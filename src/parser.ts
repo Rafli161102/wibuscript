@@ -24,8 +24,8 @@ import type {
   StringLiteral,
   BooleanLiteral,
   NullLiteral,
-} from "./ast.js";
-import { TokenType, type Token } from "./lexer.js";
+} from "./ast";
+import { TokenType, type Token } from "./lexer";
 
 export class Parser {
   private tokens: Token[] = [];

@@ -1,130 +1,140 @@
 # WibuScript
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Status](https://img.shields.io/badge/Status-Selesai%20%2F%20MVP-brightgreen?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-MVP-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-WibuScript adalah bahasa pemrograman esoterik yang diinterpretasikan (*interpreted language*), dibangun menggunakan Node.js dan TypeScript. Bahasa ini merestrukturisasi sintaks pemrograman standar menjadi perpaduan *slang* keseharian dan Romaji Jepang, memberikan pengalaman penulisan kode yang terlokalisasi secara unik.
+WibuScript adalah bahasa pemrograman esoterik (*esoteric programming language*) yang diimplementasikan menggunakan TypeScript dan berjalan di atas arsitektur *Tree-Walking Interpreter*. Bahasa ini mengabstraksi konstruksi sintaks standar menjadi perpaduan terminologi informal dwibahasa (Indonesia-Jepang) dan Romaji murni, terintegrasi langsung dengan antarmuka Web Playground berbasis Next.js untuk evaluasi kode secara *client-side*.
 
-## Konsep Inti: Sistem Alias
+## Arsitektur Sistem
 
-WibuScript mengimplementasikan **Sistem Alias** pada tingkat Analisis Leksikal (*Lexer*). Pengembang dapat menulis kode menggunakan **Versi Ekstensi** (gabungan Indo-Jepang) atau **Versi Shorthand** (Romaji Murni). 
+Sistem dirancang secara modular dengan pemisahan tegas antara mesin inti (*Core Engine*) dan antarmuka interaktif (*Frontend*):
 
-Mesin *Lexer* akan memetakan kedua varian tersebut ke dalam representasi token yang sama, sehingga keduanya dapat digunakan secara bergantian dalam satu basis kode tanpa mengorbankan performa saat diproses oleh Parser dan Evaluator.
-
-## Spesifikasi Bahasa
-
-### 1. Sintaks Fundamental
-| Keyword Standar | Versi Ekstensi | Versi Shorthand | Deskripsi |
-| :--- | :--- | :--- | :--- |
-| `let` / `var` | `koreWa` | `kore` | Deklarasi variabel atau memori. |
-| `print()` | `kasihMite()` | `mite()` | Standar output ke terminal (*console.log*). |
-| `true` | `majiBener` | `maji` | Tipe data *Boolean True*. |
-| `false` | `usoBanget` | `uso` | Tipe data *Boolean False*. |
-| `null` | `kosongZannen` | `kara` | Representasi nilai kosong/tidak terdefinisi. |
-
-### 2. Kontrol Alur & Logika (Control Flow)
-| Keyword Standar | Versi Ekstensi | Versi Shorthand | Deskripsi |
-| :--- | :--- | :--- | :--- |
-| `if` | `kaloMoshi` | `moshi` | Percabangan kondisi. |
-| `else` | `chigauDong` | `chigau` | Percabangan alternatif. |
-| `for` / `while` | `ulangZutto` | `zutto` | Perulangan atau iterasi. |
-
-### 3. Fungsi & Modul
-| Keyword Standar | Versi Ekstensi | Versi Shorthand | Deskripsi |
-| :--- | :--- | :--- | :--- |
-| `function` | `bikinJutsu` | `jutsu` | Deklarasi blok fungsi. |
-| `return` | `balikinDesu` | `kaesu` | Mengembalikan nilai dari fungsi. |
-| `import` | `panggilSenpai` | `yobu` | Memanggil modul atau *file* eksternal. |
-
-## Contoh Penggunaan (Versi Shorthand)
-
-**1. Operasi Variabel & Logika Dasar**
-```javascript
-kore statusServer = maji
-kore ping = 15
-
-moshi (statusServer == maji) {
-    mite("Koneksi stabil. Memulai program...")
-} chigau {
-    mite("Terjadi kesalahan jaringan.")
-}
 ```
-
-**2. Deklarasi Fungsi dan Perulangan**
-```javascript
-bikinJutsu cekLatensi(angka) {
-    moshi (angka > 100) {
-        balikinDesu uso
-    }
-    balikinDesu maji
-}
-
-kore hasil = cekLatensi(45)
-mite("Status latensi stabil: " + hasil)
-```
-
-## Arsitektur Mesin
-
-WibuScript dirancang sebagai *Tree-Walking Interpreter*. Arsitektur mesin ini terdiri dari tiga fase utama:
-1. **Lexer (Tokenizer):** Membaca input string mentah dan mengubahnya menjadi aliran token WibuScript yang valid dengan mengabaikan whitespace dan komentar.
-2. **Parser:** Mengambil token dan menyusunnya menjadi *Abstract Syntax Tree* (AST) berdasarkan aturan tata bahasa WibuScript.
-3. **Evaluator (Runtime):** Menjelajahi pohon AST dan mengeksekusi operasi terkait menggunakan lingkungan tuan rumah (*Host Environment*) di Node.js.
-
-## Struktur Berkas Proyek
-
-```text
 wibuscript/
 ├── src/
-│   ├── ast.ts          # Definisi node Abstract Syntax Tree (AST)
-│   ├── lexer.ts        # Lexical Analyzer (Tokenizer) dengan Sistem Alias
-│   ├── parser.ts       # Syntactic Analyzer (Parser AST)
-│   ├── runtime.ts      # Evaluator & Environment Execution Engine
-│   └── index.ts        # Titik masuk eksekusi CLI (*.wibu)
-├── contoh.wibu         # Contoh program kode sumber WibuScript
-├── package.json        # Konfigurasi dependensi dan scripts runner
-├── tsconfig.json       # Konfigurasi TypeScript compiler strict mode
+│   ├── ast.ts          # Definisi tipe simpul Abstract Syntax Tree (AST)
+│   ├── lexer.ts        # Analisis leksikal dan tokenisasi dengan Sistem Alias
+│   ├── parser.ts       # Analisis sintaksis (penyusunan AST)
+│   ├── runtime.ts      # Tree-Walking Evaluator, Environment, dan Standard Library
+│   └── index.ts        # Gerbang ekspor modul dan CLI runner
+├── app/
+│   └── page.tsx        # Antarmuka Web Playground berbasis Next.js App Router
+├── contoh.wibu         # Berkas contoh kode sumber WibuScript
+├── package.json        # Manifest proyek dan konfigurasi skrip
+├── tsconfig.json       # Konfigurasi kompilator TypeScript
 └── README.md           # Dokumentasi teknis proyek
 ```
 
-## Menjalankan Program WibuScript
+### 1. Core Engine
+- **Lexer (`src/lexer.ts`)**: Mengurai kode sumber mentah menjadi aliran token secara deterministik. Menangani literal string, numerik (integer dan desimal), operator aritmatika, operator relasional ganda (`==`, `!=`, `<=`, `>=`), serta resolusi Sistem Alias.
+- **Parser (`src/parser.ts`)**: Menerapkan teknik *Recursive Descent Parsing* dengan *operator precedence* untuk mengubah aliran token menjadi simpul AST bertipe kuat (*strongly-typed*).
+- **Runtime (`src/runtime.ts`)**: Mengeksekusi simpul AST secara asinkronus dengan isolasi lingkungan hierarkis (*lexical scoping*). Mendukung penangkapan aliran output secara *real-time* serta fungsi pustaka standar `tungguBentar` berbasis `Promise`.
 
-Pastikan dependensi telah terpasang dengan menjalankan `npm install`.
+### 2. Frontend Playground
+- Dibangun di atas Next.js App Router (`app/page.tsx`) dan Tailwind CSS.
+- Mengeksekusi tahapan kompilasi dan interpretasi secara murni pada *runtime* peramban pengguna (*Client-Side Evaluation*).
+- Menampilkan output eksekusi secara berurutan dan *real-time* melalui terminal virtual.
 
-**1. Menjalankan Berkas Kode Sumber (.wibu):**
+## Spesifikasi Sintaks (Sistem Alias)
+
+WibuScript menerapkan Sistem Alias pada lapisan analisis leksikal. Varian kata kunci panjang (Versi Ekstensi) dan varian pendek (Versi Shorthand) dipetakan ke dalam representasi `TokenType` identik, menjamin performa parsing dan evaluasi yang seragam.
+
+### 1. Deklarasi dan Nilai Literal
+| Keyword Standar | Versi Ekstensi | Versi Shorthand | Token Kategori | Deskripsi |
+| :--- | :--- | :--- | :--- | :--- |
+| `let` / `var` | `koreWa` | `kore` | `TokenType.Var` | Deklarasi alokasi memori variabel. |
+| `print()` | `kasihMite()` | `mite()` | `TokenType.Print` | Pencetakan nilai ke standar output. |
+| `true` | `majiBener` | `maji` | `TokenType.True` | Literal logika bernilai benar. |
+| `false` | `usoBanget` | `uso` | `TokenType.False` | Literal logika bernilai salah. |
+| `null` | `kosongZannen` | `kara` | `TokenType.Null` | Nilai kosong tak terdefinisi. |
+
+### 2. Kontrol Alur (Control Flow)
+| Keyword Standar | Versi Ekstensi | Versi Shorthand | Token Kategori | Deskripsi |
+| :--- | :--- | :--- | :--- | :--- |
+| `if` | `kaloMoshi` | `moshi` | `TokenType.If` | Percabangan kondisi kondisional. |
+| `else` | `chigauDong` | `chigau` | `TokenType.Else` | Cabang alternatif dari kondisi. |
+| `while` / `for` | `ulangZutto` | `zutto` | `TokenType.Loop` | Blok iterasi berbasis predikat boolean. |
+
+### 3. Subrutin dan Pustaka Standar
+| Keyword Standar | Versi Ekstensi | Versi Shorthand | Token Kategori | Deskripsi |
+| :--- | :--- | :--- | :--- | :--- |
+| `function` | `bikinJutsu` | `jutsu` | `TokenType.Function` | Deklarasi subrutin atau fungsi. |
+| `return` | `balikinDesu` | `kaesu` | `TokenType.Return` | Mengembalikan nilai dari fungsi. |
+| `delay(ms)` | `tungguBentar` | `tungguBentar` | `Builtin / Native` | Penundaan asinkronus berbasis milidetik. |
+
+## Contoh Kode Program
+
+```javascript
+// Deklarasi variabel
+kore batasIterasi = 3
+koreWa statusAktif = majiBener
+
+kasihMite("Memulai simulasi sistem...")
+
+// Percabangan kondisional
+kaloMoshi (statusAktif == maji) {
+  mite("Status sistem terverifikasi aktif.")
+} chigauDong {
+  mite("Status sistem tidak valid.")
+}
+
+// Subrutin fungsi
+bikinJutsu kalibrasi(nilai) {
+  balikinDesu nilai * 10
+}
+
+// Iterasi dengan penundaan asinkronus
+ulangZutto (batasIterasi > 0) {
+  mite("Iterasi tersisa: " + batasIterasi)
+  tungguBentar(300)
+  batasIterasi = batasIterasi - 1
+}
+
+kore hasilAkhir = kalibrasi(5)
+kasihMite("Hasil kalibrasi akhir: " + hasilAkhir)
+```
+
+## Panduan Penggunaan
+
+### 1. Instalasi Dependensi
+Pastikan Node.js (v18.0.0 atau lebih tinggi) terpasang, kemudian pasang seluruh dependensi proyek:
+
 ```bash
-# Menggunakan npm runner
-npm test
+npm install
+```
 
-# Atau menggunakan tsx secara langsung
-npx tsx src/index.ts contoh.wibu
+### 2. Menjalankan Server Lokal (Web Playground)
+Jalankan server pengembangan Next.js:
 
-# Atau mengompilasi dan mengeksekusi via Node.js
+```bash
+npm run dev
+```
+
+Akses aplikasi pada alamat `http://localhost:3000`.
+
+### 3. Membangun Proyek untuk Produksi
+Gunakan skrip kompilasi Next.js sebelum melakukan deployment (contoh: Vercel):
+
+```bash
 npm run build
-node dist/index.js contoh.wibu
+npm run start
 ```
 
-**2. Menjalankan Demonstrasi Bawaan:**
+### 4. Menjalankan CLI Core Engine (Opsional)
+Untuk mengeksekusi berkas kode `.wibu` langsung melalui terminal:
+
 ```bash
-npm start
+npm run core:test
 # atau
-npx tsx src/index.ts
+npx tsx src/index.ts contoh.wibu
 ```
-
-## Kontribusi
-
-WibuScript adalah proyek *open-source*. Kami menyambut kontribusi dari komunitas pengembang, baik untuk penyempurnaan *Core Engine*, pembuatan dokumentasi, maupun pengembangan modul standar. Silakan lakukan *Fork* pada repositori ini dan kirimkan *Pull Request* (PR) Anda.
-
-## Lisensi
-
-Proyek ini didistribusikan di bawah [MIT License](LICENSE).
 
 ## Log Pembaruan (Changelog)
 
-### Versi 1.0.0 (Rilis Core Engine & MVP)
-- Core Engine Selesai: Lexer, Parser, dan Evaluator (Runtime) telah diimplementasikan penuh dan terintegrasi secara modular.
-- Perbaikan Lexer: Dukungan penuh operator pembanding ganda (`==`, `!=`, `<=`, `>=`), operator aritmatika (`+`, `-`, `*`, `/`), string dengan escape sequence, dan perbaikan kompatibilitas TypeScript Strict Mode (`noUncheckedIndexedAccess`).
-- Implementasi Sistem Alias: Pemetaan kata kunci versi panjang (gabungan Indo-Jepang) dan versi pendek (Romaji Murni) ke dalam `TokenType` yang identik.
-- Implementasi Parser & AST: Rekonstruksi token menjadi AST untuk deklarasi variabel (`kore` / `koreWa`), pemanggilan fungsi (`mite` / `kasihMite`), percabangan kondisi (`moshi` / `chigau`), fungsi (`jutsu` / `bikinJutsu`), pengembalian nilai (`kaesu` / `balikinDesu`), dan blok kode.
-- Implementasi Runtime: Tree-Walking Interpreter dengan Environment berantai (*scope chain*) dan fungsi output terminal bawaan.
-- CLI Runner: Titik masuk `src/index.ts` untuk membaca dan mengeksekusi berkas kode `.wibu` langsung dari terminal.
+### v1.0.0-MVP
+- Rilis perdana modul Core Engine yang mencakup Lexer deterministik, Recursive Descent Parser, dan Tree-Walking Interpreter.
+- Implementasi Sistem Alias penuh untuk kompatibilitas varian sintaks Ekstensi dan Shorthand.
+- Implementasi pustaka standar asinkronus `tungguBentar` yang terintegrasi dengan siklus evaluasi `Promise`.
+- Implementasi Web Playground modern berbasis Next.js App Router (`app/page.tsx`) dan Tailwind CSS dengan kapabilitas *Client-Side Evaluation* dan *real-time terminal streaming*.
+- Konfigurasi TypeScript *Strict Mode* tanpa peringatan tipe data.

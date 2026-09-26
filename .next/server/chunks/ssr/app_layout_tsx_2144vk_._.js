@@ -1,0 +1,3 @@
+module.exports=[33290,a=>{"use strict";var b=a.i(7997);a.s(["default",0,function({children:a}){return(0,b.jsx)("html",{lang:"id",children:(0,b.jsx)("body",{className:"antialiased bg-slate-950 text-slate-100 min-h-screen",children:a})})},"metadata",0,{title:"WibuScript Web Playground",description:"Web Playground interaktif untuk bahasa pemrograman WibuScript"}])},70864,function(a){a.n(a.i(33290))}];
+
+//# sourceMappingURL=app_layout_tsx_2144vk_._.js.map

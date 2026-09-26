@@ -1,7 +1,8 @@
 // ============================================================================
 // WIBUSCRIPT RUNTIME & EVALUATOR
 // Mesin Tree-Walking Interpreter untuk mengeksekusi AST WibuScript
-// dalam lingkungan eksekusi Node.js.
+// dalam lingkungan eksekusi Node.js maupun Web Browser.
+// Dilengkapi mekanisme penangkap output (output capture) dan pustaka standar async.
 // ============================================================================
 
 import type {
@@ -21,7 +22,9 @@ import type {
   NumericLiteral,
   StringLiteral,
   BooleanLiteral,
-} from "./ast.js";
+} from "./ast";
+import { tokenize } from "./lexer";
+import { Parser } from "./parser";
 
 // ----------------------------------------------------------------------------
 // TIPE NILAI RUNTIME
@@ -53,7 +56,10 @@ export interface StringValue extends RuntimeValue {
   value: string;
 }
 
-export type NativeFnCall = (args: RuntimeValue[], env: Environment) => RuntimeValue;
+export type NativeFnCall = (
+  args: RuntimeValue[],
+  env: Environment
+) => RuntimeValue | Promise<RuntimeValue>;
 
 export interface NativeFnValue extends RuntimeValue {
   type: "native-fn";
@@ -120,6 +126,11 @@ export function formatRuntimeValue(val: RuntimeValue): string {
 // ENVIRONMENT (LINGKUP VARIABEL & FUNGSI)
 // ----------------------------------------------------------------------------
 
+export interface EnvironmentOptions {
+  outputHandler?: (message: string) => void;
+  outputLog?: string[];
+}
+
 export class Environment {
   private parent?: Environment | undefined;
   private variables: Map<string, RuntimeValue>;
@@ -164,15 +175,36 @@ export class Environment {
 }
 
 /**
- * Membuat Lingkup Global dengan fungsi bawaan (mite / kasihMite) dan konstanta default.
+ * Membuat Lingkup Global dengan dukungan penangkap output (output capture)
+ * dan pustaka standar bawaan (tungguBentar).
  */
-export function createGlobalEnvironment(): Environment {
+export function createGlobalEnvironment(
+  optionsOrHandler?: EnvironmentOptions | ((message: string) => void)
+): Environment {
   const env = new Environment();
 
-  // Implementasi fungsi output mite() dan kasihMite()
+  let outputHandler: ((message: string) => void) | undefined;
+  let logArray: string[] | undefined;
+
+  if (typeof optionsOrHandler === "function") {
+    outputHandler = optionsOrHandler;
+  } else if (optionsOrHandler) {
+    outputHandler = optionsOrHandler.outputHandler;
+    logArray = optionsOrHandler.outputLog;
+  }
+
+  // 1. Output Standar: mite() / kasihMite() / print()
   const printFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
-    const output = args.map((arg) => formatRuntimeValue(arg)).join(" ");
-    console.log(output);
+    const formatted = args.map((arg) => formatRuntimeValue(arg)).join(" ");
+
+    if (outputHandler) {
+      outputHandler(formatted);
+    } else if (logArray) {
+      logArray.push(formatted);
+    } else {
+      console.log(formatted);
+    }
+
     return MK_NULL();
   });
 
@@ -180,7 +212,17 @@ export function createGlobalEnvironment(): Environment {
   env.declareVar("kasihMite", printFn);
   env.declareVar("print", printFn);
 
-  // Konstanta bawaan
+  // 2. Pustaka Standar: tungguBentar (Asynchronous Delay)
+  const tungguBentarFn = MK_NATIVE_FN(async (args: RuntimeValue[]): Promise<RuntimeValue> => {
+    const firstArg = args[0];
+    const delayMs = firstArg && firstArg.type === "number" ? (firstArg as NumberValue).value : 1000;
+    await new Promise<void>((resolve) => setTimeout(resolve, delayMs));
+    return MK_NULL();
+  });
+
+  env.declareVar("tungguBentar", tungguBentarFn);
+
+  // 3. Konstanta Bawaan
   env.declareVar("maji", MK_BOOL(true));
   env.declareVar("majiBener", MK_BOOL(true));
   env.declareVar("uso", MK_BOOL(false));
@@ -192,43 +234,46 @@ export function createGlobalEnvironment(): Environment {
 }
 
 // ----------------------------------------------------------------------------
-// EVALUATOR (TREE-WALKING INTERPRETER)
+// EVALUATOR (TREE-WALKING ASYNC INTERPRETER)
 // ----------------------------------------------------------------------------
 
-export function evaluate(astNode: Statement, env: Environment): RuntimeValue | ReturnSignal {
+export async function evaluate(
+  astNode: Statement,
+  env: Environment
+): Promise<RuntimeValue | ReturnSignal> {
   switch (astNode.kind) {
     case "Program":
-      return evalProgram(astNode as Program, env);
+      return await evalProgram(astNode as Program, env);
 
     case "VariableDeclaration":
-      return evalVariableDeclaration(astNode as VariableDeclaration, env);
+      return await evalVariableDeclaration(astNode as VariableDeclaration, env);
 
     case "FunctionDeclaration":
       return evalFunctionDeclaration(astNode as FunctionDeclaration, env);
 
     case "IfStatement":
-      return evalIfStatement(astNode as IfStatement, env);
+      return await evalIfStatement(astNode as IfStatement, env);
 
     case "LoopStatement":
-      return evalLoopStatement(astNode as LoopStatement, env);
+      return await evalLoopStatement(astNode as LoopStatement, env);
 
     case "ReturnStatement":
-      return evalReturnStatement(astNode as ReturnStatement, env);
+      return await evalReturnStatement(astNode as ReturnStatement, env);
 
     case "BlockStatement":
-      return evalBlockStatement(astNode as BlockStatement, env);
+      return await evalBlockStatement(astNode as BlockStatement, env);
 
     case "ExpressionStatement":
-      return evalExpressionStatement(astNode as ExpressionStatement, env);
+      return await evalExpressionStatement(astNode as ExpressionStatement, env);
 
     case "AssignmentExpression":
-      return evalAssignment(astNode as AssignmentExpression, env);
+      return await evalAssignment(astNode as AssignmentExpression, env);
 
     case "BinaryExpression":
-      return evalBinaryExpression(astNode as BinaryExpression, env);
+      return await evalBinaryExpression(astNode as BinaryExpression, env);
 
     case "CallExpression":
-      return evalCallExpression(astNode as CallExpression, env);
+      return await evalCallExpression(astNode as CallExpression, env);
 
     case "Identifier":
       return evalIdentifier(astNode as Identifier, env);
@@ -254,7 +299,7 @@ function isReturnSignal(val: RuntimeValue | ReturnSignal): val is ReturnSignal {
   return typeof val === "object" && val !== null && "isReturn" in val && (val as ReturnSignal).isReturn === true;
 }
 
-function unwrapSignal(val: RuntimeValue | ReturnSignal): RuntimeValue {
+export function unwrapSignal(val: RuntimeValue | ReturnSignal): RuntimeValue {
   if (isReturnSignal(val)) {
     return val.value;
   }
@@ -276,11 +321,11 @@ function isTruthy(val: RuntimeValue): boolean {
   }
 }
 
-function evalProgram(program: Program, env: Environment): RuntimeValue {
+async function evalProgram(program: Program, env: Environment): Promise<RuntimeValue> {
   let lastEvaluated: RuntimeValue = MK_NULL();
 
   for (const statement of program.body) {
-    const result = evaluate(statement, env);
+    const result = await evaluate(statement, env);
     if (isReturnSignal(result)) {
       return result.value;
     }
@@ -290,12 +335,18 @@ function evalProgram(program: Program, env: Environment): RuntimeValue {
   return lastEvaluated;
 }
 
-function evalVariableDeclaration(declaration: VariableDeclaration, env: Environment): RuntimeValue {
-  const value = unwrapSignal(evaluate(declaration.value, env));
+async function evalVariableDeclaration(
+  declaration: VariableDeclaration,
+  env: Environment
+): Promise<RuntimeValue> {
+  const value = unwrapSignal(await evaluate(declaration.value, env));
   return env.declareVar(declaration.identifier, value);
 }
 
-function evalFunctionDeclaration(declaration: FunctionDeclaration, env: Environment): RuntimeValue {
+function evalFunctionDeclaration(
+  declaration: FunctionDeclaration,
+  env: Environment
+): RuntimeValue {
   const fn: FunctionValue = {
     type: "function",
     name: declaration.name,
@@ -306,19 +357,22 @@ function evalFunctionDeclaration(declaration: FunctionDeclaration, env: Environm
   return env.declareVar(declaration.name, fn);
 }
 
-function evalIfStatement(stmt: IfStatement, env: Environment): RuntimeValue | ReturnSignal {
-  const conditionValue = unwrapSignal(evaluate(stmt.condition, env));
+async function evalIfStatement(
+  stmt: IfStatement,
+  env: Environment
+): Promise<RuntimeValue | ReturnSignal> {
+  const conditionValue = unwrapSignal(await evaluate(stmt.condition, env));
 
   if (isTruthy(conditionValue)) {
     const scope = new Environment(env);
     for (const s of stmt.thenBranch) {
-      const result = evaluate(s, scope);
+      const result = await evaluate(s, scope);
       if (isReturnSignal(result)) return result;
     }
   } else if (stmt.elseBranch) {
     const scope = new Environment(env);
     for (const s of stmt.elseBranch) {
-      const result = evaluate(s, scope);
+      const result = await evaluate(s, scope);
       if (isReturnSignal(result)) return result;
     }
   }
@@ -326,13 +380,16 @@ function evalIfStatement(stmt: IfStatement, env: Environment): RuntimeValue | Re
   return MK_NULL();
 }
 
-function evalLoopStatement(stmt: LoopStatement, env: Environment): RuntimeValue | ReturnSignal {
+async function evalLoopStatement(
+  stmt: LoopStatement,
+  env: Environment
+): Promise<RuntimeValue | ReturnSignal> {
   let lastVal: RuntimeValue = MK_NULL();
 
-  while (isTruthy(unwrapSignal(evaluate(stmt.condition, env)))) {
+  while (isTruthy(unwrapSignal(await evaluate(stmt.condition, env)))) {
     const scope = new Environment(env);
     for (const s of stmt.body) {
-      const result = evaluate(s, scope);
+      const result = await evaluate(s, scope);
       if (isReturnSignal(result)) return result;
       lastVal = result;
     }
@@ -341,20 +398,26 @@ function evalLoopStatement(stmt: LoopStatement, env: Environment): RuntimeValue 
   return lastVal;
 }
 
-function evalReturnStatement(stmt: ReturnStatement, env: Environment): ReturnSignal {
+async function evalReturnStatement(
+  stmt: ReturnStatement,
+  env: Environment
+): Promise<ReturnSignal> {
   let value: RuntimeValue = MK_NULL();
   if (stmt.value) {
-    value = unwrapSignal(evaluate(stmt.value, env));
+    value = unwrapSignal(await evaluate(stmt.value, env));
   }
   return { isReturn: true, value };
 }
 
-function evalBlockStatement(block: BlockStatement, env: Environment): RuntimeValue | ReturnSignal {
+async function evalBlockStatement(
+  block: BlockStatement,
+  env: Environment
+): Promise<RuntimeValue | ReturnSignal> {
   const scope = new Environment(env);
   let lastVal: RuntimeValue = MK_NULL();
 
   for (const s of block.body) {
-    const result = evaluate(s, scope);
+    const result = await evaluate(s, scope);
     if (isReturnSignal(result)) return result;
     lastVal = result;
   }
@@ -362,24 +425,32 @@ function evalBlockStatement(block: BlockStatement, env: Environment): RuntimeVal
   return lastVal;
 }
 
-function evalExpressionStatement(stmt: ExpressionStatement, env: Environment): RuntimeValue | ReturnSignal {
-  return evaluate(stmt.expression, env);
+async function evalExpressionStatement(
+  stmt: ExpressionStatement,
+  env: Environment
+): Promise<RuntimeValue | ReturnSignal> {
+  return await evaluate(stmt.expression, env);
 }
 
 function evalIdentifier(ident: Identifier, env: Environment): RuntimeValue {
   return env.lookupVar(ident.symbol);
 }
 
-function evalAssignment(node: AssignmentExpression, env: Environment): RuntimeValue {
-  const value = unwrapSignal(evaluate(node.value, env));
+async function evalAssignment(
+  node: AssignmentExpression,
+  env: Environment
+): Promise<RuntimeValue> {
+  const value = unwrapSignal(await evaluate(node.value, env));
   return env.assignVar(node.assignee, value);
 }
 
-function evalBinaryExpression(binop: BinaryExpression, env: Environment): RuntimeValue {
-  const left = unwrapSignal(evaluate(binop.left, env));
-  const right = unwrapSignal(evaluate(binop.right, env));
+async function evalBinaryExpression(
+  binop: BinaryExpression,
+  env: Environment
+): Promise<RuntimeValue> {
+  const left = unwrapSignal(await evaluate(binop.left, env));
+  const right = unwrapSignal(await evaluate(binop.right, env));
 
-  // Penjumlahan string atau angka
   if (binop.operator === "+") {
     if (left.type === "string" || right.type === "string") {
       return MK_STRING(formatRuntimeValue(left) + formatRuntimeValue(right));
@@ -390,7 +461,6 @@ function evalBinaryExpression(binop: BinaryExpression, env: Environment): Runtim
     throw new Error("[Runtime Error] Operator '+' hanya mendukung tipe Number dan String.");
   }
 
-  // Operator numerik: -, *, /
   if (left.type === "number" && right.type === "number") {
     const l = (left as NumberValue).value;
     const r = (right as NumberValue).value;
@@ -416,7 +486,6 @@ function evalBinaryExpression(binop: BinaryExpression, env: Environment): Runtim
     }
   }
 
-  // Operator perbandingan kesetaraan: ==, !=
   if (binop.operator === "==") {
     if (left.type !== right.type) {
       return MK_BOOL(false);
@@ -456,12 +525,20 @@ function evalBinaryExpression(binop: BinaryExpression, env: Environment): Runtim
   throw new Error(`[Runtime Error] Operator '${binop.operator}' tidak kompatibel untuk tipe ${left.type} dan ${right.type}.`);
 }
 
-function evalCallExpression(call: CallExpression, env: Environment): RuntimeValue {
+async function evalCallExpression(
+  call: CallExpression,
+  env: Environment
+): Promise<RuntimeValue> {
   const callee = env.lookupVar(call.callee);
-  const evaluatedArgs: RuntimeValue[] = call.args.map((arg) => unwrapSignal(evaluate(arg, env)));
+  const evaluatedArgs: RuntimeValue[] = [];
+
+  for (const arg of call.args) {
+    evaluatedArgs.push(unwrapSignal(await evaluate(arg, env)));
+  }
 
   if (callee.type === "native-fn") {
-    return (callee as NativeFnValue).call(evaluatedArgs, env);
+    const result = (callee as NativeFnValue).call(evaluatedArgs, env);
+    return result instanceof Promise ? await result : result;
   }
 
   if (callee.type === "function") {
@@ -478,7 +555,7 @@ function evalCallExpression(call: CallExpression, env: Environment): RuntimeValu
 
     let lastVal: RuntimeValue = MK_NULL();
     for (const stmt of fn.body) {
-      const result = evaluate(stmt, scope);
+      const result = await evaluate(stmt, scope);
       if (isReturnSignal(result)) {
         return result.value;
       }
@@ -489,4 +566,51 @@ function evalCallExpression(call: CallExpression, env: Environment): RuntimeValu
   }
 
   throw new Error(`[Runtime Error] Identifier '${call.callee}' bukan merupakan fungsi yang dapat dipanggil.`);
+}
+
+// ----------------------------------------------------------------------------
+// HIGH-LEVEL ASYNC RUNNER UNTUK BROWSER & CLI
+// ----------------------------------------------------------------------------
+
+export interface ExecutionResult {
+  outputLog: string[];
+  lastValue: RuntimeValue;
+  error?: string | undefined;
+}
+
+/**
+ * Menjalankan kode WibuScript secara asinkronus dengan penangkapan output log.
+ */
+export async function runWibuScriptAsync(
+  sourceCode: string,
+  onOutput?: (message: string) => void
+): Promise<ExecutionResult> {
+  const outputLog: string[] = [];
+
+  const handler = (msg: string) => {
+    outputLog.push(msg);
+    if (onOutput) {
+      onOutput(msg);
+    }
+  };
+
+  const env = createGlobalEnvironment({
+    outputHandler: handler,
+    outputLog,
+  });
+
+  try {
+    const tokens = tokenize(sourceCode);
+    const parser = new Parser();
+    const program = parser.produceAST(tokens);
+    const lastValue = unwrapSignal(await evaluate(program, env));
+    return { outputLog, lastValue };
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    outputLog.push(errorMessage);
+    if (onOutput) {
+      onOutput(errorMessage);
+    }
+    return { outputLog, lastValue: MK_NULL(), error: errorMessage };
+  }
 }

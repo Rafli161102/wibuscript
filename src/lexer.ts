@@ -382,7 +382,7 @@ const kodeUjiCoba = `
   }
 `;
 
-if (process.argv[1]?.endsWith("lexer.ts") || process.argv[1]?.endsWith("lexer.js")) {
+if (typeof process !== "undefined" && process.argv && (process.argv[1]?.endsWith("lexer.ts") || process.argv[1]?.endsWith("lexer.js"))) {
     console.log("[WibuScript Lexer] Membaca kode pengujian...");
     for (const token of tokenize(kodeUjiCoba)) {
         console.log(token);
