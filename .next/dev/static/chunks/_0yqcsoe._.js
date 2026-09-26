@@ -19,59 +19,59 @@ var _s = __turbopack_context__.k.signature();
 ;
 // Kumpulan template kode WibuScript bawaan
 const CODE_PRESETS = {
-    default: `// Program Demonstrasi WibuScript
-kore nama = "Aria"
+    default: `// Program Demonstrasi WibuScript (Tema RPG / Isekai)
+kore namaKsatria = "Ren"
 kore level = 99
-kore statusPahlawan = majiBener
+kore statusIsekai = majiBener
 
-kasihMite("Menginisialisasi sistem WibuScript...")
+kasihMite("Memulai simulasi petualangan dunia baru...")
 tungguBentar(400)
 
-moshi (statusPahlawan == maji) {
-  mite("Karakter utama: " + nama)
-  mite("Tingkat kekuatan: " + level)
+moshi (statusIsekai == maji) {
+  mite("Karakter petualang: " + namaKsatria)
+  mite("Tingkat kekuatan awal: " + level)
 } chigau {
-  mite("Peringatan: Karakter tidak sah!")
+  mite("Peringatan: Karakter belum terdaftar di guild!")
 }
 
-bikinJutsu kalkulasiDaya(lvl) {
+bikinJutsu kalkulasiDayaSerang(lvl) {
   moshi (lvl >= 50) {
-    balikinDesu lvl * 10
+    balikinDesu lvl * 15
   }
-  balikinDesu lvl * 2
+  balikinDesu lvl * 5
 }
 
-kore totalDaya = kalkulasiDaya(level)
+kore totalSerangan = kalkulasiDayaSerang(level)
 tungguBentar(300)
-kasihMite("Total daya kalkulasi: " + totalDaya)
-kasihMite("Eksekusi program selesai.")`,
+kasihMite("Total daya serang kalkulasi: " + totalSerangan)
+kasihMite("Simulasi sistem petualangan selesai.")`,
     aliasDemo: `// Demonstrasi Sistem Alias (Versi Ekstensi vs Shorthand)
 // Versi Ekstensi (Indo-Jepang)
-koreWa pahlawanA = "Subaru"
-koreWa statusA = majiBener
+koreWa ksatriaApi = "Ignis"
+koreWa statusKoneksi = majiBener
 
 // Versi Shorthand (Romaji Murni)
-kore pahlawanB = "Aria"
-kore statusB = uso
+kore ksatriaEs = "Glacies"
+kore statusBuff = uso
 
-kaloMoshi (statusA == maji) {
-  kasihMite("[Ekstensi] Validasi berhasil untuk: " + pahlawanA)
+kaloMoshi (statusKoneksi == maji) {
+  kasihMite("[Ekstensi] Server terhubung. Ksatria aktif: " + ksatriaApi)
 }
 
-moshi (statusB == uso) {
-  mite("[Shorthand] Validasi status palsu terdeteksi: " + pahlawanB)
+moshi (statusBuff == uso) {
+  mite("[Shorthand] Status proteksi belum aktif untuk: " + ksatriaEs)
 }`,
     asyncLoop: `// Demonstrasi Async Delay dengan tungguBentar
-mite("Memulai hitung mundur peluncuran:")
+mite("Mengisi energi kristal sihir:")
 
-kore counter = 3
-ulangZutto (counter > 0) {
-  mite("T-minus: " + counter)
-  tungguBentar(500)
-  counter = counter - 1
+kore persentase = 3
+ulangZutto (persentase > 0) {
+  mite("Mengisi daya kristal... level " + persentase)
+  tungguBentar(400)
+  persentase = persentase - 1
 }
 
-kasihMite("Meluncur! Sistem berjalan optimal.")`
+kasihMite("Pengisian selesai! Kristal siap digunakan.")`
 };
 function WibuScriptPlayground() {
     _s();
@@ -1689,6 +1689,7 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 "[project]/src/runtime.ts [app-client] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
+// File: src/runtime.ts
 // ============================================================================
 // WIBUSCRIPT RUNTIME & EVALUATOR
 // Mesin Tree-Walking Interpreter untuk mengeksekusi AST WibuScript
@@ -1846,7 +1847,59 @@ function createGlobalEnvironment(optionsOrHandler) {
         return MK_NULL();
     });
     env.declareVar("tungguBentar", tungguBentarFn);
-    // 3. Konstanta Bawaan
+    // 3. Pustaka Standar Tambahan:
+    // 3a. gacha(min, max): Menghasilkan angka acak (RNG) di antara nilai min dan max
+    const gachaFn = MK_NATIVE_FN((args)=>{
+        let min = 0;
+        let max = 100;
+        if (args.length === 1) {
+            const first = args[0];
+            if (first && first.type === "number") {
+                max = first.value;
+            }
+        } else if (args.length >= 2) {
+            const first = args[0];
+            const second = args[1];
+            if (first && first.type === "number") {
+                min = first.value;
+            }
+            if (second && second.type === "number") {
+                max = second.value;
+            }
+        }
+        const low = Math.min(min, max);
+        const high = Math.max(min, max);
+        const result = Math.floor(Math.random() * (high - low + 1)) + low;
+        return MK_NUMBER(result);
+    });
+    env.declareVar("gacha", gachaFn);
+    // 3b. waktuSekarang(): Mengembalikan string waktu lokal saat fungsi dipanggil
+    const waktuSekarangFn = MK_NATIVE_FN(()=>{
+        return MK_STRING(new Date().toLocaleTimeString());
+    });
+    env.declareVar("waktuSekarang", waktuSekarangFn);
+    // 3c. panjangTeks(teks): Mengembalikan angka berupa jumlah karakter dari argumen string yang diberikan
+    const panjangTeksFn = MK_NATIVE_FN((args)=>{
+        const arg = args[0];
+        if (!arg) {
+            return MK_NUMBER(0);
+        }
+        const str = arg.type === "string" ? arg.value : formatRuntimeValue(arg);
+        return MK_NUMBER(str.length);
+    });
+    env.declareVar("panjangTeks", panjangTeksFn);
+    // 3d. ubahAngka(teks): Mem-parsing string menjadi tipe data angka (Number)
+    const ubahAngkaFn = MK_NATIVE_FN((args)=>{
+        const arg = args[0];
+        if (!arg) {
+            return MK_NUMBER(0);
+        }
+        const str = arg.type === "string" ? arg.value : formatRuntimeValue(arg);
+        const parsed = Number(str);
+        return MK_NUMBER(Number.isNaN(parsed) ? 0 : parsed);
+    });
+    env.declareVar("ubahAngka", ubahAngkaFn);
+    // 4. Konstanta Bawaan
     env.declareVar("maji", MK_BOOL(true));
     env.declareVar("majiBener", MK_BOOL(true));
     env.declareVar("uso", MK_BOOL(false));

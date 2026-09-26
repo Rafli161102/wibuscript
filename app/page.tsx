@@ -11,61 +11,61 @@ import {
 
 // Kumpulan template kode WibuScript bawaan
 const CODE_PRESETS: Record<string, string> = {
-  default: `// Program Demonstrasi WibuScript
-kore nama = "Aria"
+  default: `// Program Demonstrasi WibuScript (Tema RPG / Isekai)
+kore namaKsatria = "Ren"
 kore level = 99
-kore statusPahlawan = majiBener
+kore statusIsekai = majiBener
 
-kasihMite("Menginisialisasi sistem WibuScript...")
+kasihMite("Memulai simulasi petualangan dunia baru...")
 tungguBentar(400)
 
-moshi (statusPahlawan == maji) {
-  mite("Karakter utama: " + nama)
-  mite("Tingkat kekuatan: " + level)
+moshi (statusIsekai == maji) {
+  mite("Karakter petualang: " + namaKsatria)
+  mite("Tingkat kekuatan awal: " + level)
 } chigau {
-  mite("Peringatan: Karakter tidak sah!")
+  mite("Peringatan: Karakter belum terdaftar di guild!")
 }
 
-bikinJutsu kalkulasiDaya(lvl) {
+bikinJutsu kalkulasiDayaSerang(lvl) {
   moshi (lvl >= 50) {
-    balikinDesu lvl * 10
+    balikinDesu lvl * 15
   }
-  balikinDesu lvl * 2
+  balikinDesu lvl * 5
 }
 
-kore totalDaya = kalkulasiDaya(level)
+kore totalSerangan = kalkulasiDayaSerang(level)
 tungguBentar(300)
-kasihMite("Total daya kalkulasi: " + totalDaya)
-kasihMite("Eksekusi program selesai.")`,
+kasihMite("Total daya serang kalkulasi: " + totalSerangan)
+kasihMite("Simulasi sistem petualangan selesai.")`,
 
   aliasDemo: `// Demonstrasi Sistem Alias (Versi Ekstensi vs Shorthand)
 // Versi Ekstensi (Indo-Jepang)
-koreWa pahlawanA = "Subaru"
-koreWa statusA = majiBener
+koreWa ksatriaApi = "Ignis"
+koreWa statusKoneksi = majiBener
 
 // Versi Shorthand (Romaji Murni)
-kore pahlawanB = "Aria"
-kore statusB = uso
+kore ksatriaEs = "Glacies"
+kore statusBuff = uso
 
-kaloMoshi (statusA == maji) {
-  kasihMite("[Ekstensi] Validasi berhasil untuk: " + pahlawanA)
+kaloMoshi (statusKoneksi == maji) {
+  kasihMite("[Ekstensi] Server terhubung. Ksatria aktif: " + ksatriaApi)
 }
 
-moshi (statusB == uso) {
-  mite("[Shorthand] Validasi status palsu terdeteksi: " + pahlawanB)
+moshi (statusBuff == uso) {
+  mite("[Shorthand] Status proteksi belum aktif untuk: " + ksatriaEs)
 }`,
 
   asyncLoop: `// Demonstrasi Async Delay dengan tungguBentar
-mite("Memulai hitung mundur peluncuran:")
+mite("Mengisi energi kristal sihir:")
 
-kore counter = 3
-ulangZutto (counter > 0) {
-  mite("T-minus: " + counter)
-  tungguBentar(500)
-  counter = counter - 1
+kore persentase = 3
+ulangZutto (persentase > 0) {
+  mite("Mengisi daya kristal... level " + persentase)
+  tungguBentar(400)
+  persentase = persentase - 1
 }
 
-kasihMite("Meluncur! Sistem berjalan optimal.")`,
+kasihMite("Pengisian selesai! Kristal siap digunakan.")`,
 };
 
 export default function WibuScriptPlayground() {

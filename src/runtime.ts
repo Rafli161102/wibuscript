@@ -1,3 +1,4 @@
+// File: src/runtime.ts
 // ============================================================================
 // WIBUSCRIPT RUNTIME & EVALUATOR
 // Mesin Tree-Walking Interpreter untuk mengeksekusi AST WibuScript
@@ -176,7 +177,7 @@ export class Environment {
 
 /**
  * Membuat Lingkup Global dengan dukungan penangkap output (output capture)
- * dan pustaka standar bawaan (tungguBentar).
+ * dan pustaka standar bawaan (tungguBentar, gacha, waktuSekarang, panjangTeks, ubahAngka).
  */
 export function createGlobalEnvironment(
   optionsOrHandler?: EnvironmentOptions | ((message: string) => void)
@@ -222,7 +223,63 @@ export function createGlobalEnvironment(
 
   env.declareVar("tungguBentar", tungguBentarFn);
 
-  // 3. Konstanta Bawaan
+  // 3. Pustaka Standar Tambahan:
+  // 3a. gacha(min, max): Menghasilkan angka acak (RNG) di antara nilai min dan max
+  const gachaFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    let min = 0;
+    let max = 100;
+    if (args.length === 1) {
+      const first = args[0];
+      if (first && first.type === "number") {
+        max = (first as NumberValue).value;
+      }
+    } else if (args.length >= 2) {
+      const first = args[0];
+      const second = args[1];
+      if (first && first.type === "number") {
+        min = (first as NumberValue).value;
+      }
+      if (second && second.type === "number") {
+        max = (second as NumberValue).value;
+      }
+    }
+    const low = Math.min(min, max);
+    const high = Math.max(min, max);
+    const result = Math.floor(Math.random() * (high - low + 1)) + low;
+    return MK_NUMBER(result);
+  });
+  env.declareVar("gacha", gachaFn);
+
+  // 3b. waktuSekarang(): Mengembalikan string waktu lokal saat fungsi dipanggil
+  const waktuSekarangFn = MK_NATIVE_FN((): RuntimeValue => {
+    return MK_STRING(new Date().toLocaleTimeString());
+  });
+  env.declareVar("waktuSekarang", waktuSekarangFn);
+
+  // 3c. panjangTeks(teks): Mengembalikan angka berupa jumlah karakter dari argumen string yang diberikan
+  const panjangTeksFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const arg = args[0];
+    if (!arg) {
+      return MK_NUMBER(0);
+    }
+    const str = arg.type === "string" ? (arg as StringValue).value : formatRuntimeValue(arg);
+    return MK_NUMBER(str.length);
+  });
+  env.declareVar("panjangTeks", panjangTeksFn);
+
+  // 3d. ubahAngka(teks): Mem-parsing string menjadi tipe data angka (Number)
+  const ubahAngkaFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const arg = args[0];
+    if (!arg) {
+      return MK_NUMBER(0);
+    }
+    const str = arg.type === "string" ? (arg as StringValue).value : formatRuntimeValue(arg);
+    const parsed = Number(str);
+    return MK_NUMBER(Number.isNaN(parsed) ? 0 : parsed);
+  });
+  env.declareVar("ubahAngka", ubahAngkaFn);
+
+  // 4. Konstanta Bawaan
   env.declareVar("maji", MK_BOOL(true));
   env.declareVar("majiBener", MK_BOOL(true));
   env.declareVar("uso", MK_BOOL(false));

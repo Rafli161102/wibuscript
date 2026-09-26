@@ -1,12 +1,12 @@
 // Contoh Program WibuScript (.wibu)
-kore mc = "Aria"
+kore ksatria = "Ren"
 kore level = 99
 kore isHero = maji
 
 mite("Memulai program WibuScript...")
 
-moshi (mc == "Aria") {
-    mite("Selamat datang kembali, " + mc + "!")
+moshi (ksatria == "Ren") {
+    mite("Selamat datang kembali, " + ksatria + "!")
     mite("Level kamu saat ini: " + level)
 } chigau {
     mite("Identitas tidak dikenali.")
