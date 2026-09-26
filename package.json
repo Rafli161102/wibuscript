@@ -1,0 +1,29 @@
+{
+  "name": "wibuscript",
+  "version": "1.0.0",
+  "description": "![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white) ![Status](https://img.shields.io/badge/Status-In_Development-orange?style=for-the-badge) ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsx src/index.ts contoh.wibu",
+    "start": "tsx src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rafli161102/wibuscript.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Rafli161102/wibuscript/issues"
+  },
+  "homepage": "https://github.com/Rafli161102/wibuscript#readme",
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

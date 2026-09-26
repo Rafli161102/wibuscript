@@ -1,0 +1,23 @@
+// Contoh Program WibuScript (.wibu)
+kore mc = "Aria"
+kore level = 99
+kore isHero = maji
+
+mite("Memulai program WibuScript...")
+
+moshi (mc == "Aria") {
+    mite("Selamat datang kembali, " + mc + "!")
+    mite("Level kamu saat ini: " + level)
+} chigau {
+    mite("Identitas tidak dikenali.")
+}
+
+bikinJutsu hitungBonus(lvl) {
+    moshi (lvl >= 50) {
+        balikinDesu lvl * 10
+    }
+    balikinDesu lvl * 2
+}
+
+kore totalSkor = hitungBonus(level)
+kasihMite("Total bonus diperoleh: " + totalSkor)
