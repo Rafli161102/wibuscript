@@ -1,3 +1,4 @@
+// File: app/page.tsx
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -66,6 +67,35 @@ ulangZutto (persentase > 0) {
 }
 
 kasihMite("Pengisian selesai! Kristal siap digunakan.")`,
+
+  objekDanLoop: `// Demonstrasi Tipe Data Objek dan Kontrol Perulangan
+kore pahlawan = { 
+  nama: "Ksatria", 
+  elemen: "Cahaya", 
+  level: 1 
+};
+
+mite("Karakter: " + pahlawan.nama + " | Elemen: " + pahlawan.elemen);
+mite("Memulai simulasi grinding...");
+
+kore hitung = 0;
+ulangZutto (hitung < 5) {
+  hitung = hitung + 1;
+
+  moshi (hitung == 2) {
+    mite("Sesi 2 dilewati (Memicu tsugi / Continue)");
+    tsugi;
+  }
+
+  mite("Menyelesaikan sesi ke-" + hitung);
+
+  moshi (hitung == 4) {
+    mite("Stamina habis! (Memicu tomare / Break)");
+    tomare;
+  }
+}
+
+mite("Simulasi selesai.");`,
 };
 
 // Fungsi utilitas konversi Base64 yang aman untuk UTF-8
@@ -249,6 +279,7 @@ export default function WibuScriptPlayground() {
             <option value="default">Program Lengkap</option>
             <option value="aliasDemo">Sistem Alias (Ekstensi vs Shorthand)</option>
             <option value="asyncLoop">Async Delay (tungguBentar)</option>
+            <option value="objekDanLoop">Objek &amp; Kontrol Loop</option>
           </select>
 
           <button
