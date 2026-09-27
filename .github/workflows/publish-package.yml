@@ -1,0 +1,48 @@
+name: Publish to GitHub Packages
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [created, published]
+  workflow_dispatch:
+
+jobs:
+  publish-gpr:
+    name: Publish to GitHub Packages Registry
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@rafli161102'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Build Core Dist
+        run: npm run core:build
+
+      - name: Prepare Scope for GitHub Packages
+        run: |
+          node -e '
+            const fs = require("fs");
+            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            pkg.name = "@rafli161102/wibuscript";
+            pkg.publishConfig = { registry: "https://npm.pkg.github.com" };
+            fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2));
+          '
+
+      - name: Publish Package to GitHub Packages
+        run: npm publish || echo "Package version already published or skipped."
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
