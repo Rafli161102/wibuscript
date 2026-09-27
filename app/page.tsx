@@ -5,6 +5,20 @@ import packageJson from "../package.json";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Editor, { type Monaco } from "@monaco-editor/react";
 import {
+  BookOpen,
+  Terminal,
+  Code,
+  Cpu,
+  Play,
+  Share2,
+  Copy,
+  Check,
+  Trash2,
+  Zap,
+  Variable,
+  GitFork,
+} from "lucide-react";
+import {
   tokenize,
   Parser,
   evaluate,
@@ -100,6 +114,101 @@ ulangZutto (hitung < 5) {
 mite("Simulasi selesai.");`,
 };
 
+// Data kartu referensi untuk Panel Panduan Cepat
+interface GuideCard {
+  id: string;
+  title: string;
+  category: string;
+  icon: React.ElementType;
+  description: string;
+  codeSnippet: string;
+}
+
+const GUIDE_CARDS: GuideCard[] = [
+  {
+    id: "variable",
+    title: "Deklarasi Variabel",
+    category: "Variabel",
+    icon: Variable,
+    description: "Alokasi variabel baru dalam memori lingkup aktif.",
+    codeSnippet: `// Shorthand (Romaji)
+kore nama = "Ren"
+kore level = 99
+
+// Ekstensi (Indo-Jepang)
+koreWa aktif = majiBener`,
+  },
+  {
+    id: "print",
+    title: "Cetak Output",
+    category: "I/O Konsol",
+    icon: Terminal,
+    description: "Mencetak teks ke terminal virtual (stdout).",
+    codeSnippet: `// Shorthand
+mite("Selamat datang!")
+
+// Ekstensi
+kasihMite("Pesan sistem")`,
+  },
+  {
+    id: "condition",
+    title: "Logika Percabangan",
+    category: "Kontrol Alur",
+    icon: GitFork,
+    description: "Percabangan kondisi logika if-else bersarang.",
+    codeSnippet: `moshi (level >= 50) {
+  mite("Tingkat Tinggi")
+} chigau {
+  mite("Pemula")
+}`,
+  },
+  {
+    id: "function",
+    title: "Fungsi / Jutsu",
+    category: "Subrutin",
+    icon: Zap,
+    description: "Deklarasi fungsi berparameter dan nilai balikan.",
+    codeSnippet: `// Ekstensi
+bikinJutsu tambah(a, b) {
+  balikinDesu a + b
+}
+
+// Shorthand
+jutsu kali(a, b) {
+  kaesu a * b
+}`,
+  },
+  {
+    id: "loop",
+    title: "Perulangan & Kontrol",
+    category: "Iterasi",
+    icon: Cpu,
+    description: "Pengulangan while serta kontrol break dan continue.",
+    codeSnippet: `kore i = 0
+ulangZutto (i < 5) {
+  i = i + 1
+  moshi (i == 2) { tsugi; }
+  moshi (i == 4) { tomare; }
+  mite("Putaran: " + i)
+}`,
+  },
+  {
+    id: "stdlib",
+    title: "Pustaka Standar Populer",
+    category: "Standard Lib",
+    icon: Code,
+    description: "Kumpulan fungsi utilitas bawaan bahasa.",
+    codeSnippet: `// Panjang: nagasa(val)
+kore p = nagasa("Wibu")
+
+// Konversi: sujiNi(str)
+kore n = sujiNi("100")
+
+// Waktu: ima() / waktuSekarang()
+mite("Jam: " + ima())`,
+  },
+];
+
 // Fungsi utilitas konversi Base64 yang aman untuk UTF-8
 function encodeBase64(str: string): string {
   try {
@@ -149,8 +258,8 @@ function handleEditorWillMount(monaco: Monaco): void {
     supportFunctions: [
       "kasihMite", "mite",
       "bikinJutsu", "jutsu",
-      "balikInDesu", "balikinDesu", "modoru",
-      "imaDesu", "ima",
+      "balikInDesu", "balikinDesu", "kaesu", "modoru",
+      "imaDesu", "ima", "imaJikan",
       "gacha",
       "nagasa",
       "sujiNi",
@@ -172,6 +281,10 @@ function handleEditorWillMount(monaco: Monaco): void {
       "bikinGedeKore", "bikinKecilKore",
       "gachaPull",
       "yameteKudasai", "yamete",
+      "tolongBacaBerkas", "yomu", "bacaBerkas",
+      "tolongTulisBerkas", "kaku", "tulisBerkas",
+      "tolongPanggilModul", "yobu", "panggilModul",
+      "tolongAmbilData", "totte", "ambilData",
       "print",
     ],
 
@@ -290,6 +403,7 @@ export default function WibuScriptPlayground() {
   const [outputLog, setOutputLog] = useState<string[]>([]);
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [copiedSnippetId, setCopiedSnippetId] = useState<string | null>(null);
   const [executionTime, setExecutionTime] = useState<number | null>(null);
   const [statusMessage, setStatusMessage] = useState<string>("Siap");
   const [tokenCount, setTokenCount] = useState<number | null>(null);
@@ -327,9 +441,26 @@ export default function WibuScriptPlayground() {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch {
-      // Fallback jika API clipboard diblokir lingkungan
       setIsCopied(false);
     }
+  };
+
+  // Menyalin snippet kode dari kartu panduan
+  const handleCopySnippet = async (cardId: string, snippet: string) => {
+    if (typeof window === "undefined") return;
+
+    try {
+      await navigator.clipboard.writeText(snippet);
+      setCopiedSnippetId(cardId);
+      setTimeout(() => setCopiedSnippetId(null), 1800);
+    } catch {
+      setCopiedSnippetId(null);
+    }
+  };
+
+  // Menempelkan snippet panduan langsung ke editor
+  const handleInsertSnippet = (snippet: string) => {
+    setCode((prev) => (prev ? `${prev}\n\n${snippet}` : snippet));
   };
 
   // Eksekusi kode WibuScript di sisi klien (Client-Side Rendering)
@@ -399,7 +530,7 @@ export default function WibuScriptPlayground() {
       <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded bg-cyan-600 flex items-center justify-center font-mono font-bold text-white text-sm shadow">
-            WS
+            <Cpu className="w-4 h-4" />
           </div>
           <div>
             <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
@@ -433,7 +564,17 @@ export default function WibuScriptPlayground() {
             className="px-3 py-1.5 rounded text-xs font-semibold shadow transition-all bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 active:scale-95 flex items-center gap-1.5"
             title="Salin tautan berbagi ke clipboard"
           >
-            {isCopied ? "Tautan Tersalin!" : "Bagikan Kode"}
+            {isCopied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                Tautan Tersalin!
+              </>
+            ) : (
+              <>
+                <Share2 className="w-3.5 h-3.5" />
+                Bagikan Kode
+              </>
+            )}
           </button>
 
           <button
@@ -451,22 +592,112 @@ export default function WibuScriptPlayground() {
                 Mengeksekusi...
               </>
             ) : (
-              <>Jalankan Kode (Ctrl+Enter)</>
+              <>
+                <Play className="w-3.5 h-3.5 fill-current" />
+                Jalankan Kode (Ctrl+Enter)
+              </>
             )}
           </button>
         </div>
       </header>
 
-      {/* Konten Utama: 2 Kolom Editor & Terminal */}
-      <main className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 lg:p-6 overflow-hidden">
-        {/* Kolom 1: Area Editor (Monaco dengan Monarch Tokenizer WibuScript) */}
-        <section className="flex flex-col rounded-lg border border-slate-800 bg-slate-900 shadow-sm overflow-hidden">
+      {/* Konten Utama: 3 Kolom Responsif (Panduan Cepat, Editor, Terminal) */}
+      <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 lg:p-6 overflow-hidden">
+        {/* Kolom 1: Panel Panduan Cepat (Quick Guide) */}
+        <aside className="lg:col-span-3 flex flex-col rounded-lg border border-slate-800 bg-slate-900 shadow-sm overflow-hidden min-h-[420px] max-h-[calc(100vh-140px)]">
+          {/* Header Panduan */}
+          <div className="bg-slate-800/80 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-200">
+              <BookOpen className="w-4 h-4 text-cyan-400" />
+              <span>Panduan Cepat</span>
+            </div>
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+              Sintaksis
+            </span>
+          </div>
+
+          {/* Isi Kartu Panduan */}
+          <div className="flex-1 p-3 overflow-y-auto space-y-3 text-xs">
+            {GUIDE_CARDS.map((card) => {
+              const IconComponent = card.icon;
+              const isSnippetCopied = copiedSnippetId === card.id;
+
+              return (
+                <div
+                  key={card.id}
+                  className="rounded-md border border-slate-800 bg-slate-950/60 p-3 hover:border-slate-700 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-1.5 font-semibold text-slate-200 text-xs">
+                      <IconComponent className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>{card.title}</span>
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-400 bg-slate-800/80 px-1.5 py-0.5 rounded">
+                      {card.category}
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-400 leading-snug mb-2">
+                    {card.description}
+                  </p>
+
+                  <div className="relative group rounded bg-slate-900 border border-slate-800/90 p-2 font-mono text-[11px] text-slate-300">
+                    <pre className="whitespace-pre-wrap overflow-x-auto leading-relaxed text-cyan-300/90">
+                      {card.codeSnippet}
+                    </pre>
+
+                    <div className="mt-2 pt-1.5 border-t border-slate-800 flex items-center justify-end gap-1.5">
+                      <button
+                        onClick={() => handleCopySnippet(card.id, card.codeSnippet)}
+                        className="px-2 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center gap-1 transition-all"
+                        title="Salin sintaks ke clipboard"
+                      >
+                        {isSnippetCopied ? (
+                          <>
+                            <Check className="w-3 h-3 text-emerald-400" />
+                            <span>Tersalin</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" />
+                            <span>Salin</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => handleInsertSnippet(card.codeSnippet)}
+                        className="px-2 py-0.5 rounded text-[10px] bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-800/80 flex items-center gap-1 transition-all"
+                        title="Tambahkan ke editor kode"
+                      >
+                        <Code className="w-3 h-3" />
+                        <span>Sisipkan</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Footer Panduan */}
+          <div className="bg-slate-900/90 border-t border-slate-800 px-3 py-2 text-[11px] text-slate-500 flex items-center justify-between">
+            <span>Sistem Alias Ekstensi &amp; Shorthand</span>
+            <span className="font-mono text-slate-400">{GUIDE_CARDS.length} Modul</span>
+          </div>
+        </aside>
+
+        {/* Kolom 2: Area Editor (Monaco dengan Monarch Tokenizer WibuScript) */}
+        <section className="lg:col-span-5 flex flex-col rounded-lg border border-slate-800 bg-slate-900 shadow-sm overflow-hidden min-h-[420px] max-h-[calc(100vh-140px)]">
           <div className="bg-slate-800/60 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
-            <span>Editor Kode sumber (*.wibu)</span>
+            <div className="flex items-center gap-2 text-slate-300 font-semibold">
+              <Code className="w-4 h-4 text-cyan-400" />
+              <span>Editor Kode (*.wibu)</span>
+            </div>
             <span>{code.split("\n").length} baris | {code.length} karakter</span>
           </div>
 
-          <div className="relative flex-1 min-h-[420px]">
+          <div className="relative flex-1 min-h-[380px]">
             <Editor
               height="100%"
               defaultLanguage="wibuscript"
@@ -503,20 +734,18 @@ export default function WibuScriptPlayground() {
           </div>
         </section>
 
-        {/* Kolom 2: Area Terminal Virtual */}
-        <section className="flex flex-col rounded-lg border border-slate-800 bg-slate-950 shadow-sm overflow-hidden font-mono">
+        {/* Kolom 3: Area Terminal Virtual */}
+        <section className="lg:col-span-4 flex flex-col rounded-lg border border-slate-800 bg-slate-950 shadow-sm overflow-hidden font-mono min-h-[420px] max-h-[calc(100vh-140px)]">
           {/* Header Terminal */}
           <div className="bg-slate-900 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
-              <span className="ml-2 text-slate-300 font-semibold">
+              <Terminal className="w-4 h-4 text-cyan-400" />
+              <span className="text-slate-300 font-semibold">
                 Terminal Virtual (stdout)
               </span>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <span
                 className={`text-[11px] px-2 py-0.5 rounded font-mono ${
                   statusMessage === "Menjalankan..."
@@ -532,30 +761,39 @@ export default function WibuScriptPlayground() {
               </span>
               <button
                 onClick={handleClearOutput}
-                className="text-[11px] text-slate-400 hover:text-slate-200 transition-colors underline"
+                className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+                title="Bersihkan log output terminal"
               >
-                Bersihkan
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
           {/* Body Terminal */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-1.5 text-xs text-slate-300 min-h-[420px] max-h-[70vh]">
+          <div className="flex-1 p-4 overflow-y-auto space-y-1.5 text-xs text-slate-300 min-h-[380px]">
             {outputLog.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-600 select-none py-16">
+                <Terminal className="w-8 h-8 mb-2 stroke-[1.5] text-slate-700" />
                 <p>[Terminal Siap]</p>
-                <p className="text-[11px] mt-1">
+                <p className="text-[11px] mt-1 text-center">
                   Klik tombol &quot;Jalankan Kode&quot; untuk memulai evaluasi program.
                 </p>
               </div>
             ) : (
               outputLog.map((line, index) => {
-                const isError = line.startsWith("[Sistem Error]") || line.startsWith("[Lexer Error]") || line.startsWith("[Parser Error]") || line.startsWith("[Runtime Error]");
+                const isError =
+                  line.startsWith("[Sistem Error]") ||
+                  line.startsWith("[Lexer Error]") ||
+                  line.startsWith("[Parser Error]") ||
+                  line.startsWith("[Runtime Error]");
+
                 return (
                   <div
                     key={index}
                     className={`flex items-start gap-2 leading-relaxed ${
-                      isError ? "text-red-400 bg-red-950/20 px-1 rounded" : "text-slate-200"
+                      isError
+                        ? "text-red-400 bg-red-950/20 px-1 rounded"
+                        : "text-slate-200"
                     }`}
                   >
                     <span className="text-slate-600 select-none">&gt;</span>
