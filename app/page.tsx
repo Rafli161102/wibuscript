@@ -3,7 +3,7 @@
 
 import packageJson from "../package.json";
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import Editor from "@monaco-editor/react";
+import Editor, { type Monaco } from "@monaco-editor/react";
 import {
   tokenize,
   Parser,
@@ -120,6 +120,169 @@ function decodeBase64(base64: string): string {
   } catch {
     return "";
   }
+}
+
+// Registrasi bahasa kustom WibuScript ke Monaco Editor sebelum render
+function handleEditorWillMount(monaco: Monaco): void {
+  // Daftarkan identitas bahasa
+  monaco.languages.register({ id: "wibuscript" });
+
+  // Definisikan Monarch Tokenizer untuk pewarnaan sintaks
+  monaco.languages.setMonarchTokensProvider("wibuscript", {
+    defaultToken: "",
+    ignoreCase: false,
+
+    // Kata kunci kontrol alur (Ekstensi dan Shorthand)
+    controlKeywords: [
+      "moshi", "kaloMoshi", "soreTomo", "tomo", "hokaNo", "hoka",
+      "ulangZutto", "zutto",
+      "berhentiDuluKudasai", "tomare",
+      "lanjutAksiSugi", "tsugi",
+    ],
+
+    // Kata kunci deklarasi
+    declarationKeywords: [
+      "koreWa", "kore",
+    ],
+
+    // Fungsi pendukung dan pustaka standar
+    supportFunctions: [
+      "kasihMite", "mite",
+      "bikinJutsu", "jutsu",
+      "balikInDesu", "balikinDesu", "modoru",
+      "imaDesu", "ima",
+      "gacha",
+      "nagasa",
+      "sujiNi",
+      "dekaku",
+      "chiisaku",
+      "tsuika",
+      "sakujo",
+      "tungguBentarKudasai", "tungguBentar", "mate",
+      "sekarangImaDesu", "waktuSekarang",
+      "tolongCekNagasa", "cekNagasa", "panjangTeks",
+      "bikinJadiSuji", "jadiSuji", "ubahAngka",
+      "apaTipeKoreWa", "tipeNani", "shurui",
+      "kalkulasiPangkatSuji", "pangkatSuji", "beki",
+      "bikinBulatSuji", "bulatSuji", "marume",
+      "masukinKeRetsu", "isiRetsu",
+      "keluarinDariRetsu", "buangRetsu",
+      "bikinRetsu", "retsu",
+      "potongKoreNagasa", "potongTeks", "kiru",
+      "bikinGedeKore", "bikinKecilKore",
+      "gachaPull",
+      "yameteKudasai", "yamete",
+      "print",
+    ],
+
+    // Konstanta bahasa
+    constantLanguage: [
+      "majiBener", "maji",
+      "chigauBener", "chigau",
+      "karappo", "mu",
+      "usoBanget", "uso",
+      "kosongZannen", "kara",
+    ],
+
+    // Operator perbandingan dan aritmatika
+    operators: [
+      "==", "!=", "<=", ">=", "<", ">",
+      "+", "-", "*", "/", "%", "=",
+    ],
+
+    symbols: /[=><!~?:&|+\-*/^%]+/,
+
+    tokenizer: {
+      root: [
+        // Deteksi komentar yang dimulai dengan //
+        [/\/\/.*$/, "comment.line.double-slash"],
+
+        // Deteksi string diapit tanda kutip ganda
+        [/"([^"\\]|\\.)*$/, "string.invalid"],
+        [/"/, "string.quoted.double", "@string_double"],
+
+        // Deteksi string diapit tanda kutip tunggal
+        [/'([^'\\]|\\.)*$/, "string.invalid"],
+        [/'/, "string", "@string_single"],
+
+        // Angka (desimal dan bulat)
+        [/\b\d+(\.\d+)?\b/, "number"],
+
+        // Identifier dan aturan kata kunci Sistem Alias
+        [/[a-zA-Z_]\w*/, {
+          cases: {
+            "@controlKeywords": "keyword.control",
+            "@declarationKeywords": "keyword.declaration",
+            "@supportFunctions": "support.function",
+            "@constantLanguage": "constant.language",
+            "@default": "identifier",
+          },
+        }],
+
+        // Operator
+        [/@symbols/, {
+          cases: {
+            "@operators": "operator",
+            "@default": "",
+          },
+        }],
+
+        // Tanda kurung, kurung siku, kurung kurawal
+        [/[{}()[\]]/, "@brackets"],
+
+        // Pemisah
+        [/[;,.]/, "delimiter"],
+      ],
+
+      string_double: [
+        [/[^\\"]+/, "string.quoted.double"],
+        [/\\./, "string.escape"],
+        [/"/, "string.quoted.double", "@pop"],
+      ],
+
+      string_single: [
+        [/[^\\']+/, "string"],
+        [/\\./, "string.escape"],
+        [/'/, "string", "@pop"],
+      ],
+    },
+  });
+
+  // Konfigurasi fitur bahasa (auto-closing brackets, komentar, dll.)
+  monaco.languages.setLanguageConfiguration("wibuscript", {
+    comments: {
+      lineComment: "//",
+    },
+    brackets: [
+      ["{", "}"],
+      ["[", "]"],
+      ["(", ")"],
+    ],
+    autoClosingPairs: [
+      { open: "{", close: "}" },
+      { open: "[", close: "]" },
+      { open: "(", close: ")" },
+      { open: '"', close: '"' },
+      { open: "'", close: "'" },
+    ],
+    surroundingPairs: [
+      { open: "{", close: "}" },
+      { open: "[", close: "]" },
+      { open: "(", close: ")" },
+      { open: '"', close: '"' },
+      { open: "'", close: "'" },
+    ],
+    folding: {
+      markers: {
+        start: /\{/,
+        end: /\}/,
+      },
+    },
+    indentationRules: {
+      increaseIndentPattern: /\{[^}]*$/,
+      decreaseIndentPattern: /^\s*\}/,
+    },
+  });
 }
 
 export default function WibuScriptPlayground() {
@@ -296,7 +459,7 @@ export default function WibuScriptPlayground() {
 
       {/* Konten Utama: 2 Kolom Editor & Terminal */}
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 lg:p-6 overflow-hidden">
-        {/* Kolom 1: Area Editor (Monaco) */}
+        {/* Kolom 1: Area Editor (Monaco dengan Monarch Tokenizer WibuScript) */}
         <section className="flex flex-col rounded-lg border border-slate-800 bg-slate-900 shadow-sm overflow-hidden">
           <div className="bg-slate-800/60 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
             <span>Editor Kode sumber (*.wibu)</span>
@@ -306,10 +469,11 @@ export default function WibuScriptPlayground() {
           <div className="relative flex-1 min-h-[420px]">
             <Editor
               height="100%"
-              defaultLanguage="javascript"
+              defaultLanguage="wibuscript"
               theme="vs-dark"
               value={code}
               onChange={handleEditorChange}
+              beforeMount={handleEditorWillMount}
               options={{
                 fontSize: 14,
                 fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Monaco, 'Courier New', monospace",
@@ -334,7 +498,7 @@ export default function WibuScriptPlayground() {
           </div>
 
           <div className="bg-slate-900/90 border-t border-slate-800 px-4 py-2 text-[11px] text-slate-500 flex justify-between items-center">
-            <span>Monaco Editor | Dukungan Sintaks: koreWa / kore, mite, moshi, chigau, tungguBentar</span>
+            <span>Monaco Editor | Bahasa: WibuScript (Monarch Tokenizer)</span>
             <span>Tab = 2 spasi</span>
           </div>
         </section>

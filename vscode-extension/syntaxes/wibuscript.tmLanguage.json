@@ -2,25 +2,37 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "WibuScript",
   "scopeName": "source.wibuscript",
-  "fileTypes": ["wibu"],
+  "fileTypes": [
+    "wibu"
+  ],
   "patterns": [
-    { "include": "#comments" },
-    { "include": "#strings" },
-    { "include": "#numbers" },
-    { "include": "#constants" },
-    { "include": "#keywords-control" },
-    { "include": "#keywords-declaration" },
-    { "include": "#keywords-function" },
-    { "include": "#keywords-io" },
-    { "include": "#keywords-stdlib" },
-    { "include": "#keywords-operator" },
-    { "include": "#identifiers" }
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#keywords-control"
+    },
+    {
+      "include": "#keywords-declaration"
+    },
+    {
+      "include": "#support-functions"
+    }
   ],
   "repository": {
     "comments": {
       "patterns": [
         {
-          "name": "comment.line.double-slash.wibuscript",
+          "name": "comment.line.double-slash",
           "match": "//.*$"
         }
       ]
@@ -28,23 +40,23 @@
     "strings": {
       "patterns": [
         {
-          "name": "string.quoted.double.wibuscript",
+          "name": "string.quoted.double",
           "begin": "\"",
           "end": "\"",
           "patterns": [
             {
-              "name": "constant.character.escape.wibuscript",
+              "name": "constant.character.escape",
               "match": "\\\\."
             }
           ]
         },
         {
-          "name": "string.quoted.single.wibuscript",
+          "name": "string.quoted.single",
           "begin": "'",
           "end": "'",
           "patterns": [
             {
-              "name": "constant.character.escape.wibuscript",
+              "name": "constant.character.escape",
               "match": "\\\\."
             }
           ]
@@ -54,7 +66,7 @@
     "numbers": {
       "patterns": [
         {
-          "name": "constant.numeric.wibuscript",
+          "name": "constant.numeric",
           "match": "\\b[0-9]+(\\.[0-9]+)?\\b"
         }
       ]
@@ -62,132 +74,32 @@
     "constants": {
       "patterns": [
         {
-          "name": "constant.language.boolean.true.wibuscript",
-          "match": "\\b(majiBener|maji)\\b"
-        },
-        {
-          "name": "constant.language.boolean.false.wibuscript",
-          "match": "\\b(usoBanget|uso)\\b"
-        },
-        {
-          "name": "constant.language.null.wibuscript",
-          "match": "\\b(kosongZannen|karappo|kara|mu)\\b"
+          "name": "constant.language",
+          "match": "\\b(majiBener|maji|chigauBener|chigau|karappo|mu)\\b"
         }
       ]
     },
     "keywords-control": {
       "patterns": [
         {
-          "name": "keyword.control.conditional.wibuscript",
-          "match": "\\b(kaloMoshi|moshi|soreTomo|tomo|hokaNo|hoka|chigauBener|chigau)\\b"
-        },
-        {
-          "name": "keyword.control.loop.wibuscript",
-          "match": "\\b(ulangZutto|zutto)\\b"
-        },
-        {
-          "name": "keyword.control.break.wibuscript",
-          "match": "\\b(berhentiDuluKudasai|tomare)\\b"
-        },
-        {
-          "name": "keyword.control.continue.wibuscript",
-          "match": "\\b(lanjutAksiSugi|tsugi)\\b"
-        },
-        {
-          "name": "keyword.control.return.wibuscript",
-          "match": "\\b(balikinDesu|modoru)\\b"
+          "name": "keyword.control",
+          "match": "\\b(moshi|kaloMoshi|soreTomo|tomo|hokaNo|hoka|ulangZutto|zutto|berhentiDuluKudasai|tomare|lanjutAksiSugi|tsugi)\\b"
         }
       ]
     },
     "keywords-declaration": {
       "patterns": [
         {
-          "name": "keyword.declaration.variable.wibuscript",
+          "name": "keyword.declaration",
           "match": "\\b(koreWa|kore)\\b"
         }
       ]
     },
-    "keywords-function": {
+    "support-functions": {
       "patterns": [
         {
-          "name": "keyword.declaration.function.wibuscript",
-          "match": "\\b(bikinJutsu|jutsu)\\b"
-        }
-      ]
-    },
-    "keywords-io": {
-      "patterns": [
-        {
-          "name": "support.function.io.wibuscript",
-          "match": "\\b(kasihMite|mite|print)\\b"
-        }
-      ]
-    },
-    "keywords-stdlib": {
-      "patterns": [
-        {
-          "name": "support.function.delay.wibuscript",
-          "match": "\\b(tungguBentarKudasai|tungguBentar|mate)\\b"
-        },
-        {
-          "name": "support.function.time.wibuscript",
-          "match": "\\b(sekarangImaDesu|imaDesu|ima|waktuSekarang)\\b"
-        },
-        {
-          "name": "support.function.length.wibuscript",
-          "match": "\\b(tolongCekNagasa|cekNagasa|nagasa|panjangTeks)\\b"
-        },
-        {
-          "name": "support.function.conversion.wibuscript",
-          "match": "\\b(bikinJadiSuji|jadiSuji|sujiNi|ubahAngka)\\b"
-        },
-        {
-          "name": "support.function.typeof.wibuscript",
-          "match": "\\b(apaTipeKoreWa|tipeNani|shurui)\\b"
-        },
-        {
-          "name": "support.function.math.wibuscript",
-          "match": "\\b(kalkulasiPangkatSuji|pangkatSuji|beki|bikinBulatSuji|bulatSuji|marume)\\b"
-        },
-        {
-          "name": "support.function.array.wibuscript",
-          "match": "\\b(masukinKeRetsu|isiRetsu|tsuika|keluarinDariRetsu|buangRetsu|sakujo|bikinRetsu|retsu)\\b"
-        },
-        {
-          "name": "support.function.string.wibuscript",
-          "match": "\\b(potongKoreNagasa|potongTeks|kiru|bikinGedeKore|dekaku|bikinKecilKore|chiisaku)\\b"
-        },
-        {
-          "name": "support.function.rng.wibuscript",
-          "match": "\\b(gachaPull|gacha)\\b"
-        },
-        {
-          "name": "support.function.panic.wibuscript",
-          "match": "\\b(yameteKudasai|yamete)\\b"
-        }
-      ]
-    },
-    "keywords-operator": {
-      "patterns": [
-        {
-          "name": "keyword.operator.comparison.wibuscript",
-          "match": "(==|!=|<=|>=|<|>)"
-        },
-        {
-          "name": "keyword.operator.arithmetic.wibuscript",
-          "match": "[+\\-*/%]"
-        },
-        {
-          "name": "keyword.operator.assignment.wibuscript",
-          "match": "="
-        }
-      ]
-    },
-    "identifiers": {
-      "patterns": [
-        {
-          "name": "variable.other.wibuscript",
-          "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+          "name": "support.function",
+          "match": "\\b(kasihMite|mite|bikinJutsu|jutsu|balikInDesu|balikinDesu|modoru|imaDesu|ima|gacha|nagasa|sujiNi|dekaku|chiisaku|tsuika|sakujo)\\b"
         }
       ]
     }
