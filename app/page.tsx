@@ -68,10 +68,33 @@ ulangZutto (persentase > 0) {
 kasihMite("Pengisian selesai! Kristal siap digunakan.")`,
 };
 
+// Fungsi utilitas konversi Base64 yang aman untuk UTF-8
+function encodeBase64(str: string): string {
+  try {
+    return btoa(encodeURIComponent(str));
+  } catch {
+    return btoa(str);
+  }
+}
+
+function decodeBase64(base64: string): string {
+  try {
+    const binary = atob(base64);
+    try {
+      return decodeURIComponent(binary);
+    } catch {
+      return binary;
+    }
+  } catch {
+    return "";
+  }
+}
+
 export default function WibuScriptPlayground() {
   const [code, setCode] = useState<string>(CODE_PRESETS.default ?? "");
   const [outputLog, setOutputLog] = useState<string[]>([]);
   const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [isCopied, setIsCopied] = useState<boolean>(false);
   const [executionTime, setExecutionTime] = useState<number | null>(null);
   const [statusMessage, setStatusMessage] = useState<string>("Siap");
   const [tokenCount, setTokenCount] = useState<number | null>(null);
@@ -79,10 +102,41 @@ export default function WibuScriptPlayground() {
   const terminalEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Membaca parameter ?code= dari URL saat pertama kali dimuat di browser
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const codeParam = urlParams.get("code");
+      if (codeParam) {
+        const decoded = decodeBase64(codeParam);
+        if (decoded) {
+          setCode(decoded);
+        }
+      }
+    }
+  }, []);
+
   // Auto-scroll terminal virtual saat ada output baru
   useEffect(() => {
     terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [outputLog]);
+
+  // Menyalin URL lengkap berisi parameter Base64 ke clipboard pengguna
+  const handleShareCode = async () => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const encoded = encodeBase64(code);
+      const url = new URL(window.location.href);
+      url.searchParams.set("code", encoded);
+      await navigator.clipboard.writeText(url.toString());
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch {
+      // Fallback jika API clipboard diblokir lingkungan
+      setIsCopied(false);
+    }
+  };
 
   // Eksekusi kode WibuScript di sisi klien (Client-Side Rendering)
   const handleRunCode = async () => {
@@ -196,6 +250,14 @@ export default function WibuScriptPlayground() {
             <option value="aliasDemo">Sistem Alias (Ekstensi vs Shorthand)</option>
             <option value="asyncLoop">Async Delay (tungguBentar)</option>
           </select>
+
+          <button
+            onClick={() => void handleShareCode()}
+            className="px-3 py-1.5 rounded text-xs font-semibold shadow transition-all bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 active:scale-95 flex items-center gap-1.5"
+            title="Salin tautan berbagi ke clipboard"
+          >
+            {isCopied ? "Tautan Tersalin!" : "Bagikan Kode"}
+          </button>
 
           <button
             onClick={() => void handleRunCode()}

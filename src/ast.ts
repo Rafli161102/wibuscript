@@ -1,6 +1,9 @@
+// File: src/ast.ts
 // ============================================================================
 // WIBUSCRIPT ABSTRACT SYNTAX TREE (AST) DEFINITIONS
 // Mendefinisikan struktur simpul pohon sintaksis abstrak WibuScript.
+// Mendukung Objek Kamus (ObjectLiteral), Akses Anggota (MemberExpr),
+// dan Kontrol Perulangan (BreakStatement & ContinueStatement).
 // ============================================================================
 
 export type NodeType =
@@ -13,6 +16,8 @@ export type NodeType =
   | "ReturnStatement"
   | "BlockStatement"
   | "ExpressionStatement"
+  | "BreakStatement"
+  | "ContinueStatement"
 
   // Expressions
   | "AssignmentExpression"
@@ -22,7 +27,10 @@ export type NodeType =
   | "NumericLiteral"
   | "StringLiteral"
   | "BooleanLiteral"
-  | "NullLiteral";
+  | "NullLiteral"
+  | "ObjectLiteral"
+  | "Property"
+  | "MemberExpr";
 
 /**
  * Antarmuka dasar untuk semua simpul Statement.
@@ -59,7 +67,7 @@ export interface IfStatement extends Statement {
 }
 
 /**
- * Perulangan: zutto (<kondisi>) { <body> }
+ * Perulangan: zutto (<kondisi>) { <body> } / ulangZutto (<kondisi>) { <body> }
  */
 export interface LoopStatement extends Statement {
   kind: "LoopStatement";
@@ -83,6 +91,20 @@ export interface FunctionDeclaration extends Statement {
 export interface ReturnStatement extends Statement {
   kind: "ReturnStatement";
   value?: Expression | undefined;
+}
+
+/**
+ * Penghentian perulangan: tomare / berhentiDuluKudasai
+ */
+export interface BreakStatement extends Statement {
+  kind: "BreakStatement";
+}
+
+/**
+ * Peloncatan iterasi perulangan: tsugi / lanjutAksiSugi
+ */
+export interface ContinueStatement extends Statement {
+  kind: "ContinueStatement";
 }
 
 /**
@@ -172,4 +194,31 @@ export interface BooleanLiteral extends Expression {
 export interface NullLiteral extends Expression {
   kind: "NullLiteral";
   value: null;
+}
+
+/**
+ * Properti pasangan kunci-nilai pada objek literal.
+ */
+export interface Property extends Statement {
+  kind: "Property";
+  key: string;
+  value?: Expression | undefined;
+}
+
+/**
+ * Literal Objek / Kamus: { kunci: nilai, ... }
+ */
+export interface ObjectLiteral extends Expression {
+  kind: "ObjectLiteral";
+  properties: Property[];
+}
+
+/**
+ * Akses Anggota / Properti Objek dengan Titik: objek.properti
+ */
+export interface MemberExpr extends Expression {
+  kind: "MemberExpr";
+  object: Expression;
+  property: Identifier;
+  computed: boolean;
 }

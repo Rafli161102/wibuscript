@@ -1,8 +1,10 @@
+// File: src/lexer.ts
 // ============================================================================
 // WIBUSCRIPT LEXER (TOKENIZER)
 // Mengubah teks kode sumber WibuScript menjadi aliran token terstruktur.
 // Mendukung Sistem Alias (Versi Ekstensi Indo-Jepang dan Shorthand Romaji Murni)
-// serta operator perbandingan ganda (==, !=, <=, >=).
+// serta operator perbandingan ganda (==, !=, <=, >=), member access (.),
+// dan pasangan kunci objek (:).
 // ============================================================================
 
 export enum TokenType {
@@ -17,6 +19,8 @@ export enum TokenType {
     Loop,
     Function,
     Return,
+    Break,          // berhentiDuluKudasai / tomare
+    Continue,       // lanjutAksiSugi / tsugi
 
     // Tipe Data & Identifier
     Identifier,
@@ -45,6 +49,8 @@ export enum TokenType {
     CloseBrace,     // }
     Comma,          // ,
     Semicolon,      // ;
+    Dot,            // .
+    Colon,          // :
 
     // Akhir Berkas
     EOF             // End of File
@@ -88,6 +94,13 @@ export const KEYWORDS: Record<string, TokenType> = {
     // Perulangan
     "ulangZutto": TokenType.Loop,
     "zutto": TokenType.Loop,
+
+    // Kontrol Perulangan (Break & Continue)
+    "berhentiDuluKudasai": TokenType.Break,
+    "tomare": TokenType.Break,
+
+    "lanjutAksiSugi": TokenType.Continue,
+    "tsugi": TokenType.Continue,
 
     // Fungsi
     "bikinJutsu": TokenType.Function,
@@ -279,6 +292,18 @@ export function tokenize(sourceCode: string): Token[] {
             continue;
         }
 
+        if (current === ".") {
+            tokens.push({ type: TokenType.Dot, value: src.shift() as string, line: currentLine, column: currentCol });
+            column++;
+            continue;
+        }
+
+        if (current === ":") {
+            tokens.push({ type: TokenType.Colon, value: src.shift() as string, line: currentLine, column: currentCol });
+            column++;
+            continue;
+        }
+
         // 6. Deteksi Literal String ("..." atau '...')
         if (current === '"' || current === "'") {
             const quoteType = src.shift() as string;
@@ -370,21 +395,4 @@ export function tokenize(sourceCode: string): Token[] {
     });
 
     return tokens;
-}
-
-// ============================================================================
-// AREA UJI COBA (Jalankan file ini untuk mengetes)
-// ============================================================================
-const kodeUjiCoba = `
-  kore mc = "Aria"
-  moshi (mc == "Aria") {
-      mite(mc)
-  }
-`;
-
-if (typeof process !== "undefined" && process.argv && (process.argv[1]?.endsWith("lexer.ts") || process.argv[1]?.endsWith("lexer.js"))) {
-    console.log("[WibuScript Lexer] Membaca kode pengujian...");
-    for (const token of tokenize(kodeUjiCoba)) {
-        console.log(token);
-    }
 }

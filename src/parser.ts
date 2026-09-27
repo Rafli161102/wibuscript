@@ -1,8 +1,9 @@
+// File: src/parser.ts
 // ============================================================================
 // WIBUSCRIPT PARSER
 // Mengonversi aliran token menjadi pohon sintaksis abstrak (AST).
 // Mendukung Deklarasi Variabel, Percabangan Kondisional, Pemanggilan Fungsi,
-// dan Ekspresi Logika/Aritmatika dengan Sistem Alias.
+// Kontrol Perulangan (Break/Continue), Objek Literal {}, dan Akses Titik (obj.prop).
 // ============================================================================
 
 import type {
@@ -16,6 +17,8 @@ import type {
   ReturnStatement,
   BlockStatement,
   ExpressionStatement,
+  BreakStatement,
+  ContinueStatement,
   AssignmentExpression,
   BinaryExpression,
   CallExpression,
@@ -24,6 +27,9 @@ import type {
   StringLiteral,
   BooleanLiteral,
   NullLiteral,
+  ObjectLiteral,
+  Property,
+  MemberExpr,
 } from "./ast";
 import { TokenType, type Token } from "./lexer";
 
@@ -98,6 +104,20 @@ export class Parser {
       case TokenType.Loop:
         return this.parseLoopStatement();
 
+      case TokenType.Break:
+        this.advance(); // Konsumsi 'tomare' atau 'berhentiDuluKudasai'
+        if (this.at().type === TokenType.Semicolon) {
+          this.advance();
+        }
+        return { kind: "BreakStatement" } as BreakStatement;
+
+      case TokenType.Continue:
+        this.advance(); // Konsumsi 'tsugi' atau 'lanjutAksiSugi'
+        if (this.at().type === TokenType.Semicolon) {
+          this.advance();
+        }
+        return { kind: "ContinueStatement" } as ContinueStatement;
+
       case TokenType.Function:
         return this.parseFunctionDeclaration();
 
@@ -143,9 +163,15 @@ export class Parser {
   private parseIfStatement(): IfStatement {
     this.advance(); // Konsumsi 'moshi' atau 'kaloMoshi'
 
-    this.expect(TokenType.OpenParen, "Diharapkan tanda kurung buka '(' setelah kata kunci kondisi.");
+    this.expect(
+      TokenType.OpenParen,
+      "Diharapkan tanda kurung buka '(' setelah kata kunci kondisi."
+    );
     const condition = this.parseExpression();
-    this.expect(TokenType.CloseParen, "Diharapkan tanda kurung tutup ')' setelah ekspresi kondisi.");
+    this.expect(
+      TokenType.CloseParen,
+      "Diharapkan tanda kurung tutup ')' setelah ekspresi kondisi."
+    );
 
     const thenBranch = this.parseBlockOrSingleStatement();
     let elseBranch: Statement[] | undefined = undefined;
@@ -196,7 +222,9 @@ export class Parser {
       parameters.push(this.expect(TokenType.Identifier, "Diharapkan nama parameter.").value);
       while (this.at().type === TokenType.Comma) {
         this.advance();
-        parameters.push(this.expect(TokenType.Identifier, "Diharapkan nama parameter setelah tanda koma.").value);
+        parameters.push(
+          this.expect(TokenType.Identifier, "Diharapkan nama parameter setelah tanda koma.").value
+        );
       }
     }
 
@@ -297,7 +325,9 @@ export class Parser {
       const value = this.parseAssignmentExpression();
 
       if (left.kind !== "Identifier") {
-        throw new Error("[Parser Error] Sisi kiri dari tanda penugasan '=' harus berupa identifier variabel.");
+        throw new Error(
+          "[Parser Error] Sisi kiri dari tanda penugasan '=' harus berupa identifier variabel."
+        );
       }
 
       return {
@@ -378,16 +408,62 @@ export class Parser {
   }
 
   /**
-   * Pemanggilan fungsi: fn() atau mite()
+   * Pemanggilan fungsi dan akses anggota: fn() atau obj.prop
    */
   private parseCallMemberExpression(): Expression {
-    const member = this.parsePrimaryExpression();
+    let member = this.parseMemberExpression();
 
-    if (this.at().type === TokenType.OpenParen) {
-      return this.parseCallExpression(member);
+    while (this.at().type === TokenType.OpenParen) {
+      member = this.parseCallExpression(member);
+      // Jika setelah pemanggilan terdapat akses properti berantai: fn().prop
+      while (this.at().type === TokenType.Dot) {
+        this.advance();
+        const propToken = this.expect(
+          TokenType.Identifier,
+          "Diharapkan nama properti setelah tanda titik '.'."
+        );
+        member = {
+          kind: "MemberExpr",
+          object: member,
+          property: {
+            kind: "Identifier",
+            symbol: propToken.value,
+          },
+          computed: false,
+        } as MemberExpr;
+      }
     }
 
     return member;
+  }
+
+  /**
+   * Akses anggota dengan titik: objek.properti.subProperti
+   */
+  private parseMemberExpression(): Expression {
+    let object = this.parsePrimaryExpression();
+
+    while (this.at().type === TokenType.Dot) {
+      this.advance(); // Konsumsi '.'
+      const propertyToken = this.expect(
+        TokenType.Identifier,
+        "Diharapkan nama properti setelah tanda titik '.'."
+      );
+
+      const property: Identifier = {
+        kind: "Identifier",
+        symbol: propertyToken.value,
+      };
+
+      object = {
+        kind: "MemberExpr",
+        object,
+        property,
+        computed: false,
+      } as MemberExpr;
+    }
+
+    return object;
   }
 
   private parseCallExpression(caller: Expression): Expression {
@@ -422,7 +498,7 @@ export class Parser {
   }
 
   /**
-   * Elemen ekspresi dasar: Identifier, Literal, Tanda Kurung
+   * Elemen ekspresi dasar: Identifier, Literal, Objek {}, Tanda Kurung ()
    */
   private parsePrimaryExpression(): Expression {
     const token = this.at();
@@ -430,7 +506,6 @@ export class Parser {
     switch (token.type) {
       case TokenType.Identifier:
       case TokenType.Print:
-        // 'mite' atau 'kasihMite' dapat berperan sebagai nama fungsi pemanggilan
         return {
           kind: "Identifier",
           symbol: this.advance().value,
@@ -469,10 +544,80 @@ export class Parser {
           value: null,
         } as NullLiteral;
 
+      // Objek Literal: { kunci: nilai, ... }
+      case TokenType.OpenBrace: {
+        this.advance(); // Konsumsi '{'
+        const properties: Property[] = [];
+
+        while (this.at().type !== TokenType.CloseBrace && !this.isAtEnd()) {
+          let key: string;
+          if (this.at().type === TokenType.Identifier) {
+            key = this.advance().value;
+          } else if (this.at().type === TokenType.String) {
+            key = this.advance().value;
+          } else {
+            throw new Error(
+              `[Parser Error] Diharapkan kunci properti objek pada baris ${this.at().line}, kolom ${this.at().column}.`
+            );
+          }
+
+          // Dukungan shorthand: { kunci }
+          if (
+            this.at().type === TokenType.Comma ||
+            this.at().type === TokenType.CloseBrace
+          ) {
+            properties.push({
+              kind: "Property",
+              key,
+              value: {
+                kind: "Identifier",
+                symbol: key,
+              } as Identifier,
+            });
+            if (this.at().type === TokenType.Comma) {
+              this.advance();
+            }
+            continue;
+          }
+
+          this.expect(
+            TokenType.Colon,
+            `Diharapkan tanda titik dua ':' setelah kunci properti '${key}'.`
+          );
+
+          const value = this.parseExpression();
+          properties.push({
+            kind: "Property",
+            key,
+            value,
+          });
+
+          if (this.at().type !== TokenType.CloseBrace) {
+            this.expect(
+              TokenType.Comma,
+              "Diharapkan tanda koma ',' atau kurung kurawal tutup '}' setelah pasangan properti."
+            );
+          }
+        }
+
+        this.expect(
+          TokenType.CloseBrace,
+          "Diharapkan kurung kurawal tutup '}' pada akhir objek."
+        );
+
+        return {
+          kind: "ObjectLiteral",
+          properties,
+        } as ObjectLiteral;
+      }
+
       case TokenType.OpenParen: {
         this.advance(); // Konsumsi '('
         const value = this.parseExpression();
-        this.expect(TokenType.CloseParen, "Diharapkan tanda kurung tutup ')' setelah ekspresi.");
+        this.expect(
+          TokenType.CloseParen,
+          "Diharapkan tanda kurung tutup ')' setelah ekspresi."
+        );
         return value;
       }
 

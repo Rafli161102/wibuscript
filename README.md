@@ -1,3 +1,4 @@
+<!-- File: README.md -->
 # WibuScript
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
@@ -5,7 +6,7 @@
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-WibuScript adalah bahasa pemrograman esoterik (*esoteric programming language*) yang diimplementasikan menggunakan TypeScript dan berjalan di atas arsitektur *Tree-Walking Interpreter*. Bahasa ini mengabstraksi konstruksi sintaks pemrograman menjadi perpaduan terminologi informal dwibahasa (Indonesia-Jepang) dan Romaji murni. Proyek ini dilengkapi dengan modul inti (*Core Engine*) yang sepenuhnya universal dan aman untuk peramban, serta antarmuka Web Playground interaktif berbasis Next.js App Router untuk eksekusi kode secara *client-side*.
+WibuScript adalah bahasa pemrograman esoterik (*esoteric programming language*) yang diimplementasikan menggunakan TypeScript dan berjalan di atas arsitektur *Tree-Walking Interpreter*. Bahasa ini mengabstraksi konstruksi sintaks pemrograman menjadi perpaduan terminologi informal dwibahasa (Indonesia-Jepang) dan Romaji murni melalui Sistem Alias ganda. Proyek ini dilengkapi modul inti (*Core Engine*) yang sepenuhnya universal dan aman untuk peramban, serta antarmuka Web Playground interaktif berbasis Next.js App Router untuk eksekusi kode secara *client-side*.
 
 ## Arsitektur Sistem
 
@@ -31,34 +32,24 @@ wibuscript/
 ```
 
 ### 1. Core Engine
-- **Lexer (`src/lexer.ts`)**: Mengurai kode sumber mentah menjadi rangkaian token secara deterministik. Mendukung literal string, numerik (bilangan bulat dan desimal), operator aritmatika, operator relasional ganda (`==`, `!=`, `<=`, `>=`), pelacakan posisi baris/kolom, serta kanonisasi Sistem Alias.
+- **Lexer (`src/lexer.ts`)**: Mengurai kode sumber mentah menjadi rangkaian token secara deterministik. Mendukung literal string, numerik (bilangan bulat dan desimal), operator aritmatika, operator relasional ganda (`==`, `!=`, `<=`, `>=`), pelacakan posisi baris/kolom, serta resolusi Sistem Alias kata kunci.
 - **Parser (`src/parser.ts`)**: Menerapkan metode *Recursive Descent Parsing* berbasis prioritas operator (*precedence*) untuk menghasilkan pohon sintaksis abstrak (*AST*) bertipe kuat (*strongly typed*).
-- **Runtime & Evaluator (`src/runtime.ts`)**: Mengeksekusi simpul AST secara asinkronus menggunakan arsitektur *Environment* bertingkat (*lexical scoping*). Dilengkapi *hook* penangkap output (*output streaming*) dan manajemen *Return Signal*.
-- **Browser-Safe Core (`src/index.ts`)**: Menyediakan ekspor API mesin kompilasi yang sepenuhnya steril dari modul internal sistem operasi (`node:fs`, `node:path`), memungkinkan eksekusi langsung di lingkungan *browser* tanpa *bundling conflict*.
+- **Runtime & Evaluator (`src/runtime.ts`)**: Mengeksekusi simpul AST secara asinkronus menggunakan arsitektur *Environment* bertingkat (*lexical scoping*). Dilengkapi *hook* penangkap output (*output streaming*), evaluasi *Promise*, dan manajemen *Return Signal*.
+- **Browser-Safe Core (`src/index.ts`)**: Menyediakan ekspor API mesin kompilasi yang sepenuhnya steril dari modul internal sistem operasi (`node:fs`, `node:path`), memungkinkan eksekusi langsung di lingkungan *browser* tanpa konflik *bundling*.
 
-### 2. Standard Library (Pustaka Standar Bawaan)
-Pustaka bawaan terdaftar langsung di dalam *Global Environment* dan dapat dipanggil kapan saja:
-- `mite(arg)` / `kasihMite(arg)`: Mencetak nilai atau pesan ke *stdout* atau terminal virtual.
-- `tungguBentar(ms)`: Menunda eksekusi secara asinkronus selama `ms` milidetik (membungkus `Promise`).
-- `gacha(min, max)`: Generator angka acak (*Random Number Generator*) dalam rentang inklusif `[min, max]`.
-- `waktuSekarang()`: Mengembalikan representasi string waktu lokal saat fungsi dieksekusi.
-- `panjangTeks(teks)`: Menghitung dan mengembalikan jumlah karakter dari nilai string yang diberikan.
-- `ubahAngka(teks)`: Mengonversi teks string numerik menjadi tipe data angka (*Number*).
-
-### 3. Frontend Web Playground
+### 2. Frontend Web Playground
 - Dibangun di atas Next.js App Router dan Tailwind CSS v4.
 - Evaluasi kode dilakukan secara murni di sisi peramban pengguna (*Client-Side Execution*).
 - Menyediakan editor kode berbasis teks dengan dukungan indentasi tab, pintasan keyboard (`Ctrl+Enter`), metrik waktu eksekusi (milidetik), penghitung token, dan terminal virtual interaktif.
 
 ## Spesifikasi Sintaks (Sistem Alias)
 
-WibuScript menyediakan Sistem Alias pada tahap leksikal. Pengguna dapat memilih antara varian ekspresif (Versi Ekstensi) atau varian ringkas (Versi Shorthand):
+WibuScript menyediakan arsitektur Sistem Alias ganda pada seluruh lapisan sintaks bahasa dan Pustaka Standar. Setiap instruksi memiliki padanan antara varian ekspresif (Versi Ekstensi Indo-Jepang) dan varian ringkas (Versi Shorthand Romaji murni) yang terikat pada eksekutor identik.
 
 ### 1. Deklarasi dan Nilai Literal
 | Kata Kunci Standar | Versi Ekstensi | Versi Shorthand | Token Kategori | Penjelasan |
 | :--- | :--- | :--- | :--- | :--- |
 | `let` / `var` | `koreWa` | `kore` | `TokenType.Var` | Alokasi variabel baru dalam memori lingkup aktif. |
-| `print(...)` | `kasihMite(...)` | `mite(...)` | `TokenType.Print` | Mencetak argumen ke konsol atau virtual terminal. |
 | `true` | `majiBener` | `maji` | `TokenType.True` | Nilai boolean benar. |
 | `false` | `usoBanget` | `uso` | `TokenType.False` | Nilai boolean salah. |
 | `null` | `kosongZannen` | `kara` | `TokenType.Null` | Representasi ketiadaan nilai (null). |
@@ -76,46 +67,65 @@ WibuScript menyediakan Sistem Alias pada tahap leksikal. Pengguna dapat memilih 
 | `function` | `bikinJutsu` | `jutsu` | `TokenType.Function` | Deklarasi fungsi pengguna berparameter. |
 | `return` | `balikinDesu` | `kaesu` | `TokenType.Return` | Menghentikan fungsi dan mengembalikan nilai. |
 
-### 4. Pustaka Standar Bawaan (Native Functions)
-| Fungsi | Parameter | Tipe Kembalian | Deskripsi |
-| :--- | :--- | :--- | :--- |
-| `gacha(min, max)` | `Number`, `Number` | `Number` | Menghasilkan bilangan bulat acak di antara `min` dan `max`. |
-| `waktuSekarang()` | *(tanpa argumen)* | `String` | Mengambil teks waktu lokal saat pemanggilan. |
-| `panjangTeks(teks)`| `String` | `Number` | Menghitung total karakter string. |
-| `ubahAngka(teks)` | `String` | `Number` | Mem-parsing teks string menjadi tipe angka. |
-| `tungguBentar(ms)` | `Number` | `Null` | Menunda eksekusi selama `ms` milidetik (asinkronus). |
+### 4. Pustaka Standar (Standard Library Alias)
+| Fitur Standar | Versi Ekstensi | Versi Shorthand | Tipe Balikan | Deskripsi |
+| :--- | :--- | :--- | :--- | :--- |
+| Output Konsol | `kasihMite(pesan)` | `mite(pesan)` | `Null` | Mencetak pesan ke *stdout* atau virtual terminal. |
+| Asynchronous Delay | `tungguBentar(ms)` | `tungguBentar(ms)` | `Null` | Menunda eksekusi selama `ms` milidetik (Promise). |
+| Waktu Lokal | `sekarangImaDesu()` | `imaDesu()` | `String` | Mengambil representasi string waktu lokal terkini. |
+| Hitung Panjang | `tolongCekNagasa(arg)` | `cekNagasa(arg)` | `Number` | Menghitung jumlah karakter teks string atau elemen list/array. |
+| Konversi ke Angka | `bikinJadiSuji(teks)` | `jadiSuji(teks)` | `Number` | Mengonversi teks string numerik menjadi tipe angka. |
+| Generator Acak / RNG | `gachaPull(min, max)` | `gacha(min, max)` | `Number` | Menghasilkan bilangan bulat acak di antara min dan max. |
+| Pengecek Tipe (Typeof) | `apaTipeKoreWa(arg)` | `tipeNani(arg)` | `String` | Mengembalikan nama tipe data ("angka", "teks", "array", dll). |
+| Force Panic / Throw | `yameteKudasai(pesan)` | `yamete(pesan)` | `Never` | Melempar eksepsi runtime fatal untuk menghentikan program. |
+| Pangkat Matematika | `kalkulasiPangkatSuji(a, b)` | `pangkatSuji(a, b)` | `Number` | Menghitung nilai angka `a` dipangkatkan eksponen `b`. |
+| Pembulatan Matematika | `bikinBulatSuji(angka)` | `bulatSuji(angka)` | `Number` | Membulatkan angka desimal ke bilangan bulat terdekat. |
+| Array Push | `masukinKeRetsu(arr, val)` | `isiRetsu(arr, val)` | `Array` | Menambahkan elemen baru ke akhir barisan/array list. |
+| Array Pop | `keluarinDariRetsu(arr)` | `buangRetsu(arr)` | `RuntimeValue` | Menghapus dan mengembalikan elemen terakhir dari array. |
+| Pemotongan Teks | `potongKoreNagasa(s, m, a)` | `potongTeks(s, m, a)` | `String` | Memotong bagian string mulai dari indeks `m` hingga `a`. |
+| Inisialisasi Array | `bikinRetsu(...)` | `retsu(...)` | `Array` | Membuat barisan/array baru dari argumen yang diberikan. |
 
 ## Contoh Program WibuScript
 
-Berikut adalah contoh program lengkap yang mendemonstrasikan kombinasi deklarasi variabel, pemanggilan fungsi pustaka standar, percabangan logika, subrutin, dan penundaan asinkronus:
+Berikut adalah contoh program lengkap yang mendemonstrasikan integrasi Sistem Alias Pustaka Standar, manipulasi array, matematika lanjutan, pemotongan string, dan penanganan kondisi fatal:
 
 ```javascript
-// Demonstrasi Sistem WibuScript
-kore namaKsatria = "Ren"
-kore levelAwal = ubahAngka("85")
-kore statusIsekai = majiBener
+// Demonstrasi Sistem Alias & Pustaka Standar Lengkap WibuScript
+koreWa namaKsatria = "Ren-The-Dragon-Knight"
+kore levelAwal = jadiSuji("80.75")
+kore levelBulat = bulatSuji(levelAwal)
+kore dayaPangkat = pangkatSuji(levelBulat, 2)
 
-kasihMite("[" + waktuSekarang() + "] Menginisialisasi sistem petualangan...")
-tungguBentar(300)
+kasihMite("[" + imaDesu() + "] Menginisialisasi sistem petualangan...")
+mite("Level dasar asli: " + levelAwal)
+mite("Level hasil pembulatan: " + levelBulat)
+mite("Kalkulasi kuadrat level: " + dayaPangkat)
 
-// Pengecekan status menggunakan operator relasional
-moshi (statusIsekai == maji) {
-  mite("Ksatria terdaftar: " + namaKsatria)
-  mite("Panjang nama karakter: " + panjangTeks(namaKsatria) + " karakter")
-  mite("Tingkat kekuatan awal: " + levelAwal)
-} chigau {
-  mite("Karakter tidak valid.")
+// Pemotongan string (substring)
+kore namaPendek = potongTeks(namaKsatria, 0, 3)
+mite("Nama panggilan ksatria: " + namaPendek)
+
+// Manipulasi barisan / array (retsu)
+kore daftarItem = retsu("Pedang Kayu", "Potion Kecil")
+isiRetsu(daftarItem, "Perisai Besi")
+mite("Isi inventory ksatria: " + daftarItem)
+mite("Jumlah item tersimpan: " + cekNagasa(daftarItem))
+
+// Menghapus elemen terakhir array
+kore itemDibuang = buangRetsu(daftarItem)
+mite("Item yang dikeluarkan dari inventory: " + itemDibuang)
+mite("Inventory setelah update: " + daftarItem)
+
+// Gacha RNG dan validasi tipe
+kore bonusGacha = gachaPull(50, 100)
+mite("Bonus gacha harian: " + bonusGacha)
+
+kore tipeBonus = apaTipeKoreWa(bonusGacha)
+kaloMoshi (tipeBonus != "angka") {
+  yameteKudasai("Terjadi anomali tipe data pada bonus gacha!")
 }
 
-// Deklarasi subrutin kalkulasi dengan gacha RNG
-bikinJutsu kalkulasiKekuatan(lvl) {
-  kore faktorAcak = gacha(10, 25)
-  mite("Faktor acak diperoleh: " + faktorAcak)
-  balikinDesu lvl + faktorAcak
-}
-
-kore dayaTempur = kalkulasiKekuatan(levelAwal)
-kasihMite("Total daya tempur akhir: " + dayaTempur)
+kasihMite("Sistem petualangan siap digunakan.")
 ```
 
 ## Panduan Penggunaan dan Instalasi
@@ -156,6 +166,19 @@ npx tsx src/cli.ts contoh.wibu
 ```
 
 ## Log Pembaruan (Changelog)
+
+### v1.3.0
+- Ekspansi Pustaka Standar untuk manipulasi Array, Math, dan String dengan dukungan Sistem Alias ganda.
+- Penambahan fungsi matematika: `kalkulasiPangkatSuji` / `pangkatSuji` (pangkat) dan `bikinBulatSuji` / `bulatSuji` (pembulatan).
+- Penambahan fungsi manipulasi barisan/array: `masukinKeRetsu` / `isiRetsu` (push), `keluarinDariRetsu` / `buangRetsu` (pop), dan konstruktor `bikinRetsu` / `retsu`.
+- Penambahan fungsi manipulasi string: `potongKoreNagasa` / `potongTeks` (substring).
+- Integrasi dukungan tipe data `"array"` pada evaluator dan fungsi `apaTipeKoreWa` / `tipeNani` serta `tolongCekNagasa` / `cekNagasa`.
+
+### v1.2.0
+- Implementasi Sistem Alias ganda pada Standard Library dan penambahan fitur tipe data serta penanganan panic.
+- Penambahan fungsi pengecekan tipe data: `apaTipeKoreWa(arg)` (Ekstensi) vs `tipeNani(arg)` (Shorthand).
+- Penambahan fungsi pemaksaan panic/eksepsi fatal: `yameteKudasai(pesan)` (Ekstensi) vs `yamete(pesan)` (Shorthand).
+- Standardisasi Sistem Alias ganda untuk seluruh pustaka bawaan: `sekarangImaDesu` / `imaDesu`, `tolongCekNagasa` / `cekNagasa`, `bikinJadiSuji` / `jadiSuji`, dan `gachaPull` / `gacha`.
 
 ### v1.1.0
 - Ekspansi Pustaka Standar (*Standard Library*): Menambahkan fungsi bawaan `gacha(min, max)`, `waktuSekarang()`, `panjangTeks(teks)`, dan `ubahAngka(teks)`.

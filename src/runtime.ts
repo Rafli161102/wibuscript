@@ -3,7 +3,8 @@
 // WIBUSCRIPT RUNTIME & EVALUATOR
 // Mesin Tree-Walking Interpreter untuk mengeksekusi AST WibuScript
 // dalam lingkungan eksekusi Node.js maupun Web Browser.
-// Dilengkapi mekanisme penangkap output (output capture) dan pustaka standar async.
+// Dilengkapi penangkap output, pustaka standar asinkronus, dukungan Objek {},
+// Akses Properti Titik (obj.prop), dan Kontrol Perulangan (Break/Continue).
 // ============================================================================
 
 import type {
@@ -16,6 +17,8 @@ import type {
   ReturnStatement,
   BlockStatement,
   ExpressionStatement,
+  BreakStatement,
+  ContinueStatement,
   AssignmentExpression,
   BinaryExpression,
   CallExpression,
@@ -23,6 +26,8 @@ import type {
   NumericLiteral,
   StringLiteral,
   BooleanLiteral,
+  ObjectLiteral,
+  MemberExpr,
 } from "./ast";
 import { tokenize } from "./lexer";
 import { Parser } from "./parser";
@@ -31,7 +36,15 @@ import { Parser } from "./parser";
 // TIPE NILAI RUNTIME
 // ----------------------------------------------------------------------------
 
-export type ValueType = "null" | "number" | "boolean" | "string" | "native-fn" | "function";
+export type ValueType =
+  | "null"
+  | "number"
+  | "boolean"
+  | "string"
+  | "array"
+  | "object"
+  | "native-fn"
+  | "function";
 
 export interface RuntimeValue {
   type: ValueType;
@@ -57,6 +70,16 @@ export interface StringValue extends RuntimeValue {
   value: string;
 }
 
+export interface ArrayValue extends RuntimeValue {
+  type: "array";
+  elements: RuntimeValue[];
+}
+
+export interface ObjectValue extends RuntimeValue {
+  type: "object";
+  properties: Map<string, RuntimeValue>;
+}
+
 export type NativeFnCall = (
   args: RuntimeValue[],
   env: Environment
@@ -75,10 +98,24 @@ export interface FunctionValue extends RuntimeValue {
   body: Statement[];
 }
 
+// ----------------------------------------------------------------------------
+// SINYAL KONTROL ALUR (RETURN, BREAK, CONTINUE)
+// ----------------------------------------------------------------------------
+
 export interface ReturnSignal {
   isReturn: true;
   value: RuntimeValue;
 }
+
+export interface BreakSignal {
+  isBreak: true;
+}
+
+export interface ContinueSignal {
+  isContinue: true;
+}
+
+export type ControlSignal = ReturnSignal | BreakSignal | ContinueSignal;
 
 // ----------------------------------------------------------------------------
 // KONSTRUKTOR NILAI RUNTIME
@@ -100,6 +137,16 @@ export function MK_STRING(s = ""): StringValue {
   return { type: "string", value: s };
 }
 
+export function MK_ARRAY(elements: RuntimeValue[] = []): ArrayValue {
+  return { type: "array", elements };
+}
+
+export function MK_OBJECT(
+  properties = new Map<string, RuntimeValue>()
+): ObjectValue {
+  return { type: "object", properties };
+}
+
 export function MK_NATIVE_FN(call: NativeFnCall): NativeFnValue {
   return { type: "native-fn", call };
 }
@@ -114,6 +161,19 @@ export function formatRuntimeValue(val: RuntimeValue): string {
       return (val as BooleanValue).value ? "true" : "false";
     case "null":
       return "null";
+    case "array": {
+      const formattedItems = (val as ArrayValue).elements
+        .map((el) => formatRuntimeValue(el))
+        .join(", ");
+      return `[${formattedItems}]`;
+    }
+    case "object": {
+      const entries: string[] = [];
+      (val as ObjectValue).properties.forEach((v, k) => {
+        entries.push(`${k}: ${formatRuntimeValue(v)}`);
+      });
+      return entries.length === 0 ? "{}" : `{ ${entries.join(", ")} }`;
+    }
     case "native-fn":
       return "[NativeFunction]";
     case "function":
@@ -143,7 +203,9 @@ export class Environment {
 
   public declareVar(name: string, value: RuntimeValue): RuntimeValue {
     if (this.variables.has(name)) {
-      throw new Error(`[Runtime Error] Variabel '${name}' sudah dideklarasikan pada lingkup ini.`);
+      throw new Error(
+        `[Runtime Error] Variabel '${name}' sudah dideklarasikan pada lingkup ini.`
+      );
     }
     this.variables.set(name, value);
     return value;
@@ -177,7 +239,8 @@ export class Environment {
 
 /**
  * Membuat Lingkup Global dengan dukungan penangkap output (output capture)
- * dan pustaka standar bawaan (tungguBentar, gacha, waktuSekarang, panjangTeks, ubahAngka).
+ * dan pustaka standar bawaan dengan arsitektur Sistem Alias ganda
+ * (Versi Ekstensi Indo-Jepang vs Versi Shorthand Romaji).
  */
 export function createGlobalEnvironment(
   optionsOrHandler?: EnvironmentOptions | ((message: string) => void)
@@ -194,7 +257,7 @@ export function createGlobalEnvironment(
     logArray = optionsOrHandler.outputLog;
   }
 
-  // 1. Output Standar: mite() / kasihMite() / print()
+  // 1. Output Standar: kasihMite() (Ekstensi) vs mite() (Shorthand)
   const printFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const formatted = args.map((arg) => formatRuntimeValue(arg)).join(" ");
 
@@ -209,22 +272,70 @@ export function createGlobalEnvironment(
     return MK_NULL();
   });
 
-  env.declareVar("mite", printFn);
   env.declareVar("kasihMite", printFn);
+  env.declareVar("mite", printFn);
   env.declareVar("print", printFn);
 
   // 2. Pustaka Standar: tungguBentar (Asynchronous Delay)
-  const tungguBentarFn = MK_NATIVE_FN(async (args: RuntimeValue[]): Promise<RuntimeValue> => {
-    const firstArg = args[0];
-    const delayMs = firstArg && firstArg.type === "number" ? (firstArg as NumberValue).value : 1000;
-    await new Promise<void>((resolve) => setTimeout(resolve, delayMs));
-    return MK_NULL();
-  });
+  const tungguBentarFn = MK_NATIVE_FN(
+    async (args: RuntimeValue[]): Promise<RuntimeValue> => {
+      const firstArg = args[0];
+      const delayMs =
+        firstArg && firstArg.type === "number"
+          ? (firstArg as NumberValue).value
+          : 1000;
+      await new Promise<void>((resolve) => setTimeout(resolve, delayMs));
+      return MK_NULL();
+    }
+  );
 
   env.declareVar("tungguBentar", tungguBentarFn);
 
-  // 3. Pustaka Standar Tambahan:
-  // 3a. gacha(min, max): Menghasilkan angka acak (RNG) di antara nilai min dan max
+  // 3. Waktu Lokal: sekarangImaDesu (Ekstensi) vs imaDesu (Shorthand)
+  const waktuSekarangFn = MK_NATIVE_FN((): RuntimeValue => {
+    return MK_STRING(new Date().toLocaleTimeString());
+  });
+  env.declareVar("sekarangImaDesu", waktuSekarangFn);
+  env.declareVar("imaDesu", waktuSekarangFn);
+  env.declareVar("waktuSekarang", waktuSekarangFn);
+
+  // 4. Hitung Panjang (Teks / Array): tolongCekNagasa (Ekstensi) vs cekNagasa (Shorthand)
+  const panjangFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const arg = args[0];
+    if (!arg) {
+      return MK_NUMBER(0);
+    }
+    if (arg.type === "array") {
+      return MK_NUMBER((arg as ArrayValue).elements.length);
+    }
+    const str =
+      arg.type === "string"
+        ? (arg as StringValue).value
+        : formatRuntimeValue(arg);
+    return MK_NUMBER(str.length);
+  });
+  env.declareVar("tolongCekNagasa", panjangFn);
+  env.declareVar("cekNagasa", panjangFn);
+  env.declareVar("panjangTeks", panjangFn);
+
+  // 5. Konversi Angka: bikinJadiSuji (Ekstensi) vs jadiSuji (Shorthand)
+  const ubahAngkaFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const arg = args[0];
+    if (!arg) {
+      return MK_NUMBER(0);
+    }
+    const str =
+      arg.type === "string"
+        ? (arg as StringValue).value
+        : formatRuntimeValue(arg);
+    const parsed = Number(str);
+    return MK_NUMBER(Number.isNaN(parsed) ? 0 : parsed);
+  });
+  env.declareVar("bikinJadiSuji", ubahAngkaFn);
+  env.declareVar("jadiSuji", ubahAngkaFn);
+  env.declareVar("ubahAngka", ubahAngkaFn);
+
+  // 6. Acak/RNG: gachaPull (Ekstensi) vs gacha (Shorthand)
   const gachaFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     let min = 0;
     let max = 100;
@@ -248,38 +359,129 @@ export function createGlobalEnvironment(
     const result = Math.floor(Math.random() * (high - low + 1)) + low;
     return MK_NUMBER(result);
   });
+  env.declareVar("gachaPull", gachaFn);
   env.declareVar("gacha", gachaFn);
 
-  // 3b. waktuSekarang(): Mengembalikan string waktu lokal saat fungsi dipanggil
-  const waktuSekarangFn = MK_NATIVE_FN((): RuntimeValue => {
-    return MK_STRING(new Date().toLocaleTimeString());
-  });
-  env.declareVar("waktuSekarang", waktuSekarangFn);
-
-  // 3c. panjangTeks(teks): Mengembalikan angka berupa jumlah karakter dari argumen string yang diberikan
-  const panjangTeksFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+  // 7. Pengecek Tipe Data (Typeof): apaTipeKoreWa (Ekstensi) vs tipeNani (Shorthand)
+  const tipeDataFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const arg = args[0];
     if (!arg) {
-      return MK_NUMBER(0);
+      return MK_STRING("null");
     }
-    const str = arg.type === "string" ? (arg as StringValue).value : formatRuntimeValue(arg);
-    return MK_NUMBER(str.length);
+    switch (arg.type) {
+      case "number":
+        return MK_STRING("angka");
+      case "string":
+        return MK_STRING("teks");
+      case "boolean":
+        return MK_STRING("boolean");
+      case "array":
+        return MK_STRING("array");
+      case "object":
+        return MK_STRING("objek");
+      case "null":
+        return MK_STRING("null");
+      case "function":
+      case "native-fn":
+        return MK_STRING("fungsi");
+      default:
+        return MK_STRING("null");
+    }
   });
-  env.declareVar("panjangTeks", panjangTeksFn);
+  env.declareVar("apaTipeKoreWa", tipeDataFn);
+  env.declareVar("tipeNani", tipeDataFn);
 
-  // 3d. ubahAngka(teks): Mem-parsing string menjadi tipe data angka (Number)
-  const ubahAngkaFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+  // 8. Force Panic/Throw Error: yameteKudasai (Ekstensi) vs yamete (Shorthand)
+  const panicFn = MK_NATIVE_FN((args: RuntimeValue[]): never => {
+    const firstArg = args[0];
+    const message = firstArg
+      ? formatRuntimeValue(firstArg)
+      : "Terjadi kesalahan fatal (Panic).";
+    throw new Error(`[Panic] ${message}`);
+  });
+  env.declareVar("yameteKudasai", panicFn);
+  env.declareVar("yamete", panicFn);
+
+  // 9. Pangkat Matematika (Power): kalkulasiPangkatSuji (Ekstensi) vs pangkatSuji (Shorthand)
+  const pangkatFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const baseArg = args[0];
+    const expArg = args[1];
+    const base =
+      baseArg && baseArg.type === "number" ? (baseArg as NumberValue).value : 0;
+    const exp =
+      expArg && expArg.type === "number" ? (expArg as NumberValue).value : 1;
+    return MK_NUMBER(Math.pow(base, exp));
+  });
+  env.declareVar("kalkulasiPangkatSuji", pangkatFn);
+  env.declareVar("pangkatSuji", pangkatFn);
+
+  // 10. Pembulatan Matematika (Round): bikinBulatSuji (Ekstensi) vs bulatSuji (Shorthand)
+  const bulatFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const arg = args[0];
-    if (!arg) {
-      return MK_NUMBER(0);
-    }
-    const str = arg.type === "string" ? (arg as StringValue).value : formatRuntimeValue(arg);
-    const parsed = Number(str);
-    return MK_NUMBER(Number.isNaN(parsed) ? 0 : parsed);
+    const val =
+      arg && arg.type === "number" ? (arg as NumberValue).value : 0;
+    return MK_NUMBER(Math.round(val));
   });
-  env.declareVar("ubahAngka", ubahAngkaFn);
+  env.declareVar("bikinBulatSuji", bulatFn);
+  env.declareVar("bulatSuji", bulatFn);
 
-  // 4. Konstanta Bawaan
+  // 11. Inisialisasi Barisan/Array: bikinRetsu (Ekstensi) vs retsu (Shorthand)
+  const retsuFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    return MK_ARRAY([...args]);
+  });
+  env.declareVar("bikinRetsu", retsuFn);
+  env.declareVar("retsu", retsuFn);
+
+  // 12. Array Push: masukinKeRetsu (Ekstensi) vs isiRetsu (Shorthand)
+  const pushRetsuFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const target = args[0];
+    const item = args[1] ?? MK_NULL();
+    if (target && target.type === "array") {
+      (target as ArrayValue).elements.push(item);
+      return target;
+    }
+    return MK_NULL();
+  });
+  env.declareVar("masukinKeRetsu", pushRetsuFn);
+  env.declareVar("isiRetsu", pushRetsuFn);
+
+  // 13. Array Pop: keluarinDariRetsu (Ekstensi) vs buangRetsu (Shorthand)
+  const popRetsuFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const target = args[0];
+    if (target && target.type === "array") {
+      const popped = (target as ArrayValue).elements.pop();
+      return popped ?? MK_NULL();
+    }
+    return MK_NULL();
+  });
+  env.declareVar("keluarinDariRetsu", popRetsuFn);
+  env.declareVar("buangRetsu", popRetsuFn);
+
+  // 14. Pemotongan Teks (Substring): potongKoreNagasa (Ekstensi) vs potongTeks (Shorthand)
+  const potongTeksFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const strArg = args[0];
+    const startArg = args[1];
+    const endArg = args[2];
+    if (!strArg) return MK_STRING("");
+
+    const rawStr =
+      strArg.type === "string"
+        ? (strArg as StringValue).value
+        : formatRuntimeValue(strArg);
+    const start =
+      startArg && startArg.type === "number"
+        ? (startArg as NumberValue).value
+        : 0;
+
+    if (endArg && endArg.type === "number") {
+      return MK_STRING(rawStr.substring(start, (endArg as NumberValue).value));
+    }
+    return MK_STRING(rawStr.substring(start));
+  });
+  env.declareVar("potongKoreNagasa", potongTeksFn);
+  env.declareVar("potongTeks", potongTeksFn);
+
+  // 15. Konstanta Bawaan
   env.declareVar("maji", MK_BOOL(true));
   env.declareVar("majiBener", MK_BOOL(true));
   env.declareVar("uso", MK_BOOL(false));
@@ -297,7 +499,7 @@ export function createGlobalEnvironment(
 export async function evaluate(
   astNode: Statement,
   env: Environment
-): Promise<RuntimeValue | ReturnSignal> {
+): Promise<RuntimeValue | ControlSignal> {
   switch (astNode.kind) {
     case "Program":
       return await evalProgram(astNode as Program, env);
@@ -313,6 +515,12 @@ export async function evaluate(
 
     case "LoopStatement":
       return await evalLoopStatement(astNode as LoopStatement, env);
+
+    case "BreakStatement":
+      return { isBreak: true };
+
+    case "ContinueStatement":
+      return { isContinue: true };
 
     case "ReturnStatement":
       return await evalReturnStatement(astNode as ReturnStatement, env);
@@ -332,6 +540,12 @@ export async function evaluate(
     case "CallExpression":
       return await evalCallExpression(astNode as CallExpression, env);
 
+    case "MemberExpr":
+      return await evalMemberExpr(astNode as MemberExpr, env);
+
+    case "ObjectLiteral":
+      return await evalObjectLiteral(astNode as ObjectLiteral, env);
+
     case "Identifier":
       return evalIdentifier(astNode as Identifier, env);
 
@@ -348,19 +562,47 @@ export async function evaluate(
       return MK_NULL();
 
     default:
-      throw new Error(`[Runtime Error] Simpul AST '${astNode.kind}' belum didukung.`);
+      throw new Error(
+        `[Runtime Error] Simpul AST '${astNode.kind}' belum didukung.`
+      );
   }
 }
 
-function isReturnSignal(val: RuntimeValue | ReturnSignal): val is ReturnSignal {
-  return typeof val === "object" && val !== null && "isReturn" in val && (val as ReturnSignal).isReturn === true;
+function isReturnSignal(val: unknown): val is ReturnSignal {
+  return (
+    typeof val === "object" &&
+    val !== null &&
+    "isReturn" in val &&
+    (val as ReturnSignal).isReturn === true
+  );
 }
 
-export function unwrapSignal(val: RuntimeValue | ReturnSignal): RuntimeValue {
+function isBreakSignal(val: unknown): val is BreakSignal {
+  return (
+    typeof val === "object" &&
+    val !== null &&
+    "isBreak" in val &&
+    (val as BreakSignal).isBreak === true
+  );
+}
+
+function isContinueSignal(val: unknown): val is ContinueSignal {
+  return (
+    typeof val === "object" &&
+    val !== null &&
+    "isContinue" in val &&
+    (val as ContinueSignal).isContinue === true
+  );
+}
+
+export function unwrapSignal(val: RuntimeValue | ControlSignal): RuntimeValue {
   if (isReturnSignal(val)) {
     return val.value;
   }
-  return val;
+  if (isBreakSignal(val) || isContinueSignal(val)) {
+    return MK_NULL();
+  }
+  return val as RuntimeValue;
 }
 
 function isTruthy(val: RuntimeValue): boolean {
@@ -371,6 +613,10 @@ function isTruthy(val: RuntimeValue): boolean {
       return (val as NumberValue).value !== 0;
     case "string":
       return (val as StringValue).value.length > 0;
+    case "array":
+      return (val as ArrayValue).elements.length > 0;
+    case "object":
+      return (val as ObjectValue).properties.size > 0;
     case "null":
       return false;
     default:
@@ -378,7 +624,10 @@ function isTruthy(val: RuntimeValue): boolean {
   }
 }
 
-async function evalProgram(program: Program, env: Environment): Promise<RuntimeValue> {
+async function evalProgram(
+  program: Program,
+  env: Environment
+): Promise<RuntimeValue> {
   let lastEvaluated: RuntimeValue = MK_NULL();
 
   for (const statement of program.body) {
@@ -386,7 +635,7 @@ async function evalProgram(program: Program, env: Environment): Promise<RuntimeV
     if (isReturnSignal(result)) {
       return result.value;
     }
-    lastEvaluated = result;
+    lastEvaluated = unwrapSignal(result);
   }
 
   return lastEvaluated;
@@ -417,20 +666,32 @@ function evalFunctionDeclaration(
 async function evalIfStatement(
   stmt: IfStatement,
   env: Environment
-): Promise<RuntimeValue | ReturnSignal> {
+): Promise<RuntimeValue | ControlSignal> {
   const conditionValue = unwrapSignal(await evaluate(stmt.condition, env));
 
   if (isTruthy(conditionValue)) {
     const scope = new Environment(env);
     for (const s of stmt.thenBranch) {
       const result = await evaluate(s, scope);
-      if (isReturnSignal(result)) return result;
+      if (
+        isReturnSignal(result) ||
+        isBreakSignal(result) ||
+        isContinueSignal(result)
+      ) {
+        return result;
+      }
     }
   } else if (stmt.elseBranch) {
     const scope = new Environment(env);
     for (const s of stmt.elseBranch) {
       const result = await evaluate(s, scope);
-      if (isReturnSignal(result)) return result;
+      if (
+        isReturnSignal(result) ||
+        isBreakSignal(result) ||
+        isContinueSignal(result)
+      ) {
+        return result;
+      }
     }
   }
 
@@ -445,10 +706,29 @@ async function evalLoopStatement(
 
   while (isTruthy(unwrapSignal(await evaluate(stmt.condition, env)))) {
     const scope = new Environment(env);
+    let shouldBreak = false;
+
     for (const s of stmt.body) {
       const result = await evaluate(s, scope);
-      if (isReturnSignal(result)) return result;
+
+      if (isReturnSignal(result)) {
+        return result;
+      }
+
+      if (isBreakSignal(result)) {
+        shouldBreak = true;
+        break;
+      }
+
+      if (isContinueSignal(result)) {
+        break;
+      }
+
       lastVal = result;
+    }
+
+    if (shouldBreak) {
+      break;
     }
   }
 
@@ -469,13 +749,19 @@ async function evalReturnStatement(
 async function evalBlockStatement(
   block: BlockStatement,
   env: Environment
-): Promise<RuntimeValue | ReturnSignal> {
+): Promise<RuntimeValue | ControlSignal> {
   const scope = new Environment(env);
   let lastVal: RuntimeValue = MK_NULL();
 
   for (const s of block.body) {
     const result = await evaluate(s, scope);
-    if (isReturnSignal(result)) return result;
+    if (
+      isReturnSignal(result) ||
+      isBreakSignal(result) ||
+      isContinueSignal(result)
+    ) {
+      return result;
+    }
     lastVal = result;
   }
 
@@ -485,7 +771,7 @@ async function evalBlockStatement(
 async function evalExpressionStatement(
   stmt: ExpressionStatement,
   env: Environment
-): Promise<RuntimeValue | ReturnSignal> {
+): Promise<RuntimeValue | ControlSignal> {
   return await evaluate(stmt.expression, env);
 }
 
@@ -513,9 +799,13 @@ async function evalBinaryExpression(
       return MK_STRING(formatRuntimeValue(left) + formatRuntimeValue(right));
     }
     if (left.type === "number" && right.type === "number") {
-      return MK_NUMBER((left as NumberValue).value + (right as NumberValue).value);
+      return MK_NUMBER(
+        (left as NumberValue).value + (right as NumberValue).value
+      );
     }
-    throw new Error("[Runtime Error] Operator '+' hanya mendukung tipe Number dan String.");
+    throw new Error(
+      "[Runtime Error] Operator '+' hanya mendukung tipe Number dan String."
+    );
   }
 
   if (left.type === "number" && right.type === "number") {
@@ -549,11 +839,17 @@ async function evalBinaryExpression(
     }
     switch (left.type) {
       case "number":
-        return MK_BOOL((left as NumberValue).value === (right as NumberValue).value);
+        return MK_BOOL(
+          (left as NumberValue).value === (right as NumberValue).value
+        );
       case "string":
-        return MK_BOOL((left as StringValue).value === (right as StringValue).value);
+        return MK_BOOL(
+          (left as StringValue).value === (right as StringValue).value
+        );
       case "boolean":
-        return MK_BOOL((left as BooleanValue).value === (right as BooleanValue).value);
+        return MK_BOOL(
+          (left as BooleanValue).value === (right as BooleanValue).value
+        );
       case "null":
         return MK_BOOL(true);
       default:
@@ -567,11 +863,17 @@ async function evalBinaryExpression(
     }
     switch (left.type) {
       case "number":
-        return MK_BOOL((left as NumberValue).value !== (right as NumberValue).value);
+        return MK_BOOL(
+          (left as NumberValue).value !== (right as NumberValue).value
+        );
       case "string":
-        return MK_BOOL((left as StringValue).value !== (right as StringValue).value);
+        return MK_BOOL(
+          (left as StringValue).value !== (right as StringValue).value
+        );
       case "boolean":
-        return MK_BOOL((left as BooleanValue).value !== (right as BooleanValue).value);
+        return MK_BOOL(
+          (left as BooleanValue).value !== (right as BooleanValue).value
+        );
       case "null":
         return MK_BOOL(false);
       default:
@@ -579,7 +881,9 @@ async function evalBinaryExpression(
     }
   }
 
-  throw new Error(`[Runtime Error] Operator '${binop.operator}' tidak kompatibel untuk tipe ${left.type} dan ${right.type}.`);
+  throw new Error(
+    `[Runtime Error] Operator '${binop.operator}' tidak kompatibel untuk tipe ${left.type} dan ${right.type}.`
+  );
 }
 
 async function evalCallExpression(
@@ -616,13 +920,53 @@ async function evalCallExpression(
       if (isReturnSignal(result)) {
         return result.value;
       }
-      lastVal = result;
+      lastVal = result as RuntimeValue;
     }
 
     return lastVal;
   }
 
-  throw new Error(`[Runtime Error] Identifier '${call.callee}' bukan merupakan fungsi yang dapat dipanggil.`);
+  throw new Error(
+    `[Runtime Error] Identifier '${call.callee}' bukan merupakan fungsi yang dapat dipanggil.`
+  );
+}
+
+async function evalObjectLiteral(
+  node: ObjectLiteral,
+  env: Environment
+): Promise<RuntimeValue> {
+  const properties = new Map<string, RuntimeValue>();
+
+  for (const prop of node.properties) {
+    const runtimeVal = prop.value
+      ? unwrapSignal(await evaluate(prop.value, env))
+      : env.lookupVar(prop.key);
+    properties.set(prop.key, runtimeVal);
+  }
+
+  return MK_OBJECT(properties);
+}
+
+async function evalMemberExpr(
+  node: MemberExpr,
+  env: Environment
+): Promise<RuntimeValue> {
+  const objectVal = unwrapSignal(await evaluate(node.object, env));
+
+  if (objectVal.type !== "object") {
+    throw new Error(
+      `[Runtime Error] Tidak dapat mengakses properti '${node.property.symbol}' dari tipe '${objectVal.type}'.`
+    );
+  }
+
+  const obj = objectVal as ObjectValue;
+  const propertyName = node.property.symbol;
+
+  if (!obj.properties.has(propertyName)) {
+    return MK_NULL();
+  }
+
+  return obj.properties.get(propertyName) as RuntimeValue;
 }
 
 // ----------------------------------------------------------------------------
