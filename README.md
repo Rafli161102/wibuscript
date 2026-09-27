@@ -91,6 +91,8 @@ WibuScript menyediakan arsitektur Sistem Alias ganda pada seluruh lapisan sintak
 | Baca Berkas | `tolongBacaBerkas(path)` | `yomu(path)` | `String` | Membaca isi berkas teks dari file system (Node.js/CLI). |
 | Tulis Berkas | `tolongTulisBerkas(path, isi)` | `kaku(path, isi)` | `Null` | Menulis teks ke dalam berkas pada file system (Node.js/CLI). |
 | Impor Modul | `tolongPanggilModul(path)` | `yobu(path)` | `RuntimeValue` | Membaca dan mengeksekusi berkas `.wibu` lain ke lingkup global (Node.js/CLI). |
+| HTTP Fetch (GET) | `tolongAmbilData(url)` | `totte(url)` | `String` | Mengambil data dari internet via HTTP GET secara sinkronus internal (mengembalikan teks/JSON). |
+| Waktu Sistem | `waktuSekarang()` | `imaJikan()` | `String` | Mengambil representasi string waktu sistem saat ini. |
 
 ## Contoh Program WibuScript
 
@@ -177,6 +179,7 @@ npx tsx src/cli.ts contoh.wibu
 - Penambahan fungsi manipulasi teks bawaan (dekaku dan chiisaku).
 
 ### v1.2.0
+- Eksperimental: Dukungan HTTP Fetch API dan utilitas waktu.
 - Implementasi Tipe Data Objek (Dictionary) dan Member Access.
 - Implementasi Kontrol Perulangan (Break dan Continue) dengan dukungan Sistem Alias ganda.
 - Penambahan fitur Shareable URL berbasis kompresi Base64 pada Web Playground.

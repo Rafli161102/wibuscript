@@ -130,5 +130,15 @@ describe("WibuScript Runtime & Evaluator Test Suite", () => {
       const resultEkstensi = (await runCode('apaTipeKoreWa("teks");')) as StringValue;
       expect(resultEkstensi.value).toBe("teks");
     });
+
+    it("harus mendukung waktu sistem (imaJikan vs waktuSekarang)", async () => {
+      const resultShorthand = (await runCode("imaJikan();")) as StringValue;
+      expect(resultShorthand.type).toBe("string");
+      expect(resultShorthand.value.length).toBeGreaterThan(0);
+
+      const resultEkstensi = (await runCode("waktuSekarang();")) as StringValue;
+      expect(resultEkstensi.type).toBe("string");
+      expect(resultEkstensi.value.length).toBeGreaterThan(0);
+    });
   });
 });

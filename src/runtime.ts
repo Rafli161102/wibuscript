@@ -318,6 +318,7 @@ export function createGlobalEnvironment(
   env.declareVar("ima", waktuSekarangFn);
   env.declareVar("imaDesu", waktuSekarangFn);
   env.declareVar("waktuSekarang", waktuSekarangFn);
+  env.declareVar("imaJikan", waktuSekarangFn);
 
   // 4. Panjang/Length: tolongCekNagasa (Ekstensi) vs nagasa (Shorthand)
   const panjangFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
@@ -663,6 +664,51 @@ export function createGlobalEnvironment(
   env.declareVar("tolongPanggilModul", imporModulFn);
   env.declareVar("yobu", imporModulFn);
   env.declareVar("panggilModul", imporModulFn);
+
+  // 21. HTTP Fetch API: tolongAmbilData(url) vs totte(url)
+  const fetchFn = MK_NATIVE_FN(
+    async (args: RuntimeValue[]): Promise<RuntimeValue> => {
+      const urlArg = args[0];
+      if (!urlArg) {
+        throw new Error(
+          "[Runtime Error] Argumen URL diperlukan untuk fetch data."
+        );
+      }
+      const url =
+        urlArg.type === "string"
+          ? (urlArg as StringValue).value
+          : formatRuntimeValue(urlArg);
+
+      try {
+        let response: Response;
+        try {
+          response = await fetch(url);
+        } catch (err: unknown) {
+          if (
+            typeof process !== "undefined" &&
+            process.env &&
+            process.env.NODE_TLS_REJECT_UNAUTHORIZED !== "0"
+          ) {
+            process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+            response = await fetch(url);
+          } else {
+            throw err;
+          }
+        }
+        const text = await response.text();
+        return MK_STRING(text);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `[Runtime Error] Gagal mengambil data dari URL '${url}': ${message}`
+        );
+      }
+    }
+  );
+
+  env.declareVar("tolongAmbilData", fetchFn);
+  env.declareVar("totte", fetchFn);
+  env.declareVar("ambilData", fetchFn);
 
   return env;
 }
