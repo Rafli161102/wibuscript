@@ -5,6 +5,7 @@ import {
   Parser,
   evaluate,
   createGlobalEnvironment,
+  runWibuScriptAsync,
   unwrapSignal,
   type NumberValue,
   type StringValue,
@@ -153,6 +154,109 @@ describe("WibuScript Runtime & Evaluator Test Suite", () => {
       const resultEkstensi = (await runCode("waktuSekarang();")) as StringValue;
       expect(resultEkstensi.type).toBe("string");
       expect(resultEkstensi.value.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("Keamanan Bahasa & Batasan Runtime (Security Safeguards)", () => {
+    it("harus membatasi infinite loop dengan batas iterasi perulangan (maxLoopIterations)", async () => {
+      const code = `
+        kore i = 0
+        zutto (hontou) {
+          i = i + 1
+        }
+      `;
+      const env = createGlobalEnvironment({ maxLoopIterations: 50 });
+      const tokens = tokenize(code);
+      const parser = new Parser();
+      const program = parser.produceAST(tokens);
+
+      await expect(evaluate(program, env)).rejects.toThrow(
+        /Batas iterasi perulangan terlampaui \(50 putaran\)/
+      );
+    });
+
+    it("harus membatasi for-each loop jika iterasi melebihi batas", async () => {
+      const code = `
+        kore daftar = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        subete (x no daftar) {
+          // iterasi
+        }
+      `;
+      const env = createGlobalEnvironment({ maxLoopIterations: 5 });
+      const tokens = tokenize(code);
+      const parser = new Parser();
+      const program = parser.produceAST(tokens);
+
+      await expect(evaluate(program, env)).rejects.toThrow(
+        /Batas iterasi perulangan terlampaui \(5 putaran\)/
+      );
+    });
+
+    it("harus melindungi browser dari stack overflow melalui maxCallStackDepth", async () => {
+      const code = `
+        jutsu rekursiTanpaHenti() {
+          kaesu rekursiTanpaHenti()
+        }
+        rekursiTanpaHenti()
+      `;
+      const env = createGlobalEnvironment({ maxCallStackDepth: 15 });
+      const tokens = tokenize(code);
+      const parser = new Parser();
+      const program = parser.produceAST(tokens);
+
+      await expect(evaluate(program, env)).rejects.toThrow(
+        /Batas kedalaman tumpukan panggilan \(15\) terlampaui/
+      );
+    });
+
+    it("harus menghentikan eksekusi jika batas waktu (timeoutMs) terlampaui", async () => {
+      const code = `
+        kore i = 0
+        zutto (i < 100000) {
+          i = i + 1
+        }
+      `;
+      // Timeout sangat singkat (5ms)
+      const env = createGlobalEnvironment({ timeoutMs: 5 });
+      const tokens = tokenize(code);
+      const parser = new Parser();
+      const program = parser.produceAST(tokens);
+
+      await expect(evaluate(program, env)).rejects.toThrow(
+        /Batas waktu eksekusi \(5ms\) terlampaui/
+      );
+    });
+
+    it("harus merespons pembatalan pengguna (isCancelledRef)", async () => {
+      const cancelToken = { current: false };
+      const code = `
+        kore i = 0
+        zutto (i < 100) {
+          i = i + 1
+          moshi (i == 10) {
+            // batalkan
+          }
+        }
+      `;
+      // Simulasi token diaktifkan
+      cancelToken.current = true;
+      const env = createGlobalEnvironment({ isCancelledRef: cancelToken });
+      const tokens = tokenize(code);
+      const parser = new Parser();
+      const program = parser.produceAST(tokens);
+
+      await expect(evaluate(program, env)).rejects.toThrow(
+        /Eksekusi dihentikan oleh pengguna/
+      );
+    });
+
+    it("runWibuScriptAsync harus menangkap galat keamanan dan mengembalikan objek error dengan aman", async () => {
+      const code = `
+        zutto (hontou) {}
+      `;
+      const result = await runWibuScriptAsync(code, { maxLoopIterations: 20 });
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain("Batas iterasi perulangan terlampaui (20 putaran)");
     });
   });
 });

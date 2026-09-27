@@ -307,33 +307,48 @@ export async function invokeFunction(
   args: RuntimeValue[],
   env: Environment
 ): Promise<RuntimeValue> {
+  const root = env.getRoot();
+  root.checkLimits();
+
   if (callee.type === "native-fn") {
     const result = (callee as NativeFnValue).call(args, env);
     return result instanceof Promise ? await result : result;
   }
 
   if (callee.type === "function") {
-    const fn = callee as FunctionValue;
-    const scope = new Environment(fn.declarationEnv);
-
-    for (let i = 0; i < fn.parameters.length; i++) {
-      const paramName = fn.parameters[i];
-      if (paramName !== undefined) {
-        const argVal = args[i] ?? MK_NULL();
-        scope.declareVar(paramName, argVal);
-      }
+    if (root.callStackDepth >= root.maxCallStackDepth) {
+      throw new Error(
+        `[Runtime Error] Batas kedalaman tumpukan panggilan (${root.maxCallStackDepth}) terlampaui. Terdeteksi rekursi tanpa batas (Infinite Recursion)!`
+      );
     }
 
-    let lastVal: RuntimeValue = MK_NULL();
-    for (const stmt of fn.body) {
-      const result = await evaluate(stmt, scope);
-      if (isReturnSignal(result)) {
-        return result.value;
-      }
-      lastVal = result as RuntimeValue;
-    }
+    root.callStackDepth++;
+    try {
+      const fn = callee as FunctionValue;
+      const scope = new Environment(fn.declarationEnv);
 
-    return lastVal;
+      for (let i = 0; i < fn.parameters.length; i++) {
+        const paramName = fn.parameters[i];
+        if (paramName !== undefined) {
+          const argVal = args[i] ?? MK_NULL();
+          scope.declareVar(paramName, argVal);
+        }
+      }
+
+      let lastVal: RuntimeValue = MK_NULL();
+      for (const stmt of fn.body) {
+        root.checkLimits();
+        const result = await evaluate(stmt, scope);
+        if (isReturnSignal(result)) {
+          return result.value;
+        }
+        lastVal = result as RuntimeValue;
+      }
+
+      return lastVal;
+    } finally {
+      root.callStackDepth--;
+    }
   }
 
   throw new Error(
@@ -348,6 +363,10 @@ export async function invokeFunction(
 export interface EnvironmentOptions {
   outputHandler?: (message: string) => void;
   outputLog?: string[];
+  maxLoopIterations?: number;
+  maxCallStackDepth?: number;
+  timeoutMs?: number;
+  isCancelledRef?: { current: boolean };
 }
 
 // Virtual Modules Registry (berguna untuk lingkungan Web Playground & Browser)
@@ -366,10 +385,46 @@ export class Environment {
   private variables: Map<string, RuntimeValue>;
   public exports: Map<string, RuntimeValue>;
 
+  // Keamanan & Pengaman Batasan Eksekusi (Safety Limits)
+  public maxLoopIterations: number = 100_000;
+  public maxCallStackDepth: number = 1000;
+  public timeoutMs?: number | undefined;
+  public isCancelledRef?: { current: boolean } | undefined;
+  public executionStartTime: number;
+  public loopIterationCount: number = 0;
+  public callStackDepth: number = 0;
+
   constructor(parentEnv?: Environment | undefined) {
     this.parent = parentEnv;
     this.variables = new Map();
     this.exports = new Map();
+    this.executionStartTime = parentEnv ? parentEnv.executionStartTime : Date.now();
+    if (parentEnv) {
+      this.maxLoopIterations = parentEnv.maxLoopIterations;
+      this.maxCallStackDepth = parentEnv.maxCallStackDepth;
+      this.timeoutMs = parentEnv.timeoutMs;
+      this.isCancelledRef = parentEnv.isCancelledRef;
+    }
+  }
+
+  public getRoot(): Environment {
+    let curr: Environment = this;
+    while (curr.parent) {
+      curr = curr.parent;
+    }
+    return curr;
+  }
+
+  public checkLimits(): void {
+    const root = this.getRoot();
+    if (root.isCancelledRef?.current) {
+      throw new Error("[Runtime Error] Eksekusi dihentikan oleh pengguna (Cancelled).");
+    }
+    if (root.timeoutMs && Date.now() - root.executionStartTime > root.timeoutMs) {
+      throw new Error(
+        `[Runtime Error] Batas waktu eksekusi (${root.timeoutMs}ms) terlampaui. Eksekusi dihentikan demi keamanan!`
+      );
+    }
   }
 
   public declareVar(name: string, value: RuntimeValue): RuntimeValue {
@@ -439,7 +494,20 @@ export function createGlobalEnvironment(
   } else if (optionsOrHandler) {
     outputHandler = optionsOrHandler.outputHandler;
     logArray = optionsOrHandler.outputLog;
+    if (optionsOrHandler.maxLoopIterations !== undefined) {
+      env.maxLoopIterations = optionsOrHandler.maxLoopIterations;
+    }
+    if (optionsOrHandler.maxCallStackDepth !== undefined) {
+      env.maxCallStackDepth = optionsOrHandler.maxCallStackDepth;
+    }
+    if (optionsOrHandler.timeoutMs !== undefined) {
+      env.timeoutMs = optionsOrHandler.timeoutMs;
+    }
+    if (optionsOrHandler.isCancelledRef !== undefined) {
+      env.isCancelledRef = optionsOrHandler.isCancelledRef;
+    }
   }
+  env.executionStartTime = Date.now();
 
   // 1. Output Standar: kasihMite() (Ekstensi) vs mite() (Shorthand)
   const printFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
@@ -956,20 +1024,13 @@ export function createGlobalEnvironment(
           : formatRuntimeValue(urlArg);
 
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
         let response: Response;
         try {
-          response = await fetch(url);
-        } catch (err: unknown) {
-          if (
-            typeof process !== "undefined" &&
-            process.env &&
-            process.env.NODE_TLS_REJECT_UNAUTHORIZED !== "0"
-          ) {
-            process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-            response = await fetch(url);
-          } else {
-            throw err;
-          }
+          response = await fetch(url, { signal: controller.signal });
+        } finally {
+          clearTimeout(timeoutId);
         }
         const text = await response.text();
         return MK_STRING(text);
@@ -1519,8 +1580,10 @@ async function evalProgram(
   env: Environment
 ): Promise<RuntimeValue> {
   let lastEvaluated: RuntimeValue = MK_NULL();
+  const root = env.getRoot();
 
   for (const statement of program.body) {
+    root.checkLimits();
     const result = await evaluate(statement, env);
     if (isReturnSignal(result)) {
       return result.value;
@@ -1597,12 +1660,26 @@ async function evalLoopStatement(
   env: Environment
 ): Promise<RuntimeValue | ReturnSignal> {
   let lastVal: RuntimeValue = MK_NULL();
+  const root = env.getRoot();
 
   while (isTruthy(unwrapSignal(await evaluate(stmt.condition, env)))) {
+    root.checkLimits();
+    root.loopIterationCount++;
+    if (root.loopIterationCount > root.maxLoopIterations) {
+      throw new Error(
+        `[Runtime Error] Batas iterasi perulangan terlampaui (${root.maxLoopIterations} putaran). Terdeteksi potensi perulangan tak hingga (Infinite Loop)!`
+      );
+    }
+
+    if (root.loopIterationCount % 200 === 0) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
     const scope = new Environment(env);
     let shouldBreak = false;
 
     for (const s of stmt.body) {
+      root.checkLimits();
       const result = await evaluate(s, scope);
 
       if (isReturnSignal(result)) {
@@ -1633,6 +1710,9 @@ async function evalForEachStatement(
   stmt: ForEachStatement,
   env: Environment
 ): Promise<RuntimeValue | ReturnSignal> {
+  const root = env.getRoot();
+  root.checkLimits();
+
   const collectionVal = unwrapSignal(await evaluate(stmt.collection, env));
   let items: RuntimeValue[] = [];
 
@@ -1653,11 +1733,24 @@ async function evalForEachStatement(
   let lastVal: RuntimeValue = MK_NULL();
 
   for (const item of items) {
+    root.checkLimits();
+    root.loopIterationCount++;
+    if (root.loopIterationCount > root.maxLoopIterations) {
+      throw new Error(
+        `[Runtime Error] Batas iterasi perulangan terlampaui (${root.maxLoopIterations} putaran). Terdeteksi potensi perulangan tak hingga (Infinite Loop)!`
+      );
+    }
+
+    if (root.loopIterationCount % 200 === 0) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
     const scope = new Environment(env);
     scope.declareVar(stmt.item, item);
     let shouldBreak = false;
 
     for (const s of stmt.body) {
+      root.checkLimits();
       const result = await evaluate(s, scope);
 
       if (isReturnSignal(result)) {
@@ -2025,31 +2118,44 @@ async function evalMemberExpr(
       if (currentClass.methods.has(propKey)) {
         const methodDecl = currentClass.methods.get(propKey)!;
         return MK_NATIVE_FN(
-          async (args: RuntimeValue[]): Promise<RuntimeValue> => {
-            const methodScope = new Environment(currentClass!.declarationEnv);
-            // Ikat kata kunci diri sendiri di semua dialek
-            methodScope.declareVar("jibun", inst);
-            methodScope.declareVar("ji", inst);
-            methodScope.declareVar("siAing", inst);
-            methodScope.declareVar("siSaya", inst);
-            methodScope.declareVar("lanangmas", inst);
-            methodScope.declareVar("awakku", inst);
-            methodScope.declareVar("this", inst);
-
-            for (let i = 0; i < methodDecl.parameters.length; i++) {
-              const pName = methodDecl.parameters[i];
-              if (pName !== undefined) {
-                methodScope.declareVar(pName, args[i] ?? MK_NULL());
-              }
+          async (args: RuntimeValue[], callEnv: Environment): Promise<RuntimeValue> => {
+            const root = (callEnv ?? env).getRoot();
+            root.checkLimits();
+            if (root.callStackDepth >= root.maxCallStackDepth) {
+              throw new Error(
+                `[Runtime Error] Batas kedalaman tumpukan panggilan (${root.maxCallStackDepth}) terlampaui. Terdeteksi rekursi tanpa batas (Infinite Recursion)!`
+              );
             }
+            root.callStackDepth++;
+            try {
+              const methodScope = new Environment(currentClass!.declarationEnv);
+              // Ikat kata kunci diri sendiri di semua dialek
+              methodScope.declareVar("jibun", inst);
+              methodScope.declareVar("ji", inst);
+              methodScope.declareVar("siAing", inst);
+              methodScope.declareVar("siSaya", inst);
+              methodScope.declareVar("lanangmas", inst);
+              methodScope.declareVar("awakku", inst);
+              methodScope.declareVar("this", inst);
 
-            for (const s of methodDecl.body) {
-              const res = await evaluate(s, methodScope);
-              if (isReturnSignal(res)) {
-                return res.value;
+              for (let i = 0; i < methodDecl.parameters.length; i++) {
+                const pName = methodDecl.parameters[i];
+                if (pName !== undefined) {
+                  methodScope.declareVar(pName, args[i] ?? MK_NULL());
+                }
               }
+
+              for (const s of methodDecl.body) {
+                root.checkLimits();
+                const res = await evaluate(s, methodScope);
+                if (isReturnSignal(res)) {
+                  return res.value;
+                }
+              }
+              return MK_NULL();
+            } finally {
+              root.callStackDepth--;
             }
-            return MK_NULL();
           }
         );
       }
@@ -2348,35 +2454,48 @@ async function evalNewExpression(
   }
 
   if (ctor) {
-    const evaluatedArgs: RuntimeValue[] = [];
-    for (const arg of node.args) {
-      evaluatedArgs.push(unwrapSignal(await evaluate(arg, env)));
+    const root = env.getRoot();
+    root.checkLimits();
+    if (root.callStackDepth >= root.maxCallStackDepth) {
+      throw new Error(
+        `[Runtime Error] Batas kedalaman tumpukan panggilan (${root.maxCallStackDepth}) terlampaui. Terdeteksi rekursi tanpa batas (Infinite Recursion)!`
+      );
     }
-
-    const ctorScope = new Environment(cls.declarationEnv);
-    ctorScope.declareVar("jibun", instance);
-    ctorScope.declareVar("ji", instance);
-    ctorScope.declareVar("siAing", instance);
-    ctorScope.declareVar("siSaya", instance);
-    ctorScope.declareVar("lanangmas", instance);
-    ctorScope.declareVar("awakku", instance);
-    ctorScope.declareVar("this", instance);
-
-    for (let i = 0; i < ctor.parameters.length; i++) {
-      const pName = ctor.parameters[i];
-      if (pName !== undefined) {
-        ctorScope.declareVar(pName, evaluatedArgs[i] ?? MK_NULL());
+    root.callStackDepth++;
+    try {
+      const evaluatedArgs: RuntimeValue[] = [];
+      for (const arg of node.args) {
+        evaluatedArgs.push(unwrapSignal(await evaluate(arg, env)));
       }
-    }
 
-    for (const s of ctor.body) {
-      const res = await evaluate(s, ctorScope);
-      if (isReturnSignal(res)) {
-        if (res.value.type === "instance" || res.value.type === "object") {
-          return res.value;
+      const ctorScope = new Environment(cls.declarationEnv);
+      ctorScope.declareVar("jibun", instance);
+      ctorScope.declareVar("ji", instance);
+      ctorScope.declareVar("siAing", instance);
+      ctorScope.declareVar("siSaya", instance);
+      ctorScope.declareVar("lanangmas", instance);
+      ctorScope.declareVar("awakku", instance);
+      ctorScope.declareVar("this", instance);
+
+      for (let i = 0; i < ctor.parameters.length; i++) {
+        const pName = ctor.parameters[i];
+        if (pName !== undefined) {
+          ctorScope.declareVar(pName, evaluatedArgs[i] ?? MK_NULL());
         }
-        break;
       }
+
+      for (const s of ctor.body) {
+        root.checkLimits();
+        const res = await evaluate(s, ctorScope);
+        if (isReturnSignal(res)) {
+          if (res.value.type === "instance" || res.value.type === "object") {
+            return res.value;
+          }
+          break;
+        }
+      }
+    } finally {
+      root.callStackDepth--;
     }
   }
 
@@ -2514,14 +2633,26 @@ export interface ExecutionResult {
   error?: string | undefined;
 }
 
+export interface RunWibuScriptOptions extends EnvironmentOptions {}
+
 /**
- * Menjalankan kode WibuScript secara asinkronus dengan penangkapan output log.
+ * Menjalankan kode WibuScript secara asinkronus dengan penangkapan output log
+ * dan opsi batasan keamanan runtime.
  */
 export async function runWibuScriptAsync(
   sourceCode: string,
-  onOutput?: (message: string) => void
+  onOutputOrOptions?: ((message: string) => void) | RunWibuScriptOptions
 ): Promise<ExecutionResult> {
   const outputLog: string[] = [];
+  let onOutput: ((message: string) => void) | undefined;
+  let customOptions: RunWibuScriptOptions = {};
+
+  if (typeof onOutputOrOptions === "function") {
+    onOutput = onOutputOrOptions;
+  } else if (onOutputOrOptions) {
+    customOptions = onOutputOrOptions;
+    onOutput = onOutputOrOptions.outputHandler;
+  }
 
   const handler = (msg: string) => {
     outputLog.push(msg);
@@ -2531,6 +2662,7 @@ export async function runWibuScriptAsync(
   };
 
   const env = createGlobalEnvironment({
+    ...customOptions,
     outputHandler: handler,
     outputLog,
   });

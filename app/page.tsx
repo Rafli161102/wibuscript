@@ -22,6 +22,7 @@ import {
   ShieldAlert,
   Sparkles,
   Brackets,
+  Square,
 } from "lucide-react";
 import {
   tokenize,
@@ -84,7 +85,7 @@ mite("\\n=== 2. PATTERN MATCHING (SHOUGO) ===")
 // Jepang Murni: shougo (nilai) { baai ...: { ... } hyoujun: { ... } }
 // Jepang Singkat: sho (nilai) { baa ...: { ... } hyo: { ... } }
 // Wibu Absurd: cocokkan (nilai) { kaloPas ...: { ... } sisaan: { ... } }
-// Meme Rongawi: cekKhodam (nilai) { pas ...: { ... } zonk: { ... } }
+// Meme Rongawi: persimpangan (nilai) { kenaben ...: { ... } yappingtolol: { ... } }
 
 kore role = "Hokage"
 shougo (role) {
@@ -529,20 +530,45 @@ zutto (i < 5) {
   },
 ];
 
-// Fungsi utilitas konversi Base64 yang aman untuk UTF-8
-function encodeBase64(str: string): string {
+// Fungsi utilitas konversi Base64 yang aman untuk UTF-8 dan URL Query Parameters
+function encodeBase64Url(str: string): string {
   try {
-    return btoa(encodeURIComponent(str));
+    const bytes = new TextEncoder().encode(str);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) {
+      const b = bytes[i];
+      if (b !== undefined) {
+        binary += String.fromCharCode(b);
+      }
+    }
+    return btoa(binary)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
   } catch {
-    return btoa(str);
+    return "";
   }
 }
 
-function decodeBase64(str: string): string {
+function decodeBase64Url(str: string): string {
+  if (!str) return "";
   try {
-    return decodeURIComponent(atob(str));
+    let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
+    while (base64.length % 4) {
+      base64 += "=";
+    }
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new TextDecoder().decode(bytes);
   } catch {
-    return atob(str);
+    try {
+      return decodeURIComponent(atob(str));
+    } catch {
+      return "";
+    }
   }
 }
 
@@ -756,13 +782,40 @@ export default function WibuScriptPlayground() {
   const [tokenFilter, setTokenFilter] = useState<string>("");
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
+  const isCancelledRef = useRef<boolean>(false);
+  const logBufferRef = useRef<string[]>([]);
+  const flushTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const handleRunCodeRef = useRef<() => void>(() => {});
+
+  const flushLogs = useCallback(() => {
+    if (logBufferRef.current.length === 0) return;
+    const newItems = [...logBufferRef.current];
+    logBufferRef.current = [];
+    setOutputLog((prev) => {
+      const combined = [...prev, ...newItems];
+      if (combined.length > 1000) {
+        return combined.slice(combined.length - 1000);
+      }
+      return combined;
+    });
+  }, []);
+
+  const pushLog = useCallback((line: string) => {
+    logBufferRef.current.push(line);
+    if (!flushTimeoutRef.current) {
+      flushTimeoutRef.current = setTimeout(() => {
+        flushTimeoutRef.current = null;
+        flushLogs();
+      }, 25);
+    }
+  }, [flushLogs]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
       const codeParam = urlParams.get("code");
       if (codeParam) {
-        const decoded = decodeBase64(codeParam);
+        const decoded = decodeBase64Url(codeParam);
         if (decoded) {
           setCode(decoded);
         }
@@ -780,7 +833,7 @@ export default function WibuScriptPlayground() {
     if (typeof window === "undefined") return;
 
     try {
-      const encoded = encodeBase64(code);
+      const encoded = encodeBase64Url(code);
       const url = new URL(window.location.href);
       url.searchParams.set("code", encoded);
       await navigator.clipboard.writeText(url.toString());
@@ -819,10 +872,28 @@ export default function WibuScriptPlayground() {
     }
   };
 
+  const handleStopExecution = useCallback(() => {
+    if (!isRunning) return;
+    isCancelledRef.current = true;
+    setStatusMessage("Menghentikan...");
+    pushLog("[Sistem] Menghentikan eksekusi atas permintaan pengguna...");
+    if (flushTimeoutRef.current) {
+      clearTimeout(flushTimeoutRef.current);
+      flushTimeoutRef.current = null;
+    }
+    flushLogs();
+  }, [isRunning, pushLog, flushLogs]);
+
   const handleRunCode = useCallback(async () => {
     if (isRunning) return;
 
     setIsRunning(true);
+    isCancelledRef.current = false;
+    if (flushTimeoutRef.current) {
+      clearTimeout(flushTimeoutRef.current);
+      flushTimeoutRef.current = null;
+    }
+    logBufferRef.current = [];
     setOutputLog([]);
     setStatusMessage("Menjalankan...");
     const startTime = performance.now();
@@ -845,11 +916,15 @@ export default function WibuScriptPlayground() {
         setTranspiledJs("// Gagal mengompilasi ke JavaScript");
       }
 
-      // 4. Runtime & Evaluator
+      // 4. Runtime & Evaluator dengan pengaman kecepatan dan keamanan
       const env = createGlobalEnvironment({
         outputHandler: (lineMessage: string) => {
-          setOutputLog((prev) => [...prev, lineMessage]);
+          pushLog(lineMessage);
         },
+        maxLoopIterations: 50_000,
+        maxCallStackDepth: 1000,
+        timeoutMs: 10_000,
+        isCancelledRef: isCancelledRef,
       });
 
       const rawResult = await evaluate(program, env);
@@ -862,14 +937,39 @@ export default function WibuScriptPlayground() {
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      setOutputLog((prev) => [...prev, `[Sistem Error] ${errorMessage}`]);
+      pushLog(`[Sistem Error] ${errorMessage}`);
       setStatusMessage("Terjadi Kesalahan");
     } finally {
+      if (flushTimeoutRef.current) {
+        clearTimeout(flushTimeoutRef.current);
+        flushTimeoutRef.current = null;
+      }
+      flushLogs();
       setIsRunning(false);
     }
-  }, [code, isRunning]);
+  }, [code, isRunning, pushLog, flushLogs]);
+
+  useEffect(() => {
+    handleRunCodeRef.current = handleRunCode;
+  }, [handleRunCode]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        handleRunCodeRef.current();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const handleClearOutput = () => {
+    if (flushTimeoutRef.current) {
+      clearTimeout(flushTimeoutRef.current);
+      flushTimeoutRef.current = null;
+    }
+    logBufferRef.current = [];
     setOutputLog([]);
     setExecutionTime(null);
     setStatusMessage("Siap");
@@ -956,27 +1056,25 @@ export default function WibuScriptPlayground() {
             )}
           </button>
 
-          <button
-            onClick={() => void handleRunCode()}
-            disabled={isRunning}
-            className={`px-4 py-1.5 rounded text-xs font-semibold shadow transition-all flex items-center gap-2 ${
-              isRunning
-                ? "bg-slate-700 text-slate-400 cursor-not-allowed"
-                : "bg-cyan-600 hover:bg-cyan-500 text-white active:scale-95"
-            }`}
-          >
-            {isRunning ? (
-              <>
-                <span className="inline-block w-3 h-3 border-2 border-slate-400 border-t-white rounded-full animate-spin" />
-                Mengeksekusi...
-              </>
-            ) : (
-              <>
-                <Play className="w-3.5 h-3.5 fill-current" />
-                Jalankan (Ctrl+Enter)
-              </>
-            )}
-          </button>
+          {isRunning ? (
+            <button
+              onClick={handleStopExecution}
+              className="px-4 py-1.5 rounded text-xs font-semibold shadow transition-all flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white active:scale-95 animate-pulse"
+              title="Hentikan eksekusi kode saat ini"
+            >
+              <Square className="w-3.5 h-3.5 fill-current" />
+              Hentikan (Stop)
+            </button>
+          ) : (
+            <button
+              onClick={() => void handleRunCode()}
+              className="px-4 py-1.5 rounded text-xs font-semibold shadow transition-all flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white active:scale-95"
+              title="Jalankan kode (Ctrl+Enter / Cmd+Enter)"
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+              Jalankan (Ctrl+Enter)
+            </button>
+          )}
         </div>
       </header>
 
@@ -1059,7 +1157,7 @@ export default function WibuScriptPlayground() {
 
           <div className="bg-slate-900/90 border-t border-slate-800 px-3 py-2 text-[11px] text-slate-500 flex items-center justify-between">
             <span>Sistem 4 Dialek Mutlak</span>
-            <span className="font-mono text-slate-400">WibuScript v1.3.0</span>
+            <span className="font-mono text-slate-400">WibuScript v{packageJson.version}</span>
           </div>
         </aside>
 
@@ -1081,6 +1179,11 @@ export default function WibuScriptPlayground() {
               value={code}
               onChange={handleEditorChange}
               beforeMount={handleEditorWillMount}
+              onMount={(editor, monaco) => {
+                editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+                  handleRunCodeRef.current();
+                });
+              }}
               options={{
                 fontSize: 14,
                 fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Monaco, monospace",

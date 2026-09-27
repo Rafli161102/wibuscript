@@ -42,6 +42,7 @@ import {
   type ReturnSignal,
   type ExecutionResult,
   type EnvironmentOptions,
+  type RunWibuScriptOptions,
 } from "./runtime";
 import { convertDialect, type Dialect, DIALECT_TABLE } from "./converter";
 import { transpileToJS, Transpiler } from "./transpiler";
@@ -87,6 +88,7 @@ export {
   type ReturnSignal,
   type ExecutionResult,
   type EnvironmentOptions,
+  type RunWibuScriptOptions,
   convertDialect,
   type Dialect,
   DIALECT_TABLE,
