@@ -73,19 +73,19 @@ Seluruh kata kunci bahasa Inggris konvensional (`let`, `const`, `if`, `while`, d
 | **Tunggu (AWAIT)** | `matte` | `mat` | `sabarBanh` | `admindatang` | `TokenType.Await` | Penanda jeda waktu atau eksekusi asinkronus. |
 | **Coba (TRY)** | `kokoromi` | `koko` | `cobaDuluBanh` | `gasTesLur` | `TokenType.Try` | Blok penanganan eksepsi berpotensi galat. |
 | **Tangani (CATCH)** | `yurusu` | `yuru` | `santaiAja` | `amanBos` | `TokenType.Catch` | Blok tangkapan dan pemulihan galat runtime. |
-| **Iterasi (FOR-IN)** | `subete` | `sube` | `sikatSemua` | `ratakan` | `TokenType.ForEach` | Perulangan melintasi seluruh elemen koleksi barisan atau teks. |
-| **Penghubung (IN)** | `no` | `no` | `dari` | `didalam` | `TokenType.In` | Partikel penghubung variabel elemen dan koleksi. |
-| **Kelas (CLASS)** | `sekte` | `sek` | `paguyuban` | `ormas` | `TokenType.Class` | Deklarasi cetak biru objek / kelas sekte. |
-| **Konstruktor (CONSTRUCTOR)** | `tanjou` | `tan` | `lahiran` | `spawn` | `TokenType.Constructor` | Metode inisialisasi instansi objek sekte. |
-| **Objek Baru (NEW)** | `atarashii` | `ata` | `bikinBaru` | `rekrut` | `TokenType.New` | Membuat instansi objek baru dari sekte/kelas. |
-| **Pewarisan (EXTENDS)** | `keishou` | `kei` | `turunanDari` | `jalurOrdal` | `TokenType.Extends` | Menurunkan properti dan metode dari sekte induk. |
-| **Diri Sendiri (THIS)** | `jibun` | `ji` | `siAing` | `siSaya` | `TokenType.This` | Mengakses dan memodifikasi anggota instansi objek aktif. |
-| **Ekspor (EXPORT)** | `koukai` | `kou` | `sebarJutsu` | `spill` | `TokenType.Export` | Mengekspor simbol dan fungsi ke luar berkas modul. |
-| **Impor (IMPORT)** | `toriyoseru` | `tori` | `summonJutsu` | `culik` | `TokenType.Import` | Mengimpor simbol atau pustaka dari berkas/modul lain. |
-| **Asal Modul (FROM)** | `kara` | `kra` | `dari` | `lapak` | `TokenType.From` | Menentukan lokasi berkas/sumber modul yang diimpor. |
-| **Pola Cocok (MATCH)** | `shougo` | `sho` | `cocokkan` | `cekKhodam` | `TokenType.Match` | Percabangan pencocokan pola nilai jamak (Switch/Match). |
-| **Kasus (CASE)** | `baai` | `baa` | `kaloPas` | `pas` | `TokenType.Case` | Cabang pencocokan kasus nilai spesifik. |
-| **Bawaan (DEFAULT)** | `hyoujun` | `hyo` | `sisaan` | `zonk` | `TokenType.Default` | Cabang fallback jika tidak ada kasus yang cocok. |
+| **Iterasi (FOR-IN)** | `subete` | `sube` | `sikatSemua` | `thugshaker` | `TokenType.ForEach` | Perulangan melintasi seluruh elemen koleksi barisan atau teks. |
+| **Penghubung (IN)** | `no` | `no` | `dari` | `alasdaun` | `TokenType.In` | Partikel penghubung variabel elemen dan koleksi. |
+| **Kelas (CLASS)** | `sekte` | `sek` | `paguyuban` | `sektejomok` | `TokenType.Class` | Deklarasi cetak biru objek / kelas sekte. |
+| **Konstruktor (CONSTRUCTOR)** | `tanjou` | `tan` | `lahiran` | `ambatunat` | `TokenType.Constructor` | Metode inisialisasi instansi objek sekte. |
+| **Objek Baru (NEW)** | `atarashii` | `ata` | `bikinBaru` | `ambatumbas` | `TokenType.New` | Membuat instansi objek baru dari sekte/kelas. |
+| **Pewarisan (EXTENDS)** | `keishou` | `kei` | `turunanDari` | `jalurhukum` | `TokenType.Extends` | Menurunkan properti dan metode dari sekte induk. |
+| **Diri Sendiri (THIS)** | `jibun` | `ji` | `siAing` | `lanangmas` | `TokenType.This` | Mengakses dan memodifikasi anggota instansi objek aktif. |
+| **Ekspor (EXPORT)** | `koukai` | `kou` | `sebarJutsu` | `umpansilang` | `TokenType.Export` | Mengekspor simbol dan fungsi ke luar berkas modul. |
+| **Impor (IMPORT)** | `toriyoseru` | `tori` | `summonJutsu` | `begalbaju` | `TokenType.Import` | Mengimpor simbol atau pustaka dari berkas/modul lain. |
+| **Asal Modul (FROM)** | `kara` | `kra` | `dari` | `ngawiland` | `TokenType.From` | Menentukan lokasi berkas/sumber modul yang diimpor. |
+| **Pola Cocok (MATCH)** | `shougo` | `sho` | `cocokkan` | `persimpangan` | `TokenType.Match` | Percabangan pencocokan pola nilai jamak (Switch/Match). |
+| **Kasus (CASE)** | `baai` | `baa` | `kaloPas` | `kenaben` | `TokenType.Case` | Cabang pencocokan kasus nilai spesifik. |
+| **Bawaan (DEFAULT)** | `hyoujun` | `hyo` | `sisaan` | `yappingtolol` | `TokenType.Default` | Cabang fallback jika tidak ada kasus yang cocok. |
 
 ## Pustaka Standar (Standard Library)
 
@@ -125,7 +125,7 @@ Pustaka Standar mengikuti beberapa aturan:
 | Output | `kuchiMite(pesan)` | `km(pesan)` | `bacotAmba(pesan)` | `cawapresin(pesan)` | `Null` | Menampilkan nilai atau pesan ke terminal. |
 | Jeda | `shibaraku(ms)` | `siba(ms)` | `santuyDulu(ms)` | `nungguinLu(ms)` | `Null` | Menghentikan sementara eksekusi selama milidetik tertentu. |
 | Waktu | `imaJikan()` | `ima(ms)` | `jamBerapaBanh()` | `cekJamLur()` | `String` | Mengambil waktu sistem saat program dijalankan. |
-| Panjang | `nagasa(nilai)` | `naga(nilai)` | `seginiDoang(nilai)` | `cekUkuran(nilai)` | `Number` | Menghitung panjang teks atau jumlah elemen koleksi. |
+| Panjang | `nagasa(nilai)` | `naga(nilai)` | `seginiDoang(nilai)` | `panjangberurat(nilai)` | `Number` | Menghitung panjang teks atau jumlah elemen koleksi. |
 | Konversi Angka | `suji(teks)` | `suj(teks)` | `jadiAngkaBanh(teks)` | `ubahJadiDuit(teks)` | `Number` | Mengubah teks numerik menjadi angka. |
 | Jenis Nilai | `shurui(nilai)` | `shu(nilai)` | `iniApaan(nilai)` | `bendaApaanLur(nilai)` | `String` | Mengambil jenis nilai runtime. |
 | Pangkat | `beki(a, b)` | `bek(a, b)` | `angkatin(a, b)` | `naikinPangkat(a, b)` | `Number` | Menghitung perpangkatan dua angka. |
@@ -137,7 +137,7 @@ Pustaka Standar mengikuti beberapa aturan:
 | Huruf Kecil | `chiisaku(teks)` | `chi(teks)` | `kecilinHuruf(teks)` | `kecilinSemua(teks)` | `String` | Mengubah teks menjadi huruf kecil. |
 | Angka Acak | `randamu(min, max)` | `ran(min, max)` | `gachaBanh(min, max)` | `kocokAngka(min, max)` | `Number` | Menghasilkan bilangan bulat acak dalam rentang tertentu. |
 | Hentikan Program | `shikei(pesan)` | `shi(pesan)` | `matiinProgram(pesan)` | `udahKelarinAja(pesan)` | `Never` | Menghentikan program dengan kesalahan runtime. |
-| Buat Array | `retsu(...)` | `ret(...)` | `bikinBarisan(...)` | `kumpulinBocah(...)` | `Array` | Membuat array dari sejumlah nilai. |
+| Buat Array | `retsu(...)` | `ret(...)` | `bikinBarisan(...)` | `budakhitam(...)` | `Array` | Membuat array dari sejumlah nilai. |
 | Baca Berkas | `yomu(lokasi)` | `yo(lokasi)` | `bacainBerkas(lokasi)` | `bukaBerkasLur(lokasi)` | `String` | Membaca isi berkas teks pada lingkungan CLI. |
 | Tulis Berkas | `kaku(lokasi, isi)` | `ka(lokasi, isi)` | `tulisinBerkas(lokasi, isi)` | `coretBerkasLur(lokasi, isi)` | `Null` | Menulis teks ke berkas pada lingkungan CLI. |
 | Muat Modul | `yobu(lokasi)` | `yoB(lokasi)` | `panggilBerkas(lokasi)` | `sikatBanh(lokasi)` | `RuntimeValue` | Memuat dan menjalankan berkas .wibu lain. |
@@ -146,19 +146,19 @@ Pustaka Standar mengikuti beberapa aturan:
 | Bungkus JSON | `kanjiMojiretsu(nilai)` | `kmj(nilai)` | `jadiTeksBanh(nilai)` | `bungkusJsonLur(nilai)` | `String` | Mengonversi nilai runtime menjadi teks string JSON. |
 | Petakan Barisan | `utsusu(arr, fn)` | `utu(arr, fn)` | `petainBanh(arr, fn)` | `petainLur(arr, fn)` | `Array` | Memetakan setiap elemen barisan melalui fungsi callback (Map). |
 | Saring Barisan | `erabu(arr, fn)` | `era(arr, fn)` | `saringBanh(arr, fn)` | `saringLur(arr, fn)` | `Array` | Menyaring elemen barisan yang memenuhi kondisi predikat (Filter). |
-| Cari Elemen | `mitsukeru(arr, fn)` | `mitu(arr, fn)` | `cariinBanh(arr, fn)` | `ciduk(arr, fn)` | `RuntimeValue` | Mencari elemen pertama yang memenuhi kriteria pencarian (Find). |
+| Cari Elemen | `mitsukeru(arr, fn)` | `mitu(arr, fn)` | `cariinBanh(arr, fn)` | `fesnuker(arr, fn)` | `RuntimeValue` | Mencari elemen pertama yang memenuhi kriteria pencarian (Find). |
 | Akar Kuadrat | `ruuto(angka)` | `ru(angka)` | `akarPangkat(angka)` | `akarLur(angka)` | `Number` | Menghitung akar kuadrat dari sebuah angka (Sqrt). |
 | Nilai Mutlak | `zettaichi(angka)` | `zet(angka)` | `mutlakBanh(angka)` | `mutlakLur(angka)` | `Number` | Menghitung nilai mutlak / absolut sebuah bilangan (Abs). |
 | Bulat Bawah | `kiriSute(angka)` | `ks(angka)` | `bawahinBanh(angka)` | `bawahLur(angka)` | `Number` | Membulatkan pecahan ke bilangan bulat di bawahnya (Floor). |
 | Bulat Atas | `kiriAge(angka)` | `kia(angka)` | `atasinBanh(angka)` | `atasLur(angka)` | `Number` | Membulatkan pecahan ke bilangan bulat di atasnya (Ceil). |
-| Pecah Teks | `bunri(teks, pemisah)` | `bu(teks, pemisah)` | `pecahKata(teks, pemisah)` | `pecahin(teks, pemisah)` | `Array` | Memecah teks menjadi barisan string berdasarkan pemisah (Split). |
-| Gabung Teks | `tsunagu(arr, pemisah)` | `tsuna(arr, pemisah)` | `lemKata(arr, pemisah)` | `lemin(arr, pemisah)` | `String` | Menggabungkan elemen barisan menjadi satu teks (Join). |
-| Ganti Teks | `okikae(teks, cari, ganti)` | `oki(teks, cari, ganti)` | `sulapKata(teks, cari, ganti)` | `tumbalkan(teks, cari, ganti)` | `String` | Mengganti seluruh kemunculan substring dalam teks (Replace). |
-| Pangkas Spasi | `kiri(teks)` | `kri(teks)` | `pangkas(teks)` | `cukur(teks)` | `String` | Menghapus spasi di awal dan akhir teks (Trim). |
-| Cek Elemen | `fukumu(koleksi, item)` | `fuku(koleksi, item)` | `punyaGak(koleksi, item)` | `adaGak(koleksi, item)` | `Boolean` | Memeriksa apakah elemen ada dalam barisan atau teks (Includes). |
-| Urutkan Barisan | `narabikae(arr, fn?)` | `nara(arr, fn?)` | `rapihin(arr, fn?)` | `barisin(arr, fn?)` | `Array` | Mengurutkan elemen barisan (Sort default ascending atau via fungsi). |
-| Irisan Koleksi | `kirinuki(arr, awal, akhir?)` | `kinu(arr, awal, akhir?)` | `potongSebagian(arr, awal, akhir?)` | `comot(arr, awal, akhir?)` | `Array/String` | Mengambil irisan barisan atau teks berdasarkan indeks (Slice). |
-| Undian Gacha | `gacha(daftar, bobot?)` | `gac(daftar, bobot?)` | `tarikGacha(daftar, bobot?)` | `spinZeus(daftar, bobot?)` | `RuntimeValue` | Mengundi item secara seragam atau probabilistik berbobot (Gacha RNG). |
+| Pecah Teks | `bunri(teks, pemisah)` | `bu(teks, pemisah)` | `pecahKata(teks, pemisah)` | `pecahkepala(teks, pemisah)` | `Array` | Memecah teks menjadi barisan string berdasarkan pemisah (Split). |
+| Gabung Teks | `tsunagu(arr, pemisah)` | `tsuna(arr, pemisah)` | `lemKata(arr, pemisah)` | `lendirmurni(arr, pemisah)` | `String` | Menggabungkan elemen barisan menjadi satu teks (Join). |
+| Ganti Teks | `okikae(teks, cari, ganti)` | `oki(teks, cari, ganti)` | `sulapKata(teks, cari, ganti)` | `akuntumbal(teks, cari, ganti)` | `String` | Mengganti seluruh kemunculan substring dalam teks (Replace). |
+| Pangkas Spasi | `kiri(teks)` | `kri(teks)` | `pangkas(teks)` | `cukurfade(teks)` | `String` | Menghapus spasi di awal dan akhir teks (Trim). |
+| Cek Elemen | `fukumu(koleksi, item)` | `fuku(koleksi, item)` | `punyaGak(koleksi, item)` | `monyetijo(koleksi, item)` | `Boolean` | Memeriksa apakah elemen ada dalam barisan atau teks (Includes). |
+| Urutkan Barisan | `narabikae(arr, fn?)` | `nara(arr, fn?)` | `rapihin(arr, fn?)` | `goyangpantat(arr, fn?)` | `Array` | Mengurutkan elemen barisan (Sort default ascending atau via fungsi). |
+| Irisan Koleksi | `kirinuki(arr, awal, akhir?)` | `kinu(arr, awal, akhir?)` | `potongSebagian(arr, awal, akhir?)` | `pedangdaging(arr, awal, akhir?)` | `Array/String` | Mengambil irisan barisan atau teks berdasarkan indeks (Slice). |
+| Undian Gacha | `gacha(daftar, bobot?)` | `gac(daftar, bobot?)` | `tarikGacha(daftar, bobot?)` | `weeklypass(daftar, bobot?)` | `RuntimeValue` | Mengundi item secara seragam atau probabilistik berbobot (Gacha RNG). |
 
 > **Catatan:** Nama-nama di atas merupakan nama permukaan masing-masing dialek. Implementasi runtime tetap menggunakan satu fungsi internal untuk setiap kemampuan.
 
@@ -192,7 +192,7 @@ bacotAmba("Panjang nama: " + panjang);
 ```javascript
 pokmipokmi nama = "Sora";
 cawapresin("Halo " + nama);
-pokmipokmi panjang = cekUkuran(nama);
+pokmipokmi panjang = panjangberurat(nama);
 cawapresin("Panjang nama: " + panjang);
 ```
 
@@ -345,7 +345,7 @@ npx wibu convert contoh.wibu --to rongawi -o rongawi.wibu
   - Jepang Murni: `shougo (diskriminan) { baai nilai: { ... } hyoujun: { ... } }`.
   - Jepang Singkat (Singkatan Otentik): `sho (diskriminan) { baa nilai: { ... } hyo: { ... } }` (`shougo` -> `sho`, `baai` -> `baa`, `hyoujun` -> `hyo`).
   - Wibu Absurd: `cocokkan (diskriminan) { kaloPas nilai: { ... } sisaan: { ... } }`.
-  - Meme Rongawi: `cekKhodam (diskriminan) { pas nilai: { ... } zonk: { ... } }`.
+  - Meme Rongawi: `persimpangan (diskriminan) { kenaben nilai: { ... } yappingtolol: { ... } }`.
   - Fleksibilitas Eksekusi: Berfungsi sebagai pernyataan blok maupun sebagai ekspresi pencocokan pola (*match expression*).
 - **Destructuring & Spread Operator (`...`)**:
   - Array Destructuring: Deklarasi variabel `kore [a, b, ...sisa] = [...]` dan penugasan pertukaran nilai (*variable swapping*) `[a, b] = [b, a]`.
@@ -359,15 +359,15 @@ npx wibu convert contoh.wibu --to rongawi -o rongawi.wibu
 
 ### v1.7.0 (Upgrade Phase 2: OOP & Module System)
 - **Pemrograman Berorientasi Objek (OOP)**:
-  - Deklarasi Kelas/Sekte: `sekte` (Murni) / `sek` (Singkat) / `paguyuban` (Wibu) / `ormas` (Rongawi).
-  - Metode Konstruktor: `tanjou` (Murni) / `tan` (Singkat) / `lahiran` (Wibu) / `spawn` (Rongawi).
-  - Instansiasi Objek: `atarashii` (Murni) / `ata` (Singkat) / `bikinBaru` (Wibu) / `rekrut` (Rongawi).
-  - Pewarisan Kelas: `keishou` (Murni) / `kei` (Singkat) / `turunanDari` (Wibu) / `jalurOrdal` (Rongawi).
-  - Referensi Diri (This): `jibun` (Murni) / `ji` (Singkat) / `siAing` (Wibu) / `siSaya` (Rongawi) untuk pembacaan dan penugasan properti instansi.
+  - Deklarasi Kelas/Sekte: `sekte` (Murni) / `sek` (Singkat) / `paguyuban` (Wibu) / `sektejomok` (Rongawi).
+  - Metode Konstruktor: `tanjou` (Murni) / `tan` (Singkat) / `lahiran` (Wibu) / `ambatunat` (Rongawi).
+  - Instansiasi Objek: `atarashii` (Murni) / `ata` (Singkat) / `bikinBaru` (Wibu) / `ambatumbas` (Rongawi).
+  - Pewarisan Kelas: `keishou` (Murni) / `kei` (Singkat) / `turunanDari` (Wibu) / `jalurhukum` (Rongawi).
+  - Referensi Diri (This): `jibun` (Murni) / `ji` (Singkat) / `siAing` (Wibu) / `lanangmas` (Rongawi) untuk pembacaan dan penugasan properti instansi.
 - **Sistem Modul Asli (Export & Import)**:
-  - Ekspor Simbol: `koukai` (Murni) / `kou` (Singkat) / `sebarJutsu` (Wibu) / `spill` (Rongawi).
-  - Impor Modul: `toriyoseru` (Murni) / `tori` (Singkat) / `summonJutsu` (Wibu) / `culik` (Rongawi).
-  - Partikel Asal Modul: `kara` (Murni) / `kra` (Singkat) / `dari` (Wibu) / `lapak` (Rongawi).
+  - Ekspor Simbol: `koukai` (Murni) / `kou` (Singkat) / `sebarJutsu` (Wibu) / `umpansilang` (Rongawi).
+  - Impor Modul: `toriyoseru` (Murni) / `tori` (Singkat) / `summonJutsu` (Wibu) / `begalbaju` (Rongawi).
+  - Partikel Asal Modul: `kara` (Murni) / `kra` (Singkat) / `dari` (Wibu) / `ngawiland` (Rongawi).
   - Registry Virtual Modul untuk keamanan eksekusi di lingkungan Web Browser dan Playground.
 - **Shorthand Jepang Otentik**: Menegakkan singkatan suku kata bahasa Jepang otentik untuk seluruh kata kunci singkatan baru (`sek`, `tan`, `ata`, `kei`, `ji`, `kou`, `tori`, `kra`).
 - **Tooling & Transpiler ES2022**:
@@ -376,7 +376,7 @@ npx wibu convert contoh.wibu --to rongawi -o rongawi.wibu
   - Kartu panduan cepat dan preset baru pada Web Playground.
 
 ### v1.6.0
-- **Perulangan Iterasi Koleksi (For-In / For-Each)**: Dukungan perulangan langsung melintasi elemen array, karakter string, dan kunci objek menggunakan 4 dialek: `subete (item no koleksi)` (Murni), `sube (item no koleksi)` (Singkat), `sikatSemua (item dari koleksi)` (Wibu), dan `ratakan (item didalam koleksi)` (Rongawi). Dilengkapi dukungan penuh `yame` (break) dan `tsugi` (continue).
+- **Perulangan Iterasi Koleksi (For-In / For-Each)**: Dukungan perulangan langsung melintasi elemen array, karakter string, dan kunci objek menggunakan 4 dialek: `subete (item no koleksi)` (Murni), `sube (item no koleksi)` (Singkat), `sikatSemua (item dari koleksi)` (Wibu), dan `thugshaker (item alasdaun koleksi)` (Rongawi). Dilengkapi dukungan penuh `yame` (break) dan `tsugi` (continue).
 - **Fungsi Sebaris Lambda / Arrow (=>)**: Dukungan penulisan ekspresi fungsi ringkas kelas satu `(x, y) => x + y`, `x => x * x`, `() => nilai`, dan bentuk blok `(x) => { ... }`. Dapat dipanggil secara instan (IIFE) atau disalurkan langsung sebagai callback pada metode tingkat tinggi (`utsusu`, `erabu`, `mitsukeru`).
 - **Ekspansi Pustaka Standar (Manipulasi Teks, Barisan & Gacha)**:
   - Manipulasi String: `bunri` (split teks), `tsunagu` (join array), `okikae` (replace substring), `kiri` (trim spasi).

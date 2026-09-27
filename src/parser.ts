@@ -357,7 +357,7 @@ export class Parser {
 
     this.expect(
       TokenType.In,
-      "Diharapkan kata penghubung koleksi ('no', 'dari', atau 'didalam') setelah nama variabel."
+      "Diharapkan kata penghubung koleksi ('no', 'dari', atau 'alasdaun') setelah nama variabel."
     );
 
     const collection = this.parseExpression();
@@ -675,12 +675,12 @@ export class Parser {
       this.expect(TokenType.CloseBrace, "Diharapkan '}' setelah daftar pengenal impor.");
     }
 
-    // Partikel asal modul: 'kara' / 'kra' / 'dari' / 'lapak'
+    // Partikel asal modul: 'kara' / 'kra' / 'dari' / 'ngawiland'
     if (this.at().type === TokenType.From || this.at().type === TokenType.In) {
       this.advance();
     } else {
       throw new Error(
-        `[Parser Error] Diharapkan kata kunci asal modul ('kara', 'kra', 'dari', atau 'lapak') pada baris ${this.at().line}, kolom ${this.at().column}.`
+        `[Parser Error] Diharapkan kata kunci asal modul ('kara', 'kra', 'dari', atau 'ngawiland') pada baris ${this.at().line}, kolom ${this.at().column}.`
       );
     }
 
@@ -1360,7 +1360,7 @@ export class Parser {
    * Pencocokan pola: shougo (diskriminan) { baai nilai: { ... } hyoujun: { ... } }
    */
   private parseMatchStatement(): MatchStatement {
-    this.advance(); // Konsumsi 'shougo' / 'sho' / 'cocokkan' / 'cekKhodam'
+    this.advance(); // Konsumsi 'shougo' / 'sho' / 'cocokkan' / 'persimpangan'
 
     let hasParen = false;
     if (this.at().type === TokenType.OpenParen) {
@@ -1391,7 +1391,7 @@ export class Parser {
       }
 
       if (this.at().type === TokenType.Case) {
-        this.advance(); // Konsumsi 'baai' / 'baa' / 'kaloPas' / 'pas'
+        this.advance(); // Konsumsi 'baai' / 'baa' / 'kaloPas' / 'kenaben'
         const caseValue = this.parseExpression();
         this.expect(
           TokenType.Colon,
@@ -1403,7 +1403,7 @@ export class Parser {
           body,
         });
       } else if (this.at().type === TokenType.Default) {
-        this.advance(); // Konsumsi 'hyoujun' / 'hyo' / 'sisaan' / 'zonk'
+        this.advance(); // Konsumsi 'hyoujun' / 'hyo' / 'sisaan' / 'yappingtolol'
         this.expect(
           TokenType.Colon,
           "Diharapkan tanda titik dua ':' setelah kata kunci hyoujun/default."

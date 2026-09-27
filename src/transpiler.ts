@@ -107,6 +107,7 @@ const STDLIB_MAP: Record<string, string> = {
   ret: "((...args) => args)",
   bikinBarisan: "((...args) => args)",
   kumpulinBocah: "((...args) => args)",
+  budakhitam: "((...args) => args)",
   kumpulinJawa: "((...args) => args)",
 };
 
@@ -581,62 +582,62 @@ export class Transpiler {
           return `__erabu(${arr}, ${fn})`;
         }
 
-        if (["mitsukeru", "mitu", "cariinBanh", "golekLur", "ciduk"].includes(calleeName)) {
+        if (["mitsukeru", "mitu", "cariinBanh", "golekLur", "ciduk", "fesnuker"].includes(calleeName)) {
           const arr = this.transpileExpression(call.args[0]!);
           const fn = this.transpileExpression(call.args[1]!);
           return `__mitsukeru(${arr}, ${fn})`;
         }
 
-        if (["bunri", "bu", "pecahKata", "bedahno", "pecahin"].includes(calleeName)) {
+        if (["bunri", "bu", "pecahKata", "bedahno", "pecahin", "pecahkepala"].includes(calleeName)) {
           const str = this.transpileExpression(call.args[0]!);
           const sep = call.args[1] ? this.transpileExpression(call.args[1]) : "''";
           return `__bunri(${str}, ${sep})`;
         }
 
-        if (["tsunagu", "tsuna", "lemKata", "gandengen", "lemin"].includes(calleeName)) {
+        if (["tsunagu", "tsuna", "lemKata", "gandengen", "lemin", "lendirmurni"].includes(calleeName)) {
           const arr = this.transpileExpression(call.args[0]!);
           const sep = call.args[1] ? this.transpileExpression(call.args[1]) : "''";
           return `__tsunagu(${arr}, ${sep})`;
         }
 
-        if (["okikae", "oki", "sulapKata", "gantinen", "tumbalkan"].includes(calleeName)) {
+        if (["okikae", "oki", "sulapKata", "gantinen", "tumbalkan", "akuntumbal"].includes(calleeName)) {
           const str = this.transpileExpression(call.args[0]!);
           const from = this.transpileExpression(call.args[1]!);
           const to = this.transpileExpression(call.args[2]!);
           return `__okikae(${str}, ${from}, ${to})`;
         }
 
-        if (["kiri", "kri", "pangkas", "potongen", "cukur"].includes(calleeName)) {
+        if (["kiri", "kri", "pangkas", "potongen", "cukur", "cukurfade"].includes(calleeName)) {
           const str = this.transpileExpression(call.args[0]!);
           return `__kiri(${str})`;
         }
 
-        if (["fukumu", "fuku", "punyaGak", "onora", "adaGak"].includes(calleeName)) {
+        if (["fukumu", "fuku", "punyaGak", "onora", "adaGak", "monyetijo"].includes(calleeName)) {
           const target = this.transpileExpression(call.args[0]!);
           const item = this.transpileExpression(call.args[1]!);
           return `__fukumu(${target}, ${item})`;
         }
 
-        if (["narabikae", "nara", "rapihin", "urutno", "barisin"].includes(calleeName)) {
+        if (["narabikae", "nara", "rapihin", "urutno", "barisin", "goyangpantat"].includes(calleeName)) {
           const arr = this.transpileExpression(call.args[0]!);
           const comp = call.args[1] ? this.transpileExpression(call.args[1]) : "null";
           return `__narabikae(${arr}, ${comp})`;
         }
 
-        if (["kirinuki", "kinu", "potongSebagian", "cuplikno", "comot"].includes(calleeName)) {
+        if (["kirinuki", "kinu", "potongSebagian", "cuplikno", "comot", "pedangdaging"].includes(calleeName)) {
           const target = this.transpileExpression(call.args[0]!);
           const start = this.transpileExpression(call.args[1]!);
           const end = call.args[2] ? this.transpileExpression(call.args[2]) : "undefined";
           return `__kirinuki(${target}, ${start}, ${end})`;
         }
 
-        if (["gacha", "gac", "tarikGacha", "mputerNasib", "spinZeus"].includes(calleeName)) {
+        if (["gacha", "gac", "tarikGacha", "mputerNasib", "spinZeus", "weeklypass"].includes(calleeName)) {
           const items = this.transpileExpression(call.args[0]!);
           const weights = call.args[1] ? this.transpileExpression(call.args[1]) : "undefined";
           return `__gacha(${items}, ${weights})`;
         }
 
-        if (["nagasa", "naga", "seginiDoang", "itungPanjangLur", "tolongCekNagasa", "cekUkuran"].includes(calleeName)) {
+        if (["nagasa", "naga", "seginiDoang", "itungPanjangLur", "tolongCekNagasa", "cekUkuran", "panjangberurat"].includes(calleeName)) {
           const arg = this.transpileExpression(call.args[0]!);
           return `__nagasa(${arg})`;
         }

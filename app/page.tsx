@@ -112,11 +112,11 @@ kore shuriken = atarashii Senjata("Shuriken Bayangan")
 mite(shuriken.lempar())
 
 mite("\\n=== PENDEFINISIAN SEKTE & PEWARISAN ===")
-// Deklarasi Sekte/Kelas: sekte (Murni) / sek (Singkat) / paguyuban (Wibu) / ormas (Rongawi)
+// Deklarasi Sekte/Kelas: sekte (Murni) / sek (Singkat) / paguyuban (Wibu) / sektejomok (Rongawi)
 sekte Pendekar {
-  // Konstruktor: tanjou / tan / lahiran / spawn
+  // Konstruktor: tanjou / tan / lahiran / ambatunat
   tanjou(nama, klan) {
-    // Referensi Diri: jibun / ji / siAing / siSaya
+    // Referensi Diri: jibun / ji / siAing / lanangmas
     jibun.nama = nama
     jibun.klan = klan
     jibun.tenaga = 100
@@ -127,7 +127,7 @@ sekte Pendekar {
   }
 }
 
-// Pewarisan: keishou / kei / turunanDari / jalurOrdal
+// Pewarisan: keishou / kei / turunanDari / jalurhukum
 sekte PendekarApi keishou Pendekar {
   jurusApi() {
     jibun.tenaga = jibun.tenaga - 20
@@ -135,7 +135,7 @@ sekte PendekarApi keishou Pendekar {
   }
 }
 
-// Instansiasi Baru: atarashii / ata / bikinBaru / rekrut
+// Instansiasi Baru: atarashii / ata / bikinBaru / ambatumbas
 kore sasuke = atarashii PendekarApi("Sasuke", "Uchiha")
 mite(sasuke.status())
 sasuke.jurusApi()
@@ -314,7 +314,7 @@ kore { nama, klan: marga } = { nama: "Itachi", klan: "Uchiha" }
 // Murni:   shougo (x) { baai 1: { ... } hyoujun: { ... } }
 // Singkat: sho (x) { baa 1: { ... } hyo: { ... } }
 // Wibu:    cocokkan (x) { kaloPas 1: { ... } sisaan: { ... } }
-// Rongawi: cekKhodam (x) { pas 1: { ... } zonk: { ... } }
+// Rongawi: persimpangan (x) { kenaben 1: { ... } yappingtolol: { ... } }
 shougo (a) {
   baai 20: { mite("Dua puluh!") }
   hyoujun: { mite("Lainnya") }
@@ -340,7 +340,7 @@ n.salam()
 
 // 2. Singkat: sek, tan, ata, kei, ji
 // 3. Wibu: paguyuban, lahiran, bikinBaru, turunanDari, siAing
-// 4. Rongawi: ormas, spawn, rekrut, jalurOrdal, siSaya`,
+// 4. Rongawi: sektejomok, ambatunat, ambatumbas, jalurhukum, lanangmas`,
   },
   {
     id: "modules",
@@ -349,7 +349,7 @@ n.salam()
     icon: FileCode,
     description: "Ekspor (koukai) dan Impor (toriyoseru ... kara) kode antar modul.",
     codeSnippet: `// 1. Ekspor simbol (4 Dialek):
-// koukai | kou | sebarJutsu | spill
+// koukai | kou | sebarJutsu | umpansilang
 koukai jutsu tambah(a, b) { kaesu a + b; }
 koukai { item1, SekteBaru }
 
@@ -357,7 +357,7 @@ koukai { item1, SekteBaru }
 // toriyoseru { ... } kara "..."
 // tori { ... } kra "..."
 // summonJutsu { ... } dari "..."
-// culik { ... } lapak "..."
+// begalbaju { ... } ngawiland "..."
 toriyoseru { jurusBayangan } kara "./ninja.wibu"
 mite(jurusBayangan(3))`,
   },
@@ -423,7 +423,7 @@ kore huruf = "Wibu"[0]`,
 // Murni: subete (x no list)
 // Singkat: sube (x no list)
 // Wibu: sikatSemua (x dari list)
-// Rongawi: ratakan (x didalam list)
+// Rongawi: thugshaker (x alasdaun list)
 kore tim = ["Megumin", "Aqua", "Kazuma"]
 subete (hero no tim) {
   mite("Karakter: " + hero)
@@ -564,13 +564,13 @@ function handleEditorWillMount(monaco: Monaco): void {
       "matte", "mat", "sabarBanh", "admindatang",
       "kokoromi", "koko", "cobaDuluBanh", "gasTesLur",
       "yurusu", "yuru", "santaiAja", "amanBos",
-      "subete", "sube", "sikatSemua", "ratakan",
-      "no", "dari", "didalam",
-      "toriyoseru", "tori", "summonJutsu", "culik",
-      "kara", "kra", "lapak", "koukai", "kou", "sebarJutsu", "spill",
-      "shougo", "sho", "cocokkan", "cekKhodam",
-      "baai", "baa", "kaloPas", "pas",
-      "hyoujun", "hyo", "sisaan", "zonk",
+      "subete", "sube", "sikatSemua", "thugshaker",
+      "no", "dari", "alasdaun",
+      "toriyoseru", "tori", "summonJutsu", "begalbaju",
+      "kara", "kra", "ngawiland", "koukai", "kou", "sebarJutsu", "umpansilang",
+      "shougo", "sho", "cocokkan", "persimpangan",
+      "baai", "baa", "kaloPas", "kenaben",
+      "hyoujun", "hyo", "sisaan", "yappingtolol",
     ],
 
     // Kata kunci deklarasi & subrutin (4 Dialek Mutlak)
@@ -579,11 +579,11 @@ function handleEditorWillMount(monaco: Monaco): void {
       "zettai", "ze", "hargaMati", "bundarahma",
       "jutsu", "ju", "mybini", "fufufafa",
       "kaesu", "kae", "kasihPaham", "kandabahlil",
-      "sekte", "sek", "paguyuban", "ormas",
-      "tanjou", "tan", "lahiran", "spawn",
-      "atarashii", "ata", "bikinBaru", "rekrut",
-      "keishou", "kei", "turunanDari", "jalurOrdal",
-      "jibun", "ji", "siAing", "siSaya",
+      "sekte", "sek", "paguyuban", "sektejomok",
+      "tanjou", "tan", "lahiran", "ambatunat",
+      "atarashii", "ata", "bikinBaru", "ambatumbas",
+      "keishou", "kei", "turunanDari", "jalurhukum",
+      "jibun", "ji", "siAing", "lanangmas",
     ],
 
     // Fungsi pendukung dan pustaka standar
@@ -592,7 +592,7 @@ function handleEditorWillMount(monaco: Monaco): void {
       "kuchiMite", "km", "bacotAmba", "cawapresin",
       "shibaraku", "siba", "santuyDulu", "nungguinLu",
       "imaJikan", "ima", "jamBerapaBanh", "cekJamLur",
-      "nagasa", "naga", "seginiDoang", "cekUkuran",
+      "nagasa", "naga", "seginiDoang", "panjangberurat",
       "suji", "suj", "jadiAngkaBanh", "ubahJadiDuit",
       "shurui", "shu", "iniApaan", "bendaApaanLur",
       "beki", "bek", "angkatin", "naikinPangkat",
@@ -604,7 +604,7 @@ function handleEditorWillMount(monaco: Monaco): void {
       "chiisaku", "chii", "bikinKecil", "kecilinLur",
       "randamu", "ran", "acakBanh", "kocokLur",
       "shikei", "shi", "matiinProgram", "udahKelarinAja",
-      "retsu", "ret", "bikinBarisan", "kumpulinBocah",
+      "retsu", "ret", "bikinBarisan", "budakhitam",
       "yomu", "yo", "bacainBerkas", "bukaBerkasLur",
       "kaku", "ka", "tulisinBerkas", "coretBerkasLur",
       "yobu", "yoB", "panggilBerkas", "sikatBanh",
@@ -613,19 +613,19 @@ function handleEditorWillMount(monaco: Monaco): void {
       "kanjiMojiretsu", "kmj", "jadiTeksBanh", "bungkusJsonLur",
       "utsusu", "utu", "petainBanh", "petainLur",
       "erabu", "era", "saringBanh", "saringLur",
-      "mitsukeru", "mitu", "cariinBanh", "ciduk",
+      "mitsukeru", "mitu", "cariinBanh", "fesnuker",
       "ruuto", "ru", "akarPangkat", "akarLur",
       "zettaichi", "zet", "mutlakBanh", "mutlakLur",
       "kiriSute", "ks", "bawahinBanh", "bawahLur",
       "kiriAge", "kia", "atasinBanh", "atasLur",
-      "bunri", "bu", "pecahKata", "pecahin",
-      "tsunagu", "tsuna", "lemKata", "lemin",
-      "okikae", "oki", "sulapKata", "tumbalkan",
-      "kiri", "kri", "pangkas", "cukur",
-      "fukumu", "fuku", "punyaGak", "adaGak",
-      "narabikae", "nara", "rapihin", "barisin",
-      "kirinuki", "kinu", "potongSebagian", "comot",
-      "gacha", "gac", "tarikGacha", "spinZeus",
+      "bunri", "bu", "pecahKata", "pecahkepala",
+      "tsunagu", "tsuna", "lemKata", "lendirmurni",
+      "okikae", "oki", "sulapKata", "akuntumbal",
+      "kiri", "kri", "pangkas", "cukurfade",
+      "fukumu", "fuku", "punyaGak", "monyetijo",
+      "narabikae", "nara", "rapihin", "goyangpantat",
+      "kirinuki", "kinu", "potongSebagian", "pedangdaging",
+      "gacha", "gac", "tarikGacha", "weeklypass",
     ],
 
     // Konstanta bahasa (4 Dialek Mutlak)

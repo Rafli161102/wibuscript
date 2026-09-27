@@ -106,7 +106,7 @@
       "patterns": [
         {
           "name": "keyword.control",
-          "match": "\\b(moshi|mo|whenYh|izintampil|soretomo|sore|kaloGakGitu|wowok|hoka|ho|yaudahlahYa|woijawa|zutto|zu|gasSampePagi|nyawit|yame|ya|ampunSepuh|bijisatu|tsugi|tsu|lanjutPart2|ambatukam|matte|mat|sabarBanh|admindatang|kokoromi|koko|cobaDuluBanh|gasTesLur|yurusu|yuru|santaiAja|amanBos|subete|sube|sikatSemua|ratakan|no|dari|didalam|toriyoseru|tori|summonJutsu|culik|kara|kra|lapak|koukai|kou|sebarJutsu|spill|shougo|sho|cocokkan|cekKhodam|baai|baa|kaloPas|pas|hyoujun|hyo|sisaan|zonk)\\b"
+          "match": "\\b(moshi|mo|whenYh|izintampil|soretomo|sore|kaloGakGitu|wowok|hoka|ho|yaudahlahYa|woijawa|zutto|zu|gasSampePagi|nyawit|yame|ya|ampunSepuh|bijisatu|tsugi|tsu|lanjutPart2|ambatukam|matte|mat|sabarBanh|admindatang|kokoromi|koko|cobaDuluBanh|gasTesLur|yurusu|yuru|santaiAja|amanBos|subete|sube|sikatSemua|thugshaker|no|dari|alasdaun|toriyoseru|tori|summonJutsu|begalbaju|kara|kra|ngawiland|koukai|kou|sebarJutsu|umpansilang|shougo|sho|cocokkan|persimpangan|baai|baa|kaloPas|kenaben|hyoujun|hyo|sisaan|yappingtolol)\\b"
         }
       ]
     },
@@ -114,7 +114,7 @@
       "patterns": [
         {
           "name": "keyword.declaration",
-          "match": "\\b(kore|ko|siImut|pokmipokmi|zettai|ze|hargaMati|bundarahma|jutsu|ju|mybini|fufufafa|kaesu|kae|kasihPaham|kandabahlil|sekte|sek|paguyuban|ormas|tanjou|tan|lahiran|spawn|atarashii|ata|bikinBaru|rekrut|keishou|kei|turunanDari|jalurOrdal|jibun|ji|siAing|siSaya)\\b"
+          "match": "\\b(kore|ko|siImut|pokmipokmi|zettai|ze|hargaMati|bundarahma|jutsu|ju|mybini|fufufafa|kaesu|kae|kasihPaham|kandabahlil|sekte|sek|paguyuban|sektejomok|tanjou|tan|lahiran|ambatunat|atarashii|ata|bikinBaru|ambatumbas|keishou|kei|turunanDari|jalurhukum|jibun|ji|siAing|lanangmas)\\b"
         }
       ]
     },
@@ -122,7 +122,7 @@
       "patterns": [
         {
           "name": "support.function",
-          "match": "\\b(mite|mi|teriakAmba|salamkenal|kuchiMite|km|bacotAmba|cawapresin|shibaraku|siba|santuyDulu|nungguinLu|imaJikan|ima|jamBerapaBanh|cekJamLur|nagasa|naga|seginiDoang|cekUkuran|suji|suj|jadiAngkaBanh|ubahJadiDuit|shurui|shu|iniApaan|bendaApaanLur|beki|bek|angkatin|naikinPangkat|marume|maru|buletinBanh|ratainLur|ireta|ire|masukinSini|masukPakEko|toru|to|buangAja|singkirkanLur|kiru|ki|potongBanh|gorokLur|ookiku|ooki|bikinGede|gedeinLur|chiisaku|chii|bikinKecil|kecilinLur|randamu|ran|acakBanh|kocokLur|shikei|shi|matiinProgram|udahKelarinAja|retsu|ret|bikinBarisan|kumpulinBocah|yomu|yo|bacainBerkas|bukaBerkasLur|kaku|ka|tulisinBerkas|coretBerkasLur|yobu|yoB|panggilBerkas|sikatBanh|ukeru|uke|ambilDataBanh|SepongMas|kanjiNi|kn|jadiObjekBanh|uraiJsonLur|kanjiMojiretsu|kmj|jadiTeksBanh|bungkusJsonLur|utsusu|utu|petainBanh|petainLur|erabu|era|saringBanh|saringLur|mitsukeru|mitu|cariinBanh|ciduk|ruuto|ru|akarPangkat|akarLur|zettaichi|zet|mutlakBanh|mutlakLur|kiriSute|ks|bawahinBanh|bawahLur|kiriAge|kia|atasinBanh|atasLur|bunri|bu|pecahKata|pecahin|tsunagu|tsuna|lemKata|lemin|okikae|oki|sulapKata|tumbalkan|kiri|kri|pangkas|cukur|fukumu|fuku|punyaGak|adaGak|narabikae|nara|rapihin|barisin|kirinuki|kinu|potongSebagian|comot|gacha|gac|tarikGacha|spinZeus)\\b"
+          "match": "\\b(mite|mi|teriakAmba|salamkenal|kuchiMite|km|bacotAmba|cawapresin|shibaraku|siba|santuyDulu|nungguinLu|imaJikan|ima|jamBerapaBanh|cekJamLur|nagasa|naga|seginiDoang|panjangberurat|suji|suj|jadiAngkaBanh|ubahJadiDuit|shurui|shu|iniApaan|bendaApaanLur|beki|bek|angkatin|naikinPangkat|marume|maru|buletinBanh|ratainLur|ireta|ire|masukinSini|masukPakEko|toru|to|buangAja|singkirkanLur|kiru|ki|potongBanh|gorokLur|ookiku|ooki|bikinGede|gedeinLur|chiisaku|chii|bikinKecil|kecilinLur|randamu|ran|acakBanh|kocokLur|shikei|shi|matiinProgram|udahKelarinAja|retsu|ret|bikinBarisan|budakhitam|yomu|yo|bacainBerkas|bukaBerkasLur|kaku|ka|tulisinBerkas|coretBerkasLur|yobu|yoB|panggilBerkas|sikatBanh|ukeru|uke|ambilDataBanh|SepongMas|kanjiNi|kn|jadiObjekBanh|uraiJsonLur|kanjiMojiretsu|kmj|jadiTeksBanh|bungkusJsonLur|utsusu|utu|petainBanh|petainLur|erabu|era|saringBanh|saringLur|mitsukeru|mitu|cariinBanh|fesnuker|ruuto|ru|akarPangkat|akarLur|zettaichi|zet|mutlakBanh|mutlakLur|kiriSute|ks|bawahinBanh|bawahLur|kiriAge|kia|atasinBanh|atasLur|bunri|bu|pecahKata|pecahkepala|tsunagu|tsuna|lemKata|lendirmurni|okikae|oki|sulapKata|akuntumbal|kiri|kri|pangkas|cukurfade|fukumu|fuku|punyaGak|monyetijo|narabikae|nara|rapihin|goyangpantat|kirinuki|kinu|potongSebagian|pedangdaging|gacha|gac|tarikGacha|weeklypass)\\b"
         }
       ]
     },

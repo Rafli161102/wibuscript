@@ -143,24 +143,24 @@ describe("WibuScript v1.7.0 - Phase 2: OOP & Module System", () => {
       expect(result.outputLog).toEqual(["Keren nih: Megumin"]);
     });
 
-    it("dapat mengeksekusi ormas, spawn, rekrut, siSaya, jalurOrdal (Meme Rongawi)", async () => {
+    it("dapat mengeksekusi sektejomok, ambatunat, ambatumbas, lanangmas, jalurhukum (Meme Rongawi)", async () => {
       const code = `
-        ormas WargaMeme {
-          spawn(asal) {
-            siSaya.asal = asal
+        sektejomok WargaMeme {
+          ambatunat(asal) {
+            lanangmas.asal = asal
           }
           sapa() {
-            salamkenal("Asal: " + siSaya.asal)
+            salamkenal("Asal: " + lanangmas.asal)
           }
         }
 
-        ormas Pendekar jalurOrdal WargaMeme {
+        sektejomok Pendekar jalurhukum WargaMeme {
           jurus() {
-            salamkenal("Gebugan maut dari " + siSaya.asal)
+            salamkenal("Gebugan maut dari " + lanangmas.asal)
           }
         }
 
-        pokmipokmi p = rekrut Pendekar("Solo")
+        pokmipokmi p = ambatumbas Pendekar("Solo")
         p.sapa()
         p.jurus()
       `;
@@ -248,18 +248,18 @@ describe("WibuScript v1.7.0 - Phase 2: OOP & Module System", () => {
       expect(result.outputLog).toEqual(["Halo Otaku!"]);
     });
 
-    it("dapat mengekspor dan mengimpor dengan dialek Rongawi (spill, culik, lapak)", async () => {
+    it("dapat mengekspor dan mengimpor dengan dialek Rongawi (umpansilang, begalbaju, ngawiland)", async () => {
       registerVirtualModule(
         "./rongawi_mod.wibu",
         `
-          spill fufufafa tambah(a, b) {
+          umpansilang fufufafa tambah(a, b) {
             kandabahlil a + b
           }
         `
       );
 
       const mainCode = `
-        culik { tambah } lapak "./rongawi_mod.wibu"
+        begalbaju { tambah } ngawiland "./rongawi_mod.wibu"
         salamkenal(tambah(10, 20))
       `;
 
@@ -329,11 +329,11 @@ describe("WibuScript v1.7.0 - Phase 2: OOP & Module System", () => {
       expect(wibu).toContain('summonJutsu { Katana } dari "./senjata.wibu"');
 
       const rongawi = convertDialect(source, "rongawi");
-      expect(rongawi).toContain("ormas Ninja");
-      expect(rongawi).toContain("spawn(n)");
-      expect(rongawi).toContain("siSaya.n = n");
-      expect(rongawi).toContain("spill { Ninja }");
-      expect(rongawi).toContain('culik { Katana } lapak "./senjata.wibu"');
+      expect(rongawi).toContain("sektejomok Ninja");
+      expect(rongawi).toContain("ambatunat(n)");
+      expect(rongawi).toContain("lanangmas.n = n");
+      expect(rongawi).toContain("umpansilang { Ninja }");
+      expect(rongawi).toContain('begalbaju { Katana } ngawiland "./senjata.wibu"');
     });
   });
 

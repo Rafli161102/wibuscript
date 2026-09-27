@@ -523,6 +523,7 @@ export function createGlobalEnvironment(
   env.declareVar("seginiDoang", panjangFn);
   env.declareVar("itungPanjangLur", panjangFn);
   env.declareVar("cekUkuran", panjangFn);
+  env.declareVar("panjangberurat", panjangFn);
 
   // 5. Konversi Angka: suji (Murni) / suj (Singkat) / jadiAngkaBanh (Wibu) / ubahJadiDuit (Rongawi)
   const ubahAngkaFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
@@ -772,6 +773,7 @@ export function createGlobalEnvironment(
   env.declareVar("kocokAngka", gachaFn);
   env.declareVar("mputerNasib", gachaFn);
   env.declareVar("spinZeus", gachaFn);
+  env.declareVar("weeklypass", gachaFn);
   env.declareVar("gachaPull", gachaFn);
 
   // 15. Force Panic / Throw Error: shikei (Murni) / shi (Singkat) / matiinProgram (Wibu) / udahKelarinAja (Rongawi)
@@ -799,6 +801,7 @@ export function createGlobalEnvironment(
   env.declareVar("bikinBarisan", retsuFn);
   env.declareVar("kumpulinJawa", retsuFn);
   env.declareVar("kumpulinBocah", retsuFn);
+  env.declareVar("budakhitam", retsuFn);
 
   // 17. Konstanta Bawaan
   env.declareVar("maji", MK_BOOL(true));
@@ -1095,6 +1098,7 @@ export function createGlobalEnvironment(
   env.declareVar("cariinBanh", findFn);
   env.declareVar("golekLur", findFn);
   env.declareVar("ciduk", findFn);
+  env.declareVar("fesnuker", findFn);
 
   // 24. Matematika Tingkat Lanjut:
   // Akar Kuadrat (SQRT): ruuto (Murni) / ru (Singkat) / akarPangkat (Wibu) / akarLur (Rongawi)
@@ -1166,6 +1170,7 @@ export function createGlobalEnvironment(
   env.declareVar("pecahKata", bunriFn);
   env.declareVar("bedahno", bunriFn);
   env.declareVar("pecahin", bunriFn);
+  env.declareVar("pecahkepala", bunriFn);
 
   // Gabung String: tsunagu (Murni) / tsuna (Singkat) / lemKata (Wibu) / gandengen (Rongawi)
   const tsunaguFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
@@ -1185,6 +1190,7 @@ export function createGlobalEnvironment(
   env.declareVar("lemKata", tsunaguFn);
   env.declareVar("gandengen", tsunaguFn);
   env.declareVar("lemin", tsunaguFn);
+  env.declareVar("lendirmurni", tsunaguFn);
 
   // Ganti Substring: okikae (Murni) / oki (Singkat) / sulapKata (Wibu) / gantinen (Rongawi)
   const okikaeFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
@@ -1211,6 +1217,7 @@ export function createGlobalEnvironment(
   env.declareVar("sulapKata", okikaeFn);
   env.declareVar("gantinen", okikaeFn);
   env.declareVar("tumbalkan", okikaeFn);
+  env.declareVar("akuntumbal", okikaeFn);
 
   // Pangkas Spasi: kiri (Murni) / kri (Singkat) / pangkas (Wibu) / potongen (Rongawi)
   const kiriFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
@@ -1225,6 +1232,7 @@ export function createGlobalEnvironment(
   env.declareVar("pangkas", kiriFn);
   env.declareVar("potongen", kiriFn);
   env.declareVar("cukur", kiriFn);
+  env.declareVar("cukurfade", kiriFn);
 
   // 26. Utilitas Koleksi & Array Tambahan:
   // Cek Keberadaan (Includes): fukumu (Murni) / fuku (Singkat) / punyaGak (Wibu) / onora (Rongawi)
@@ -1261,6 +1269,7 @@ export function createGlobalEnvironment(
   env.declareVar("punyaGak", fukumuFn);
   env.declareVar("onora", fukumuFn);
   env.declareVar("adaGak", fukumuFn);
+  env.declareVar("monyetijo", fukumuFn);
 
   // Urutkan Barisan (Sort): narabikae (Murni) / nara (Singkat) / rapihin (Wibu) / urutno (Rongawi)
   const narabikaeFn = MK_NATIVE_FN(
@@ -1305,6 +1314,7 @@ export function createGlobalEnvironment(
   env.declareVar("rapihin", narabikaeFn);
   env.declareVar("urutno", narabikaeFn);
   env.declareVar("barisin", narabikaeFn);
+  env.declareVar("goyangpantat", narabikaeFn);
 
   // Irisan Barisan / Teks (Slice): kirinuki (Murni) / kinu (Singkat) / potongSebagian (Wibu) / cuplikno (Rongawi)
   const kirinukiFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
@@ -1334,6 +1344,7 @@ export function createGlobalEnvironment(
   env.declareVar("potongSebagian", kirinukiFn);
   env.declareVar("cuplikno", kirinukiFn);
   env.declareVar("comot", kirinukiFn);
+  env.declareVar("pedangdaging", kirinukiFn);
 
   return env;
 }
@@ -2021,6 +2032,7 @@ async function evalMemberExpr(
             methodScope.declareVar("ji", inst);
             methodScope.declareVar("siAing", inst);
             methodScope.declareVar("siSaya", inst);
+            methodScope.declareVar("lanangmas", inst);
             methodScope.declareVar("awakku", inst);
             methodScope.declareVar("this", inst);
 
@@ -2346,6 +2358,7 @@ async function evalNewExpression(
     ctorScope.declareVar("ji", instance);
     ctorScope.declareVar("siAing", instance);
     ctorScope.declareVar("siSaya", instance);
+    ctorScope.declareVar("lanangmas", instance);
     ctorScope.declareVar("awakku", instance);
     ctorScope.declareVar("this", instance);
 

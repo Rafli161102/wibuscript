@@ -4,7 +4,7 @@
 // - Analisis & Perbaikan Bug: % modulo, string .nagasa, new tanpa kurung, semicolon
 // - Destructuring Array & Object (Deklarasi & Penugasan Swapping)
 // - Operator Spread & Rest (...)
-// - Pattern Matching (shougo) di 4 Dialek Mutlak (sho, cocokkan, cekKhodam)
+// - Pattern Matching (shougo) di 4 Dialek Mutlak (sho, cocokkan, persimpangan)
 // - Dialect Converter & JS Transpiler
 // ============================================================================
 
@@ -222,18 +222,18 @@ describe("WibuScript v1.8.0 - Pattern Matching (shougo) di 4 Dialek Mutlak", () 
     expect(out).toEqual(["Sisaan Wibu!"]);
   });
 
-  it("Dialek 4 (Meme Rongawi): cekKhodam, pas, zonk", async () => {
+  it("Dialek 4 (Meme Rongawi): persimpangan, kenaben, yappingtolol", async () => {
     const out: string[] = [];
     const code = `
       pokmipokmi pangkat = "Admin";
-      cekKhodam (pangkat) {
-        pas "Member": {
+      persimpangan (pangkat) {
+        kenaben "Member": {
           salamkenal("Member Baru");
         }
-        pas "Admin": {
+        kenaben "Admin": {
           salamkenal("Admin Datang!");
         }
-        zonk: {
+        yappingtolol: {
           salamkenal("Silent Reader");
         }
       }
@@ -277,9 +277,9 @@ describe("WibuScript v1.8.0 - Dialect Converter & Transpiler", () => {
     expect(wibu).toContain("sisaan:");
 
     const rongawi = convertDialect(wibu, "rongawi");
-    expect(rongawi).toContain("cekKhodam (x)");
-    expect(rongawi).toContain("pas 1:");
-    expect(rongawi).toContain("zonk:");
+    expect(rongawi).toContain("persimpangan (x)");
+    expect(rongawi).toContain("kenaben 1:");
+    expect(rongawi).toContain("yappingtolol:");
   });
 
   it("JS Transpiler: Menghasilkan kode JavaScript ES2022+ yang valid untuk destructuring & shougo", () => {
