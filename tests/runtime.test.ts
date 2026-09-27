@@ -22,27 +22,41 @@ async function runCode(code: string) {
 }
 
 describe("WibuScript Runtime & Evaluator Test Suite", () => {
-  describe("Deklarasi Variabel (koreWa vs kore)", () => {
-    it("harus mendukung deklarasi variabel menggunakan koreWa (Ekstensi)", async () => {
-      const result = (await runCode('koreWa nama = "Megumin"; nama;')) as StringValue;
-      expect(result.type).toBe("string");
-      expect(result.value).toBe("Megumin");
+  describe("Deklarasi Variabel (Sistem 4 Dialek Mutlak)", () => {
+    it("harus mendukung deklarasi variabel menggunakan 4 dialek (kore, ko, siImut, pokmipokmi)", async () => {
+      const resultMurni = (await runCode('kore nama = "Megumin"; nama;')) as StringValue;
+      expect(resultMurni.type).toBe("string");
+      expect(resultMurni.value).toBe("Megumin");
+
+      const resultSingkat = (await runCode("ko level = 99; level;")) as NumberValue;
+      expect(resultSingkat.type).toBe("number");
+      expect(resultSingkat.value).toBe(99);
+
+      const resultWibu = (await runCode('siImut waifu = "Aqua"; waifu;')) as StringValue;
+      expect(resultWibu.type).toBe("string");
+      expect(resultWibu.value).toBe("Aqua");
+
+      const resultRongawi = (await runCode("pokmipokmi saldo = 500; saldo;")) as NumberValue;
+      expect(resultRongawi.type).toBe("number");
+      expect(resultRongawi.value).toBe(500);
     });
 
-    it("harus mendukung deklarasi variabel menggunakan kore (Shorthand)", async () => {
-      const result = (await runCode("kore level = 99; level;")) as NumberValue;
-      expect(result.type).toBe("number");
-      expect(result.value).toBe(99);
-    });
+    it("harus mendukung nilai boolean (hontou / hon / menyalaAbkuh dan uso / ladehBanh)", async () => {
+      const resultHontou = (await runCode("kore aktif = hontou; aktif;")) as BooleanValue;
+      expect(resultHontou.type).toBe("boolean");
+      expect(resultHontou.value).toBe(true);
 
-    it("harus mendukung nilai boolean (maji / majiBener dan uso / usoBanget)", async () => {
-      const resultMaji = (await runCode("kore aktif = maji; aktif;")) as BooleanValue;
-      expect(resultMaji.type).toBe("boolean");
-      expect(resultMaji.value).toBe(true);
+      const resultHon = (await runCode("ko aktif = hon; aktif;")) as BooleanValue;
+      expect(resultHon.type).toBe("boolean");
+      expect(resultHon.value).toBe(true);
 
       const resultUso = (await runCode("kore aktif = uso; aktif;")) as BooleanValue;
       expect(resultUso.type).toBe("boolean");
       expect(resultUso.value).toBe(false);
+
+      const resultLadeh = (await runCode("siImut aktif = ladehBanh; aktif;")) as BooleanValue;
+      expect(resultLadeh.type).toBe("boolean");
+      expect(resultLadeh.value).toBe(false);
     });
   });
 

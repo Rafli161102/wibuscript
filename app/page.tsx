@@ -28,63 +28,64 @@ import {
 
 // Kumpulan template kode WibuScript bawaan
 const CODE_PRESETS: Record<string, string> = {
-  default: `// Program Demonstrasi WibuScript (Tema RPG / Isekai)
+  default: `// Program Demonstrasi WibuScript (Tema RPG / Isekai - 4 Dialek Mutlak)
 kore namaKsatria = "Ren"
-kore level = 99
-kore statusIsekai = majiBener
+zettai level = 99
+kore statusIsekai = hontou
 
-kasihMite("Memulai simulasi petualangan dunia baru...")
-tungguBentar(400)
+mite("Memulai petualangan di dunia baru...")
 
-moshi (statusIsekai == maji) {
+moshi (statusIsekai == hontou) {
   mite("Karakter petualang: " + namaKsatria)
   mite("Tingkat kekuatan awal: " + level)
-} chigau {
+} hoka {
   mite("Peringatan: Karakter belum terdaftar di guild!")
 }
 
-bikinJutsu kalkulasiDayaSerang(lvl) {
+jutsu kalkulasiDayaSerang(lvl) {
   moshi (lvl >= 50) {
-    balikinDesu lvl * 15
+    kaesu lvl * 15
   }
-  balikinDesu lvl * 5
+  kaesu lvl * 5
 }
 
 kore totalSerangan = kalkulasiDayaSerang(level)
-tungguBentar(300)
-kasihMite("Total daya serang kalkulasi: " + totalSerangan)
-kasihMite("Simulasi sistem petualangan selesai.")`,
+mite("Total daya serang kalkulasi: " + totalSerangan)
+mite("Simulasi sistem petualangan selesai.")`,
 
-  aliasDemo: `// Demonstrasi Sistem Alias (Versi Ekstensi vs Shorthand)
-// Versi Ekstensi (Indo-Jepang)
-koreWa ksatriaApi = "Ignis"
-koreWa statusKoneksi = majiBener
+  dialekDemo: `// Demonstrasi Sistem 4 Dialek Mutlak WibuScript
+// 1. Jepang Murni (kore, zettai, hontou, moshi, hoka, jutsu, kaesu, mite)
+kore nama = "Megumin"
+zettai elemen = "Explosion"
 
-// Versi Shorthand (Romaji Murni)
-kore ksatriaEs = "Glacies"
-kore statusBuff = uso
+// 2. Jepang Singkat (ko, ze, hon, mo, ho, ju, kae, mi)
+ko level = 99
+ze aktif = hon
 
-kaloMoshi (statusKoneksi == maji) {
-  kasihMite("[Ekstensi] Server terhubung. Ksatria aktif: " + ksatriaApi)
-}
+// 3. Wibu Absurd (siImut, hargaMati, menyalaAbkuh, whenYh, yaudahlahYa, mybini, kasihPaham, teriakAmba)
+siImut waifu = "Aqua"
+teriakAmba("Karakter aktif: " + nama + " | Waifu: " + waifu)
 
-moshi (statusBuff == uso) {
-  mite("[Shorthand] Status proteksi belum aktif untuk: " + ksatriaEs)
+// 4. Meme Rongawi (pokmipokmi, bundarahma, unjukkebolehan, izintampil, woijawa, fufufafa, kandabahlil, salamkenal)
+pokmipokmi mana = 9999
+salamkenal("Kekuatan Mana: " + mana)
+
+moshi (aktif == hon) {
+  mi("Status pertarungan: MENYALA ABKUH!")
 }`,
 
-  asyncLoop: `// Demonstrasi Async Delay dengan tungguBentar
+  asyncLoop: `// Demonstrasi Perulangan (WHILE) & Cetak (PRINT)
 mite("Mengisi energi kristal sihir:")
 
 kore persentase = 3
-ulangZutto (persentase > 0) {
+zutto (persentase > 0) {
   mite("Mengisi daya kristal... level " + persentase)
-  tungguBentar(400)
   persentase = persentase - 1
 }
 
-kasihMite("Pengisian selesai! Kristal siap digunakan.")`,
+mite("Pengisian selesai! Kristal siap digunakan.")`,
 
-  objekDanLoop: `// Demonstrasi Tipe Data Objek dan Kontrol Perulangan
+  objekDanLoop: `// Demonstrasi Tipe Data Objek dan Kontrol Perulangan (Break & Continue)
 kore pahlawan = { 
   nama: "Ksatria", 
   elemen: "Cahaya", 
@@ -95,26 +96,26 @@ mite("Karakter: " + pahlawan.nama + " | Elemen: " + pahlawan.elemen);
 mite("Memulai simulasi grinding...");
 
 kore hitung = 0;
-ulangZutto (hitung < 5) {
+zutto (hitung < 5) {
   hitung = hitung + 1;
 
   moshi (hitung == 2) {
-    mite("Sesi 2 dilewati (Memicu tsugi / Continue)");
+    mite("Sesi 2 dilewati (tsugi / Continue)");
     tsugi;
   }
 
   mite("Menyelesaikan sesi ke-" + hitung);
 
   moshi (hitung == 4) {
-    mite("Stamina habis! (Memicu tomare / Break)");
-    tomare;
+    mite("Stamina habis! (yame / Break)");
+    yame;
   }
 }
 
 mite("Simulasi selesai.");`,
 };
 
-// Data kartu referensi untuk Panel Panduan Cepat
+// Data kartu referensi untuk Panel Panduan Cepat (4 Dialek Mutlak)
 interface GuideCard {
   id: string;
   title: string;
@@ -127,85 +128,115 @@ interface GuideCard {
 const GUIDE_CARDS: GuideCard[] = [
   {
     id: "variable",
-    title: "Deklarasi Variabel",
-    category: "Variabel",
+    title: "Variabel & Tetapan",
+    category: "LET / CONST",
     icon: Variable,
-    description: "Alokasi variabel baru dalam memori lingkup aktif.",
-    codeSnippet: `// Shorthand (Romaji)
+    description: "Deklarasi variabel dan konstanta di 4 dialek.",
+    codeSnippet: `// 1. Murni: kore / zettai
 kore nama = "Ren"
-kore level = 99
+zettai pi = 3.14
 
-// Ekstensi (Indo-Jepang)
-koreWa aktif = majiBener`,
+// 2. Singkat: ko / ze
+ko umur = 17
+
+// 3. Wibu: siImut / hargaMati
+siImut waifu = "Rem"
+
+// 4. Rongawi: pokmipokmi / bundarahma
+pokmipokmi saldo = 50000`,
   },
   {
     id: "print",
     title: "Cetak Output",
-    category: "I/O Konsol",
+    category: "PRINT",
     icon: Terminal,
-    description: "Mencetak teks ke terminal virtual (stdout).",
-    codeSnippet: `// Shorthand
-mite("Selamat datang!")
+    description: "Mencetak teks ke terminal virtual di 4 dialek.",
+    codeSnippet: `// 1. Murni: mite
+mite("Halo Dunia!")
 
-// Ekstensi
-kasihMite("Pesan sistem")`,
+// 2. Singkat: mi
+mi("Halo Singkat")
+
+// 3. Wibu: teriakAmba
+teriakAmba("Menyala Abkuh!")
+
+// 4. Rongawi: salamkenal
+salamkenal("Salam kenal sepuh")`,
   },
   {
     id: "condition",
     title: "Logika Percabangan",
-    category: "Kontrol Alur",
+    category: "IF / ELSE IF / ELSE",
     icon: GitFork,
-    description: "Percabangan kondisi logika if-else bersarang.",
-    codeSnippet: `moshi (level >= 50) {
-  mite("Tingkat Tinggi")
-} chigau {
-  mite("Pemula")
-}`,
+    description: "Percabangan kondisi logika if, else if, dan else.",
+    codeSnippet: `// 1. Murni: moshi, soretomo, hoka
+moshi (skor >= 90) {
+  mite("Peringkat S")
+} soretomo moshi (skor >= 70) {
+  mite("Peringkat A")
+} hoka {
+  mite("Coba Lagi")
+}
+
+// 2. Singkat: mo, sore, ho
+// 3. Wibu: whenYh, kaloGakGitu, yaudahlahYa
+// 4. Rongawi: izintampil, wowok, woijawa`,
   },
   {
     id: "function",
-    title: "Fungsi / Jutsu",
-    category: "Subrutin",
+    title: "Fungsi & Nilai Balik",
+    category: "FUNCTION / RETURN",
     icon: Zap,
-    description: "Deklarasi fungsi berparameter dan nilai balikan.",
-    codeSnippet: `// Ekstensi
-bikinJutsu tambah(a, b) {
-  balikinDesu a + b
+    description: "Deklarasi subrutin/fungsi dan nilai balikan.",
+    codeSnippet: `// 1. Murni: jutsu & kaesu
+jutsu tambah(a, b) {
+  kaesu a + b
 }
 
-// Shorthand
-jutsu kali(a, b) {
-  kaesu a * b
-}`,
+// 2. Singkat: ju & kae
+ju kali(a, b) {
+  kae a * b
+}
+
+// 3. Wibu: mybini & kasihPaham
+// 4. Rongawi: fufufafa & kandabahlil`,
   },
   {
     id: "loop",
     title: "Perulangan & Kontrol",
-    category: "Iterasi",
+    category: "WHILE / BREAK / CONT",
     icon: Cpu,
-    description: "Pengulangan while serta kontrol break dan continue.",
-    codeSnippet: `kore i = 0
-ulangZutto (i < 5) {
+    description: "Perulangan while serta kontrol break dan continue.",
+    codeSnippet: `// 1. Murni: zutto, yame, tsugi
+kore i = 0
+zutto (i < 5) {
   i = i + 1
   moshi (i == 2) { tsugi; }
-  moshi (i == 4) { tomare; }
+  moshi (i == 4) { yame; }
   mite("Putaran: " + i)
-}`,
+}
+
+// 2. Singkat: zu, ya, tsu
+// 3. Wibu: gasSampePagi, ampunSepuh, lanjutPart2
+// 4. Rongawi: nyawit, bijisatu, ambatukam`,
   },
   {
-    id: "stdlib",
-    title: "Pustaka Standar Populer",
-    category: "Standard Lib",
+    id: "literals",
+    title: "Literal Khusus",
+    category: "TRUE / FALSE / NULL",
     icon: Code,
-    description: "Kumpulan fungsi utilitas bawaan bahasa.",
-    codeSnippet: `// Panjang: nagasa(val)
-kore p = nagasa("Wibu")
+    description: "Nilai boolean dan null dalam 4 dialek.",
+    codeSnippet: `// Benar (TRUE):
+// hontou | hon | menyalaAbkuh | unjukkebolehan
+kore aktif = hontou
 
-// Konversi: sujiNi(str)
-kore n = sujiNi("100")
+// Salah (FALSE):
+// uso | ladehBanh | keracunanmbg
+kore gagal = uso
 
-// Waktu: ima() / waktuSekarang()
-mite("Jam: " + ima())`,
+// Kosong (NULL):
+// munashi | mu | maafLancang | blukutuk
+kore data = munashi`,
   },
 ];
 
@@ -241,25 +272,29 @@ function handleEditorWillMount(monaco: Monaco): void {
     defaultToken: "",
     ignoreCase: false,
 
-    // Kata kunci kontrol alur (Ekstensi dan Shorthand)
+    // Kata kunci kontrol alur (4 Dialek Mutlak)
     controlKeywords: [
-      "moshi", "kaloMoshi", "soreTomo", "tomo", "hokaNo", "hoka",
-      "ulangZutto", "zutto",
-      "berhentiDuluKudasai", "tomare",
-      "lanjutAksiSugi", "tsugi",
+      "moshi", "mo", "whenYh", "izintampil",
+      "soretomo", "sore", "kaloGakGitu", "wowok",
+      "hoka", "ho", "yaudahlahYa", "woijawa",
+      "zutto", "zu", "gasSampePagi", "nyawit",
+      "yame", "ya", "ampunSepuh", "bijisatu",
+      "tsugi", "tsu", "lanjutPart2", "ambatukam",
+      "matte", "mat", "sabarBanh", "admindatang",
     ],
 
-    // Kata kunci deklarasi
+    // Kata kunci deklarasi & subrutin (4 Dialek Mutlak)
     declarationKeywords: [
-      "koreWa", "kore",
+      "kore", "ko", "siImut", "pokmipokmi",
+      "zettai", "ze", "hargaMati", "bundarahma",
+      "jutsu", "ju", "mybini", "fufufafa",
+      "kaesu", "kae", "kasihPaham", "kandabahlil",
     ],
 
     // Fungsi pendukung dan pustaka standar
     supportFunctions: [
-      "kasihMite", "mite",
-      "bikinJutsu", "jutsu",
-      "balikInDesu", "balikinDesu", "kaesu", "modoru",
-      "imaDesu", "ima", "imaJikan",
+      "mite", "mi", "teriakAmba", "salamkenal",
+      "imaDesu", "ima", "imaJikan", "waktuSekarang",
       "gacha",
       "nagasa",
       "sujiNi",
@@ -267,8 +302,7 @@ function handleEditorWillMount(monaco: Monaco): void {
       "chiisaku",
       "tsuika",
       "sakujo",
-      "tungguBentarKudasai", "tungguBentar", "mate",
-      "sekarangImaDesu", "waktuSekarang",
+      "mate",
       "tolongCekNagasa", "cekNagasa", "panjangTeks",
       "bikinJadiSuji", "jadiSuji", "ubahAngka",
       "apaTipeKoreWa", "tipeNani", "shurui",
@@ -288,13 +322,11 @@ function handleEditorWillMount(monaco: Monaco): void {
       "print",
     ],
 
-    // Konstanta bahasa
+    // Konstanta bahasa (4 Dialek Mutlak)
     constantLanguage: [
-      "majiBener", "maji",
-      "chigauBener", "chigau",
-      "karappo", "mu",
-      "usoBanget", "uso",
-      "kosongZannen", "kara",
+      "hontou", "hon", "menyalaAbkuh", "unjukkebolehan",
+      "uso", "ladehBanh", "keracunanmbg",
+      "munashi", "mu", "maafLancang", "blukutuk",
     ],
 
     // Operator perbandingan dan aritmatika

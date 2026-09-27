@@ -2,25 +2,32 @@
 // ============================================================================
 // WIBUSCRIPT LEXER (TOKENIZER)
 // Mengubah teks kode sumber WibuScript menjadi aliran token terstruktur.
-// Mendukung Sistem Alias (Versi Ekstensi Indo-Jepang dan Shorthand Romaji Murni)
-// serta operator perbandingan ganda (==, !=, <=, >=), member access (.),
-// dan pasangan kunci objek (:).
+// Mengadopsi Sistem 4 Dialek Mutlak:
+// 1. Jepang Murni
+// 2. Jepang Singkat
+// 3. Wibu Absurd
+// 4. Meme Rongawi
 // ============================================================================
 
 export enum TokenType {
-    // Keywords Dasar (Sistem Alias)
+    // Keywords Dasar (4 Dialek Mutlak)
     Var,
+    Let = Var,
+    Const = Var,
     Print,
     If,
     Else,
+    ElseIf = Else,
     True,
     False,
     Null,
     Loop,
+    While = Loop,
+    Break,
+    Continue,
     Function,
     Return,
-    Break,          // berhentiDuluKudasai / tomare
-    Continue,       // lanjutAksiSugi / tsugi
+    Await,
 
     // Tipe Data & Identifier
     Identifier,
@@ -63,52 +70,97 @@ export interface Token {
     column: number;
 }
 
-// Sistem Alias WibuScript (Memetakan versi panjang & shorthand ke TokenType yang sama)
+// Sistem 4 Dialek Mutlak WibuScript
+// Memetakan kosakata 4 dialek (Jepang Murni, Jepang Singkat, Wibu Absurd, Meme Rongawi) ke TokenType internal
 export const KEYWORDS: Record<string, TokenType> = {
-    // Variabel
-    "koreWa": TokenType.Var,
+    // Variabel (LET)
     "kore": TokenType.Var,
+    "ko": TokenType.Var,
+    "siImut": TokenType.Var,
+    "pokmipokmi": TokenType.Var,
 
-    // Output Standar
-    "kasihMite": TokenType.Print,
-    "mite": TokenType.Print,
+    // Tetapan (CONST)
+    "zettai": TokenType.Const,
+    "ze": TokenType.Const,
+    "hargaMati": TokenType.Const,
+    "bundarahma": TokenType.Const,
 
-    // Percabangan
-    "kaloMoshi": TokenType.If,
-    "moshi": TokenType.If,
+    // Kosong (NULL)
+    "munashi": TokenType.Null,
+    "mu": TokenType.Null,
+    "maafLancang": TokenType.Null,
+    "blukutuk": TokenType.Null,
 
-    "chigauDong": TokenType.Else,
-    "chigau": TokenType.Else,
+    // Benar (TRUE)
+    "hontou": TokenType.True,
+    "hon": TokenType.True,
+    "menyalaAbkuh": TokenType.True,
+    "unjukkebolehan": TokenType.True,
 
-    // Boolean Literals
-    "majiBener": TokenType.True,
-    "maji": TokenType.True,
-
-    "usoBanget": TokenType.False,
+    // Salah (FALSE) - 'uso' dipakai ganda untuk Jepang Murni dan Singkat
     "uso": TokenType.False,
+    "ladehBanh": TokenType.False,
+    "keracunanmbg": TokenType.False,
 
-    // Null Literal
-    "kosongZannen": TokenType.Null,
-    "kara": TokenType.Null,
+    // Jika (IF)
+    "moshi": TokenType.If,
+    "mo": TokenType.If,
+    "whenYh": TokenType.If,
+    "izintampil": TokenType.If,
 
-    // Perulangan
-    "ulangZutto": TokenType.Loop,
+    // Selain Jika (ELSE IF)
+    "soretomo": TokenType.ElseIf,
+    "sore": TokenType.ElseIf,
+    "kaloGakGitu": TokenType.ElseIf,
+    "wowok": TokenType.ElseIf,
+
+    // Selainnya (ELSE)
+    "hoka": TokenType.Else,
+    "ho": TokenType.Else,
+    "yaudahlahYa": TokenType.Else,
+    "woijawa": TokenType.Else,
+
+    // Perulangan (WHILE)
     "zutto": TokenType.Loop,
+    "zu": TokenType.Loop,
+    "gasSampePagi": TokenType.Loop,
+    "nyawit": TokenType.Loop,
 
-    // Kontrol Perulangan (Break & Continue)
-    "berhentiDuluKudasai": TokenType.Break,
-    "tomare": TokenType.Break,
+    // Berhenti (BREAK)
+    "yame": TokenType.Break,
+    "ya": TokenType.Break,
+    "ampunSepuh": TokenType.Break,
+    "bijisatu": TokenType.Break,
 
-    "lanjutAksiSugi": TokenType.Continue,
+    // Lanjut (CONTINUE)
     "tsugi": TokenType.Continue,
+    "tsu": TokenType.Continue,
+    "lanjutPart2": TokenType.Continue,
+    "ambatukam": TokenType.Continue,
 
-    // Fungsi
-    "bikinJutsu": TokenType.Function,
+    // Fungsi (FUNCTION)
     "jutsu": TokenType.Function,
+    "ju": TokenType.Function,
+    "mybini": TokenType.Function,
+    "fufufafa": TokenType.Function,
 
-    // Pengembalian Nilai (Return)
-    "balikinDesu": TokenType.Return,
+    // Kembalikan (RETURN)
     "kaesu": TokenType.Return,
+    "kae": TokenType.Return,
+    "kasihPaham": TokenType.Return,
+    "kandabahlil": TokenType.Return,
+
+    // Tampilkan (PRINT)
+    "mite": TokenType.Print,
+    "mi": TokenType.Print,
+    "teriakAmba": TokenType.Print,
+    "salamkenal": TokenType.Print,
+
+    // Tunggu (AWAIT)
+    "matte": TokenType.Await,
+    "mat": TokenType.Await,
+    "sabarBanh": TokenType.Await,
+    "admindatang": TokenType.Await,
 };
 
 /**

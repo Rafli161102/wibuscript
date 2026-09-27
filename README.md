@@ -42,34 +42,38 @@ wibuscript/
 - Evaluasi kode dilakukan secara murni di sisi peramban pengguna (*Client-Side Execution*).
 - Menyediakan editor kode berbasis teks dengan dukungan indentasi tab, pintasan keyboard (`Ctrl+Enter`), metrik waktu eksekusi (milidetik), penghitung token, virtual terminal interaktif, dan fitur *Shareable URL* berbasis kompresi Base64.
 
-## Spesifikasi Sintaks (Sistem Alias)
+## Spesifikasi Sintaks (Sistem 4 Dialek Mutlak)
 
-WibuScript menyediakan arsitektur Sistem Alias ganda pada seluruh lapisan sintaks bahasa dan Pustaka Standar. Setiap instruksi memiliki padanan antara varian ekspresif (Versi Ekstensi Indo-Jepang) dan varian ringkas (Versi Shorthand 100% Romaji Jepang murni) yang terikat pada eksekutor identik.
+WibuScript menerapkan standardisasi kosakata berarsitektur **"Sistem 4 Dialek Mutlak"** secara eksklusif pada seluruh lapisan mesin kompilator. Setiap instruksi inti bahasa diakomodasi oleh 4 dialek yang saling kompatibel dan dapat digunakan secara bersilangan:
+1. **Jepang Murni**: Terminologi Romaji standar yang elegan dan ekspresif.
+2. **Jepang Singkat**: Singkatan suku kata minimalis untuk efisiensi pengetikan cepat.
+3. **Wibu Absurd**: Dialek hiperbolik khas komunitas anime dan jejepangan Indonesia.
+4. **Meme Rongawi**: Istilah kultural kontemporer dan bahasa gaul internet lokal.
 
-### 1. Deklarasi dan Nilai Literal
-| Kata Kunci Standar | Versi Ekstensi | Versi Shorthand | Token Kategori | Penjelasan |
-| :--- | :--- | :--- | :--- | :--- |
-| `let` / `var` | `koreWa` | `kore` | `TokenType.Var` | Alokasi variabel baru dalam memori lingkup aktif. |
-| `true` | `majiBener` | `maji` | `TokenType.True` | Nilai boolean benar. |
-| `false` | `usoBanget` | `uso` | `TokenType.False` | Nilai boolean salah. |
-| `null` | `kosongZannen` | `kara` | `TokenType.Null` | Representasi ketiadaan nilai (null). |
+Seluruh kata kunci bahasa Inggris konvensional (`let`, `const`, `if`, `while`, dsb.) dan alias lama telah dihapus sepenuhnya demi menjaga integritas esoterik WibuScript.
 
-### 2. Kontrol Alur (Control Flow)
-| Kata Kunci Standar | Versi Ekstensi | Versi Shorthand | Token Kategori | Penjelasan |
-| :--- | :--- | :--- | :--- | :--- |
-| `if` | `kaloMoshi` | `moshi` | `TokenType.If` | Percabangan kondisi kondisional. |
-| `else` | `chigauDong` | `chigau` | `TokenType.Else` | Blok alternatif jika kondisi bernilai salah. |
-| `while` | `ulangZutto` | `zutto` | `TokenType.Loop` | Pengulangan blok selama predikat bernilai *truthy*. |
-| `break` | `berhentiDuluKudasai` | `tomare` | `TokenType.Break` | Menghentikan eksekusi perulangan saat ini. |
-| `continue` | `lanjutAksiSugi` | `tsugi` | `TokenType.Continue` | Melompati iterasi perulangan ke putaran berikutnya. |
+### Tabel Pemetaan 4 Dialek Mutlak
 
-### 3. Subrutin (Fungsi)
-| Kata Kunci Standar | Versi Ekstensi | Versi Shorthand | Token Kategori | Penjelasan |
-| :--- | :--- | :--- | :--- | :--- |
-| `function` | `bikinJutsu` | `jutsu` | `TokenType.Function` | Deklarasi fungsi pengguna berparameter. |
-| `return` | `balikinDesu` | `kaesu` | `TokenType.Return` | Menghentikan fungsi dan mengembalikan nilai. |
+| Kategori Token | Jepang Murni | Jepang Singkat | Wibu Absurd | Meme Rongawi | TokenType | Deskripsi |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Variabel (LET)** | `kore` | `ko` | `siImut` | `pokmipokmi` | `TokenType.Var` | Alokasi variabel baru dalam lingkup aktif. |
+| **Tetapan (CONST)** | `zettai` | `ze` | `hargaMati` | `bundarahma` | `TokenType.Const` | Alokasi konstanta / tetapan nilai memori. |
+| **Kosong (NULL)** | `munashi` | `mu` | `maafLancang` | `blukutuk` | `TokenType.Null` | Representasi ketiadaan nilai (*null*). |
+| **Benar (TRUE)** | `hontou` | `hon` | `menyalaAbkuh` | `unjukkebolehan` | `TokenType.True` | Nilai boolean benar (*true*). |
+| **Salah (FALSE)** | `uso` | `uso` | `ladehBanh` | `keracunanmbg` | `TokenType.False` | Nilai boolean salah (*false*). |
+| **Jika (IF)** | `moshi` | `mo` | `whenYh` | `izintampil` | `TokenType.If` | Percabangan kondisi kondisional. |
+| **Selain Jika (ELSE IF)** | `soretomo` | `sore` | `kaloGakGitu` | `wowok` | `TokenType.ElseIf` | Cabang alternatif bersyarat berikutnya. |
+| **Selainnya (ELSE)** | `hoka` | `ho` | `yaudahlahYa` | `woijawa` | `TokenType.Else` | Blok alternatif jika seluruh kondisi tidak terpenuhi. |
+| **Perulangan (WHILE)** | `zutto` | `zu` | `gasSampePagi` | `nyawit` | `TokenType.Loop` | Pengulangan blok selama predikat bernilai *truthy*. |
+| **Berhenti (BREAK)** | `yame` | `ya` | `ampunSepuh` | `bijisatu` | `TokenType.Break` | Menghentikan eksekusi perulangan saat ini. |
+| **Lanjut (CONTINUE)** | `tsugi` | `tsu` | `lanjutPart2` | `ambatukam` | `TokenType.Continue` | Melompati iterasi perulangan ke putaran berikutnya. |
+| **Fungsi (FUNCTION)** | `jutsu` | `ju` | `mybini` | `fufufafa` | `TokenType.Function` | Deklarasi subrutin / fungsi berparameter. |
+| **Kembalikan (RETURN)** | `kaesu` | `kae` | `kasihPaham` | `kandabahlil` | `TokenType.Return` | Menghentikan fungsi dan mengembalikan nilai. |
+| **Tampilkan (PRINT)** | `mite` | `mi` | `teriakAmba` | `salamkenal` | `TokenType.Print` | Mencetak pesan ke konsol terminal (*stdout*). |
+| **Tunggu (AWAIT)** | `matte` | `mat` | `sabarBanh` | `admindatang` | `TokenType.Await` | Penanda jeda waktu atau eksekusi asinkronus. |
 
-### 4. Pustaka Standar (Standard Library Alias)
+### Pustaka Standar (Standard Library)
+
 | Fitur Standar | Versi Ekstensi | Versi Shorthand | Tipe Balikan | Deskripsi |
 | :--- | :--- | :--- | :--- | :--- |
 | Output Konsol | `kasihMite(pesan)` | `mite(pesan)` | `Null` | Mencetak pesan ke *stdout* atau virtual terminal. |
@@ -96,39 +100,39 @@ WibuScript menyediakan arsitektur Sistem Alias ganda pada seluruh lapisan sintak
 
 ## Contoh Program WibuScript
 
-Berikut adalah contoh program lengkap yang mendemonstrasikan integrasi Sistem Alias Pustaka Standar dengan kosakata Romaji murni, manipulasi teks, array, objek kamus, dan kontrol loop:
+Berikut adalah contoh program lengkap yang mendemonstrasikan integrasi Sistem 4 Dialek Mutlak dengan manipulasi teks, array, objek kamus, dan kontrol loop:
 
 ```javascript
-// Demonstrasi Tipe Data Objek, Shorthand Romaji Murni, dan Kontrol Perulangan
+// Demonstrasi Tipe Data Objek, Sistem 4 Dialek Mutlak, dan Kontrol Perulangan
 kore pahlawan = { 
   nama: "Ksatria", 
   elemen: "Cahaya", 
   level: 1 
 };
 
-kore namaBesar = dekaku(pahlawan.nama);
-kore namaKecil = chiisaku(pahlawan.nama);
+zettai namaBesar = dekaku(pahlawan.nama);
+ko namaKecil = chiisaku(pahlawan.nama);
 mite("Karakter Kapital: " + namaBesar + " | Huruf Kecil: " + namaKecil);
-mite("Waktu eksekusi: " + ima());
+mi("Waktu eksekusi: " + ima());
 
-kore daftarSkill = retsu("Tebasan Cahaya", "Perisai Suci");
+siImut daftarSkill = retsu("Tebasan Cahaya", "Perisai Suci");
 tsuika(daftarSkill, "Penyembuhan");
-mite("Jumlah skill aktif: " + nagasa(daftarSkill));
+teriakAmba("Jumlah skill aktif: " + nagasa(daftarSkill));
 
-kore hitung = 0;
-ulangZutto (hitung < 5) {
+pokmipokmi hitung = 0;
+zutto (hitung < 5) {
   hitung = hitung + 1;
 
   moshi (hitung == 2) {
-    mite("Sesi 2 dilewati (tsugi)");
+    salamkenal("Sesi 2 dilewati (tsugi)");
     tsugi;
   }
 
   mite("Menyelesaikan sesi ke-" + hitung);
 
   moshi (hitung == 4) {
-    mite("Stamina habis! (tomare)");
-    tomare;
+    mite("Stamina habis! (yame)");
+    yame;
   }
 }
 
@@ -173,6 +177,11 @@ npx tsx src/cli.ts contoh.wibu
 ```
 
 ## Log Pembaruan (Changelog)
+
+### v1.4.0
+- **Standarisasi Sistem 4 Dialek Mutlak**: Refaktor penuh Lexer dan Tokenizer ke dalam sistem 4 dialek (Jepang Murni, Jepang Singkat, Wibu Absurd, Meme Rongawi) untuk 15 kategori token utama.
+- **Pembersihan Keyword Ekosistem**: Menghapus seluruh kata kunci bahasa Inggris konvensional (`let`, `const`, `if`, `while`, dsb.) dan alias ganda lama dari mesin kompilator.
+- **Pembaruan Web Playground & Dokumentasi**: Memperbarui kartu Panduan Cepat, preset demonstrasi, dan pewarnaan sintaksis Monaco Editor berbasis 4 dialek.
 
 ### v1.3.0
 - Refaktor besar-besaran Pustaka Standar: Versi Shorthand kini menggunakan 100% kosakata Romaji Jepang murni untuk menjaga konsistensi ekosistem.
