@@ -6,7 +6,7 @@
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-WibuScript adalah bahasa pemrograman esoterik (*esoteric programming language*) yang diimplementasikan menggunakan TypeScript dan berjalan di atas arsitektur *Tree-Walking Interpreter*. Bahasa ini mengabstraksi konstruksi sintaks pemrograman menjadi perpaduan terminologi informal dwibahasa (Indonesia-Jepang) dan Romaji murni melalui Sistem Alias ganda. Proyek ini dilengkapi modul inti (*Core Engine*) yang sepenuhnya universal dan aman untuk peramban, serta antarmuka Web Playground interaktif berbasis Next.js App Router untuk eksekusi kode secara *client-side*.
+WibuScript adalah bahasa pemrograman esoterik (*esoteric programming language*) yang diimplementasikan menggunakan TypeScript dan berjalan di atas arsitektur *Tree-Walking Interpreter*. Bahasa ini mengabstraksi konstruksi sintaks pemrograman melalui arsitektur Sistem 4 Dialek Mutlak (Jepang Murni, Jepang Singkat, Wibu Absurd, dan Meme Rongawi). Proyek ini dilengkapi modul inti (*Core Engine*) yang sepenuhnya universal dan aman untuk peramban, serta antarmuka Web Playground interaktif berbasis Next.js App Router untuk eksekusi kode secara *client-side*.
 
 ## Arsitektur Sistem
 
@@ -16,7 +16,7 @@ Struktur direktori proyek dirancang secara modular dengan pemisahan tegas antara
 wibuscript/
 ├── src/
 │   ├── ast.ts          # Definisi tipe dan struktur Abstract Syntax Tree (AST)
-│   ├── lexer.ts        # Analisis leksikal, tokenisasi, dan resolusi Sistem Alias
+│   ├── lexer.ts        # Analisis leksikal, tokenisasi, dan resolusi 4 Dialek Mutlak
 │   ├── parser.ts       # Analisis sintaksis (Recursive Descent Parsing ke AST)
 │   ├── runtime.ts      # Tree-Walking Evaluator, Environment hierarkis, dan Standard Library
 │   ├── index.ts        # Entry point Core Engine (ekspor modul universal & browser-safe)
@@ -32,7 +32,7 @@ wibuscript/
 ```
 
 ### 1. Core Engine
-- **Lexer (`src/lexer.ts`)**: Mengurai kode sumber mentah menjadi rangkaian token secara deterministik. Mendukung literal string, numerik (bilangan bulat dan desimal), operator aritmatika, operator relasional ganda (`==`, `!=`, `<=`, `>=`), pasangan kunci objek (`:`), akses titik (`.`), pelacakan posisi baris/kolom, serta resolusi Sistem Alias kata kunci.
+- **Lexer (`src/lexer.ts`)**: Mengurai kode sumber mentah menjadi rangkaian token secara deterministik. Mendukung literal string, numerik (bilangan bulat dan desimal), operator aritmatika, operator relasional ganda (`==`, `!=`, `<=`, `>=`), pasangan kunci objek (`:`), akses titik (`.`), pelacakan posisi baris/kolom, serta resolusi 4 Dialek Mutlak kata kunci.
 - **Parser (`src/parser.ts`)**: Menerapkan metode *Recursive Descent Parsing* berbasis prioritas operator (*precedence*) untuk menghasilkan pohon sintaksis abstrak (*AST*) bertipe kuat (*strongly typed*). Mendukung deklarasi variabel, percabangan, fungsi, perulangan, `BreakStatement`, `ContinueStatement`, `ObjectLiteral`, dan `MemberExpr`.
 - **Runtime & Evaluator (`src/runtime.ts`)**: Mengeksekusi simpul AST secara asinkronus menggunakan arsitektur *Environment* bertingkat (*lexical scoping*). Dilengkapi *hook* penangkap output (*output streaming*), penanganan sinyal loop (`Break`/`Continue`), evaluasi objek kamus, manipulasi string, dan manajemen *Return Signal*.
 - **Browser-Safe Core (`src/index.ts`)**: Menyediakan ekspor API mesin kompilasi yang sepenuhnya steril dari modul internal sistem operasi (`node:fs`, `node:path`), memungkinkan eksekusi langsung di lingkungan *browser* tanpa konflik *bundling*.
@@ -72,31 +72,143 @@ Seluruh kata kunci bahasa Inggris konvensional (`let`, `const`, `if`, `while`, d
 | **Tampilkan (PRINT)** | `mite` | `mi` | `teriakAmba` | `salamkenal` | `TokenType.Print` | Mencetak pesan ke konsol terminal (*stdout*). |
 | **Tunggu (AWAIT)** | `matte` | `mat` | `sabarBanh` | `admindatang` | `TokenType.Await` | Penanda jeda waktu atau eksekusi asinkronus. |
 
-### Pustaka Standar (Standard Library)
+## Pustaka Standar (Standard Library)
 
-| Fitur Standar | Versi Ekstensi | Versi Shorthand | Tipe Balikan | Deskripsi |
-| :--- | :--- | :--- | :--- | :--- |
-| Output Konsol | `kasihMite(pesan)` | `mite(pesan)` | `Null` | Mencetak pesan ke *stdout* atau virtual terminal. |
-| Asynchronous Delay | `tungguBentarKudasai(ms)` | `mate(ms)` | `Null` | Menunda eksekusi selama `ms` milidetik (Promise). |
-| Waktu Lokal | `sekarangImaDesu()` | `ima()` | `String` | Mengambil representasi string waktu lokal terkini. |
-| Hitung Panjang | `tolongCekNagasa(arg)` | `nagasa(arg)` | `Number` | Menghitung jumlah karakter teks string atau elemen array. |
-| Konversi ke Angka | `bikinJadiSuji(teks)` | `sujiNi(teks)` | `Number` | Mengonversi teks string numerik menjadi tipe angka. |
-| Tipe Data (Typeof) | `apaTipeKoreWa(arg)` | `shurui(arg)` | `String` | Mengembalikan nama tipe data ("angka", "teks", "array", "objek"). |
-| Pangkat Matematika | `kalkulasiPangkatSuji(a, b)` | `beki(a, b)` | `Number` | Menghitung nilai angka `a` dipangkatkan eksponen `b`. |
-| Pembulatan Matematika | `bikinBulatSuji(angka)` | `marume(angka)` | `Number` | Membulatkan angka desimal ke bilangan bulat terdekat. |
-| Array Push | `masukinKeRetsu(arr, val)` | `tsuika(arr, val)` | `Array` | Menambahkan elemen baru ke akhir barisan/array list. |
-| Array Pop | `keluarinDariRetsu(arr)` | `sakujo(arr)` | `RuntimeValue` | Menghapus dan mengembalikan elemen terakhir dari array. |
-| Pemotongan Teks | `potongKoreNagasa(s, m, a)` | `kiru(s, m, a)` | `String` | Memotong bagian string mulai dari indeks `m` hingga `a`. |
-| Huruf Kapital (Upper) | `bikinGedeKore(teks)` | `dekaku(teks)` | `String` | Mengonversi teks string menjadi huruf kapital (uppercase). |
-| Huruf Kecil (Lower) | `bikinKecilKore(teks)` | `chiisaku(teks)` | `String` | Mengonversi teks string menjadi huruf kecil (lowercase). |
-| Generator Acak / RNG | `gachaPull(min, max)` | `gacha(min, max)` | `Number` | Menghasilkan bilangan bulat acak di antara min dan max. |
-| Force Panic / Throw | `yameteKudasai(pesan)` | `yamete(pesan)` | `Never` | Melempar eksepsi runtime fatal untuk menghentikan program. |
-| Inisialisasi Array | `bikinRetsu(...)` | `retsu(...)` | `Array` | Membuat barisan/array baru dari argumen yang diberikan. |
-| Baca Berkas | `tolongBacaBerkas(path)` | `yomu(path)` | `String` | Membaca isi berkas teks dari file system (Node.js/CLI). |
-| Tulis Berkas | `tolongTulisBerkas(path, isi)` | `kaku(path, isi)` | `Null` | Menulis teks ke dalam berkas pada file system (Node.js/CLI). |
-| Impor Modul | `tolongPanggilModul(path)` | `yobu(path)` | `RuntimeValue` | Membaca dan mengeksekusi berkas `.wibu` lain ke lingkup global (Node.js/CLI). |
-| HTTP Fetch (GET) | `tolongAmbilData(url)` | `totte(url)` | `String` | Mengambil data dari internet via HTTP GET secara sinkronus internal (mengembalikan teks/JSON). |
-| Waktu Sistem | `waktuSekarang()` | `imaJikan()` | `String` | Mengambil representasi string waktu sistem saat ini. |
+WibuScript menyediakan Pustaka Standar sebagai kumpulan fungsi bawaan yang dapat digunakan tanpa membuat implementasi fungsi tersebut secara manual.
+
+Pustaka Standar dirancang mengikuti prinsip utama WibuScript:
+> Satu kemampuan runtime, empat bentuk sintaks.
+
+Keempat dialek tidak memiliki implementasi pustaka yang terpisah. Setiap nama fungsi pada masing-masing dialek hanya merupakan nama permukaan yang dipetakan menuju fungsi internal yang sama.
+
+Dengan demikian:
+```text
+Jepang Murni ─────┐
+Jepang Singkat ───┤
+Wibu Absurd ──────┼──→ Fungsi Runtime yang sama
+Meme Rongawi ─────┘
+```
+
+Perbedaan dialek hanya berada pada cara programmer memanggil fungsi, bukan pada perilaku fungsi tersebut.
+
+### Prinsip Pustaka
+
+Pustaka Standar mengikuti beberapa aturan:
+1. Setiap fungsi memiliki satu fungsi internal.
+2. Setiap dialek memiliki satu nama khusus untuk fungsi tersebut.
+3. Tidak terdapat alias tambahan dalam dialek yang sama.
+4. Nama fungsi pustaka tidak boleh menggunakan kata yang telah ditetapkan sebagai kata kunci inti (seperti mite, teriakAmba, dsb).
+5. Fungsi yang sama harus menghasilkan perilaku runtime yang sama pada seluruh dialek.
+6. Fungsi yang membutuhkan kemampuan Node.js hanya tersedia pada lingkungan CLI.
+7. Fungsi yang aman untuk browser dapat digunakan pada Web Playground.
+8. Penamaan pustaka tidak mengubah struktur AST maupun evaluator.
+
+### Daftar Fungsi Pustaka
+
+| Kemampuan | Jepang Murni | Jepang Singkat | Wibu Absurd | Meme Rongawi | Balikan | Keterangan |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| Output | `kuchiMite(pesan)` | `km(pesan)` | `bacotAmba(pesan)` | `cawapresin(pesan)` | `Null` | Menampilkan nilai atau pesan ke terminal. |
+| Jeda | `shibaraku(ms)` | `siba(ms)` | `santuyDulu(ms)` | `nungguinLu(ms)` | `Null` | Menghentikan sementara eksekusi selama milidetik tertentu. |
+| Waktu | `imaJikan()` | `ima(ms)` | `jamBerapaBanh()` | `cekJamLur()` | `String` | Mengambil waktu sistem saat program dijalankan. |
+| Panjang | `nagasa(nilai)` | `naga(nilai)` | `seginiDoang(nilai)` | `itungPanjangLur(nilai)` | `Number` | Menghitung panjang teks atau jumlah elemen koleksi. |
+| Konversi Angka | `suji(teks)` | `suj(teks)` | `jadiAngkaBanh(teks)` | `ubahJadiDuit(teks)` | `Number` | Mengubah teks numerik menjadi angka. |
+| Jenis Nilai | `shurui(nilai)` | `shu(nilai)` | `iniApaan(nilai)` | `bendaApaanLur(nilai)` | `String` | Mengambil jenis nilai runtime. |
+| Pangkat | `beki(a, b)` | `bek(a, b)` | `angkatin(a, b)` | `naikinPangkat(a, b)` | `Number` | Menghitung perpangkatan dua angka. |
+| Pembulatan | `marume(angka)` | `maru(angka)` | `bulatinBanh(angka)` | `rapihinAngka(angka)` | `Number` | Membulatkan angka desimal ke bilangan bulat terdekat. |
+| Tambah Array | `ireta(array, nilai)` | `ire(array, nilai)` | `masukinLur(array, nilai)` | `tambahBarang(array, nilai)` | `Array` | Menambahkan elemen ke akhir array. |
+| Ambil Array | `toru(array)` | `tor(array)` | `ambilBelakang(array)` | `keluarinBarang(array)` | `RuntimeValue` | Menghapus dan mengembalikan elemen terakhir array. |
+| Potong Teks | `kiru(teks, mulai, akhir)` | `kir(teks, mulai, akhir)` | `potongSini(teks, mulai, akhir)` | `cuilTeks(teks, mulai, akhir)` | `String` | Mengambil bagian tertentu dari sebuah teks. |
+| Huruf Kapital | `ookiku(teks)` | `ook(teks)` | `gedeinHuruf(teks)` | `besarinSemua(teks)` | `String` | Mengubah teks menjadi huruf kapital. |
+| Huruf Kecil | `chiisaku(teks)` | `chi(teks)` | `kecilinHuruf(teks)` | `kecilinSemua(teks)` | `String` | Mengubah teks menjadi huruf kecil. |
+| Angka Acak | `randamu(min, max)` | `ran(min, max)` | `gachaBanh(min, max)` | `kocokAngka(min, max)` | `Number` | Menghasilkan bilangan bulat acak dalam rentang tertentu. |
+| Hentikan Program | `shikei(pesan)` | `shi(pesan)` | `matiinProgram(pesan)` | `udahKelarinAja(pesan)` | `Never` | Menghentikan program dengan kesalahan runtime. |
+| Buat Array | `retsu(...)` | `ret(...)` | `bikinBarisan(...)` | `kumpulinJawa(...)` | `Array` | Membuat array dari sejumlah nilai. |
+| Baca Berkas | `yomu(lokasi)` | `yo(lokasi)` | `bacainBerkas(lokasi)` | `bukaBerkasLur(lokasi)` | `String` | Membaca isi berkas teks pada lingkungan CLI. |
+| Tulis Berkas | `kaku(lokasi, isi)` | `ka(lokasi, isi)` | `tulisinBerkas(lokasi, isi)` | `coretBerkasLur(lokasi, isi)` | `Null` | Menulis teks ke berkas pada lingkungan CLI. |
+| Muat Modul | `yobu(lokasi)` | `yoB(lokasi)` | `panggilBerkas(lokasi)` | `sikatBanh(lokasi)` | `RuntimeValue` | Memuat dan menjalankan berkas .wibu lain. |
+| Ambil Data | `ukeru(url)` | `uke(url)` | `ambilDataBanh(url)` | `SepongMas(url)` | `String` | Mengambil data menggunakan HTTP GET. |
+
+> **Catatan:** Nama-nama di atas merupakan nama permukaan masing-masing dialek. Implementasi runtime tetap menggunakan satu fungsi internal untuk setiap kemampuan.
+
+### Contoh Penggunaan Pustaka
+
+#### Jepang Murni
+```javascript
+kore nama = "Sora";
+kuchiMite("Halo " + nama);
+kore panjang = nagasa(nama);
+kuchiMite("Panjang nama: " + panjang);
+```
+
+#### Jepang Singkat
+```javascript
+ko nama = "Sora";
+km("Halo " + nama);
+ko panjang = naga(nama);
+km("Panjang nama: " + panjang);
+```
+
+#### Wibu Absurd
+```javascript
+siImut nama = "Sora";
+bacotAmba("Halo " + nama);
+siImut panjang = seginiDoang(nama);
+bacotAmba("Panjang nama: " + panjang);
+```
+
+#### Meme Rongawi
+```javascript
+pokmipokmi nama = "Sora";
+cawapresin("Halo " + nama);
+pokmipokmi panjang = itungPanjangLur(nama);
+cawapresin("Panjang nama: " + panjang);
+```
+
+Keempat contoh tersebut memiliki semantik yang sama. Perbedaannya hanya terletak pada kosakata dialek yang digunakan.
+
+### Pembagian Lingkungan Pustaka
+
+Tidak seluruh fungsi dapat dijalankan pada setiap lingkungan.
+
+#### Browser / Web Playground
+Fungsi yang tidak membutuhkan akses langsung terhadap sistem operasi dapat dijalankan secara aman di browser, seperti:
+`kuchiMite()`, `shibaraku()`, `imaJikan()`, `nagasa()`, `suji()`, `shurui()`, `beki()`, `marume()`, `ireta()`, `toru()`, `kiru()`, `ookiku()`, `chiisaku()`, `randamu()`, `retsu()`
+
+#### CLI / Node.js
+Fungsi yang membutuhkan akses sistem operasi dibatasi hanya pada CLI:
+`yomu()`, `kaku()`, `yobu()`
+
+Fungsi jaringan seperti pengambilan data juga mengikuti kemampuan lingkungan eksekusi yang digunakan.
+
+### Arsitektur Internal
+
+Pemetaan pustaka tidak dilakukan dengan membuat empat implementasi berbeda. Secara konseptual:
+
+```text
+kuchiMite ──────┐
+km ─────────────┤
+bacotAmba ──────┼──→ PRINT_RUNTIME
+cawapresin ─────┘
+
+nagasa ─────────┐
+naga ───────────┤
+seginiDoang ────┼──→ LENGTH_RUNTIME
+itungPanjangLur ┘
+```
+
+Dengan pendekatan tersebut, perubahan pada implementasi internal cukup dilakukan satu kali. Misalnya algoritma `nagasa()` diperbaiki, maka seluruh bentuk dialek otomatis mendapatkan perubahan yang sama:
+
+```text
+Jepang Murni    → nagasa()
+Jepang Singkat  → naga()
+Wibu Absurd     → seginiDoang()
+Meme Rongawi    → itungPanjangLur()
+                         │
+                         ▼
+                  LENGTH_RUNTIME
+```
+
+Hal ini menjaga konsistensi antara empat dialek sekaligus mencegah terjadinya perbedaan perilaku antarversi sintaks.
 
 ## Contoh Program WibuScript
 
@@ -110,33 +222,33 @@ kore pahlawan = {
   level: 1 
 };
 
-zettai namaBesar = dekaku(pahlawan.nama);
+zettai namaBesar = ookiku(pahlawan.nama);
 ko namaKecil = chiisaku(pahlawan.nama);
-mite("Karakter Kapital: " + namaBesar + " | Huruf Kecil: " + namaKecil);
-mi("Waktu eksekusi: " + ima());
+kuchiMite("Karakter Kapital: " + namaBesar + " | Huruf Kecil: " + namaKecil);
+km("Waktu eksekusi: " + ima());
 
 siImut daftarSkill = retsu("Tebasan Cahaya", "Perisai Suci");
-tsuika(daftarSkill, "Penyembuhan");
-teriakAmba("Jumlah skill aktif: " + nagasa(daftarSkill));
+ireta(daftarSkill, "Penyembuhan");
+bacotAmba("Jumlah skill aktif: " + nagasa(daftarSkill));
 
 pokmipokmi hitung = 0;
 zutto (hitung < 5) {
   hitung = hitung + 1;
 
   moshi (hitung == 2) {
-    salamkenal("Sesi 2 dilewati (tsugi)");
+    cawapresin("Sesi 2 dilewati (tsugi)");
     tsugi;
   }
 
-  mite("Menyelesaikan sesi ke-" + hitung);
+  kuchiMite("Menyelesaikan sesi ke-" + hitung);
 
   moshi (hitung == 4) {
-    mite("Stamina habis! (yame)");
+    kuchiMite("Stamina habis! (yame)");
     yame;
   }
 }
 
-mite("Simulasi selesai.");
+kuchiMite("Simulasi selesai.");
 ```
 
 ## Panduan Penggunaan dan Instalasi
@@ -179,30 +291,30 @@ npx tsx src/cli.ts contoh.wibu
 ## Log Pembaruan (Changelog)
 
 ### v1.4.0
-- **Standarisasi Sistem 4 Dialek Mutlak**: Refaktor penuh Lexer dan Tokenizer ke dalam sistem 4 dialek (Jepang Murni, Jepang Singkat, Wibu Absurd, Meme Rongawi) untuk 15 kategori token utama.
-- **Pembersihan Keyword Ekosistem**: Menghapus seluruh kata kunci bahasa Inggris konvensional (`let`, `const`, `if`, `while`, dsb.) dan alias ganda lama dari mesin kompilator.
+- **Standarisasi Sistem 4 Dialek Mutlak**: Refaktor penuh Lexer, Tokenizer, dan Pustaka Standar ke dalam arsitektur 4 dialek (Jepang Murni, Jepang Singkat, Wibu Absurd, Meme Rongawi) untuk seluruh token inti dan fungsi bawaan.
+- **Pembersihan Keyword Ekosistem**: Menghapus seluruh kata kunci bahasa Inggris konvensional (`let`, `const`, `if`, `while`, dsb.) dan konsep alias lama dari mesin kompilator dan dokumentasi.
 - **Pembaruan Web Playground & Dokumentasi**: Memperbarui kartu Panduan Cepat, preset demonstrasi, dan pewarnaan sintaksis Monaco Editor berbasis 4 dialek.
 
 ### v1.3.0
-- Refaktor besar-besaran Pustaka Standar: Versi Shorthand kini menggunakan 100% kosakata Romaji Jepang murni untuk menjaga konsistensi ekosistem.
-- Penambahan fungsi manipulasi teks bawaan (dekaku dan chiisaku).
+- Refaktor Pustaka Standar: Penyelarasan kosakata Romaji Jepang murni untuk menjaga konsistensi ekosistem.
+- Penambahan fungsi manipulasi teks bawaan (`dekaku` dan `chiisaku`).
 
 ### v1.2.0
 - Eksperimental: Dukungan HTTP Fetch API dan utilitas waktu.
 - Implementasi Tipe Data Objek (Dictionary) dan Member Access.
-- Implementasi Kontrol Perulangan (Break dan Continue) dengan dukungan Sistem Alias ganda.
+- Implementasi Kontrol Perulangan (Break dan Continue).
 - Penambahan fitur Shareable URL berbasis kompresi Base64 pada Web Playground.
 
 ### v1.1.0
 - Dukungan File System I/O dan Sistem Impor Modul untuk pengembangan multi-file.
-- Ekspansi Pustaka Standar (*Standard Library*): Menambahkan fungsi bawaan `gacha(min, max)`, `waktuSekarang()`, `panjangTeks(teks)`, `ubahAngka(teks)`, operasi matematika, manipulasi string, dan operasi array.
+- Ekspansi Pustaka Standar (*Standard Library*): Menambahkan fungsi bawaan operasi matematika, manipulasi string, dan operasi array.
 - Restrukturisasi Core Engine: Pemisahan tegas antara modul universal (`src/index.ts`) dan CLI runner (`src/cli.ts`) untuk menjamin kompatibilitas total dengan Turbopack dan browser runtime.
 - Penambahan Root Layout (`app/layout.tsx`) dan konfigurasi styling Tailwind CSS v4 (`app/globals.css`).
 - Pembersihan referensi spesifik menjadi tema RPG/Isekai generik pada template antarmuka Web Playground.
 
 ### v1.0.0-MVP
 - Rilis perdana modul Core Engine (Lexer, Recursive Descent Parser, dan Tree-Walking Interpreter).
-- Implementasi Sistem Alias penuh untuk format kata kunci Ekstensi dan Shorthand.
-- Implementasi penundaan asinkronus `tungguBentar` berbasis `Promise`.
+- Implementasi arsitektur dialek untuk format kata kunci.
+- Implementasi penundaan asinkronus berbasis `Promise`.
 - Implementasi Web Playground modern berbasis Next.js App Router dengan *client-side rendering* dan *real-time output streaming*.
 - Penegakan TypeScript *Strict Mode* penuh di seluruh kode sumber.
