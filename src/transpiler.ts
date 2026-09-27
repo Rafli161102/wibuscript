@@ -17,9 +17,11 @@ import type {
   BlockStatement,
   ExpressionStatement,
   TryCatchStatement,
+  ForEachStatement,
   AssignmentExpression,
   BinaryExpression,
   UnaryExpression,
+  ArrowFunctionExpression,
   CallExpression,
   Identifier,
   NumericLiteral,
@@ -115,6 +117,14 @@ export class Transpiler {
       "const __utsusu = (arr, fn) => arr.map(fn);",
       "const __erabu = (arr, fn) => arr.filter(fn);",
       "const __mitsukeru = (arr, fn) => arr.find(fn) ?? null;",
+      "const __bunri = (str, sep) => String(str).split(sep ?? '');",
+      "const __tsunagu = (arr, sep) => (Array.isArray(arr) ? arr.join(sep ?? '') : '');",
+      "const __okikae = (str, from, to) => String(str).split(from).join(to);",
+      "const __kiri = (str) => String(str).trim();",
+      "const __fukumu = (t, item) => (Array.isArray(t) ? t.includes(item) : String(t).includes(item));",
+      "const __narabikae = (arr, fn) => (fn ? [...arr].sort(fn) : [...arr].sort());",
+      "const __kirinuki = (t, s, e) => t.slice(s, e);",
+      "const __gacha = (items, weights) => { if (!Array.isArray(items) || items.length === 0) return null; if (!weights) return items[Math.floor(Math.random() * items.length)]; const total = weights.reduce((a, b) => a + b, 0); let r = Math.random() * total; for (let i = 0; i < items.length; i++) { if (r < weights[i]) return items[i]; r -= weights[i]; } return items[items.length - 1]; };",
       ""
     );
 
@@ -135,6 +145,9 @@ export class Transpiler {
 
       case "LoopStatement":
         return this.transpileLoopStatement(stmt as LoopStatement);
+
+      case "ForEachStatement":
+        return this.transpileForEachStatement(stmt as ForEachStatement);
 
       case "FunctionDeclaration":
         return this.transpileFunctionDeclaration(stmt as FunctionDeclaration);
@@ -193,6 +206,20 @@ export class Transpiler {
   private transpileLoopStatement(node: LoopStatement): string {
     const cond = this.transpileExpression(node.condition);
     let out = `${this.indent()}while (${cond}) {\n`;
+
+    this.indentLevel++;
+    for (const s of node.body) {
+      out += this.transpileStatement(s) + "\n";
+    }
+    this.indentLevel--;
+
+    out += `${this.indent()}}`;
+    return out;
+  }
+
+  private transpileForEachStatement(node: ForEachStatement): string {
+    const collection = this.transpileExpression(node.collection);
+    let out = `${this.indent()}for (const ${node.item} of ${collection}) {\n`;
 
     this.indentLevel++;
     for (const s of node.body) {
@@ -334,35 +361,110 @@ export class Transpiler {
         return `(${un.operator}${operand})`;
       }
 
+      case "ArrowFunctionExpression": {
+        const arrow = expr as ArrowFunctionExpression;
+        const params = arrow.parameters.join(", ");
+        if (
+          arrow.isExpressionBody &&
+          arrow.body.length === 1 &&
+          arrow.body[0]?.kind === "ReturnStatement"
+        ) {
+          const ret = arrow.body[0] as ReturnStatement;
+          const retVal = ret.value ? this.transpileExpression(ret.value) : "undefined";
+          return `((${params}) => ${retVal})`;
+        }
+        let out = `((${params}) => {\n`;
+        this.indentLevel++;
+        for (const s of arrow.body) {
+          out += this.transpileStatement(s) + "\n";
+        }
+        this.indentLevel--;
+        out += `${this.indent()}})`;
+        return out;
+      }
+
       case "CallExpression": {
         const call = expr as CallExpression;
         const callee = call.callee;
+        const calleeName = typeof callee === "string" ? callee : "";
 
-        // Penanganan metode barisan khusus
-        if (["utsusu", "utu", "petainBanh", "petainLur"].includes(callee)) {
+        // Penanganan metode barisan & pustaka khusus
+        if (["utsusu", "utu", "petainBanh", "petainLur"].includes(calleeName)) {
           const arr = this.transpileExpression(call.args[0]!);
           const fn = this.transpileExpression(call.args[1]!);
           return `__utsusu(${arr}, ${fn})`;
         }
 
-        if (["erabu", "era", "saringBanh", "saringLur"].includes(callee)) {
+        if (["erabu", "era", "saringBanh", "saringLur"].includes(calleeName)) {
           const arr = this.transpileExpression(call.args[0]!);
           const fn = this.transpileExpression(call.args[1]!);
           return `__erabu(${arr}, ${fn})`;
         }
 
-        if (["mitsukeru", "mitu", "cariinBanh", "golekLur"].includes(callee)) {
+        if (["mitsukeru", "mitu", "cariinBanh", "golekLur"].includes(calleeName)) {
           const arr = this.transpileExpression(call.args[0]!);
           const fn = this.transpileExpression(call.args[1]!);
           return `__mitsukeru(${arr}, ${fn})`;
         }
 
-        if (["nagasa", "naga", "seginiDoang", "itungPanjangLur", "tolongCekNagasa"].includes(callee)) {
+        if (["bunri", "bu", "pecahKata", "bedahno"].includes(calleeName)) {
+          const str = this.transpileExpression(call.args[0]!);
+          const sep = call.args[1] ? this.transpileExpression(call.args[1]) : "''";
+          return `__bunri(${str}, ${sep})`;
+        }
+
+        if (["tsunagu", "tsuna", "lemKata", "gandengen"].includes(calleeName)) {
+          const arr = this.transpileExpression(call.args[0]!);
+          const sep = call.args[1] ? this.transpileExpression(call.args[1]) : "''";
+          return `__tsunagu(${arr}, ${sep})`;
+        }
+
+        if (["okikae", "oki", "sulapKata", "gantinen"].includes(calleeName)) {
+          const str = this.transpileExpression(call.args[0]!);
+          const from = this.transpileExpression(call.args[1]!);
+          const to = this.transpileExpression(call.args[2]!);
+          return `__okikae(${str}, ${from}, ${to})`;
+        }
+
+        if (["kiri", "kri", "pangkas", "potongen"].includes(calleeName)) {
+          const str = this.transpileExpression(call.args[0]!);
+          return `__kiri(${str})`;
+        }
+
+        if (["fukumu", "fuku", "punyaGak", "onora"].includes(calleeName)) {
+          const target = this.transpileExpression(call.args[0]!);
+          const item = this.transpileExpression(call.args[1]!);
+          return `__fukumu(${target}, ${item})`;
+        }
+
+        if (["narabikae", "nara", "rapihin", "urutno"].includes(calleeName)) {
+          const arr = this.transpileExpression(call.args[0]!);
+          const comp = call.args[1] ? this.transpileExpression(call.args[1]) : "null";
+          return `__narabikae(${arr}, ${comp})`;
+        }
+
+        if (["kirinuki", "kinu", "potongSebagian", "cuplikno"].includes(calleeName)) {
+          const target = this.transpileExpression(call.args[0]!);
+          const start = this.transpileExpression(call.args[1]!);
+          const end = call.args[2] ? this.transpileExpression(call.args[2]) : "undefined";
+          return `__kirinuki(${target}, ${start}, ${end})`;
+        }
+
+        if (["gacha", "gac", "tarikGacha", "mputerNasib"].includes(calleeName)) {
+          const items = this.transpileExpression(call.args[0]!);
+          const weights = call.args[1] ? this.transpileExpression(call.args[1]) : "undefined";
+          return `__gacha(${items}, ${weights})`;
+        }
+
+        if (["nagasa", "naga", "seginiDoang", "itungPanjangLur", "tolongCekNagasa"].includes(calleeName)) {
           const arg = this.transpileExpression(call.args[0]!);
           return `__nagasa(${arg})`;
         }
 
-        const mappedCallee = STDLIB_MAP[callee] ?? callee;
+        const mappedCallee =
+          typeof callee === "string"
+            ? (STDLIB_MAP[callee] ?? callee)
+            : `(${this.transpileExpression(callee)})`;
         const args = call.args.map((a) => this.transpileExpression(a)).join(", ");
         return `${mappedCallee}(${args})`;
       }

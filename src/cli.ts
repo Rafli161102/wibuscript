@@ -11,7 +11,7 @@ import * as path from "node:path";
 import { runWibuScript, transpileToJS, convertDialect, type Dialect } from "./index";
 import { startREPL } from "./repl";
 
-const WIBU_VERSION = "1.3.0";
+const WIBU_VERSION = "1.6.0";
 
 function printUsage(): void {
   console.log(`🌸 WibuScript CLI v${WIBU_VERSION}`);

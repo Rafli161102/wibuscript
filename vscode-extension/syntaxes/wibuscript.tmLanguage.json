@@ -106,7 +106,7 @@
       "patterns": [
         {
           "name": "keyword.control",
-          "match": "\\b(moshi|mo|whenYh|izintampil|soretomo|sore|kaloGakGitu|wowok|hoka|ho|yaudahlahYa|woijawa|zutto|zu|gasSampePagi|nyawit|yame|ya|ampunSepuh|bijisatu|tsugi|tsu|lanjutPart2|ambatukam|matte|mat|sabarBanh|admindatang|kokoromi|koko|cobaDuluBanh|gasTesLur|yurusu|yuru|santaiAja|amanBos)\\b"
+          "match": "\\b(moshi|mo|whenYh|izintampil|soretomo|sore|kaloGakGitu|wowok|hoka|ho|yaudahlahYa|woijawa|zutto|zu|gasSampePagi|nyawit|yame|ya|ampunSepuh|bijisatu|tsugi|tsu|lanjutPart2|ambatukam|matte|mat|sabarBanh|admindatang|kokoromi|koko|cobaDuluBanh|gasTesLur|yurusu|yuru|santaiAja|amanBos|subete|sube|sikatSemua|gilisemua|no|dari|soko)\\b"
         }
       ]
     },
@@ -122,7 +122,7 @@
       "patterns": [
         {
           "name": "support.function",
-          "match": "\\b(mite|mi|teriakAmba|salamkenal|kuchiMite|km|bacotAmba|cawapresin|shibaraku|siba|santuyDulu|nungguinLu|imaJikan|ima|jamBerapaBanh|cekJamLur|nagasa|naga|seginiDoang|itungPanjangLur|suji|suj|jadiAngkaBanh|ubahJadiDuit|shurui|shu|iniApaan|bendaApaanLur|beki|bek|angkatin|naikinPangkat|marume|maru|buletinBanh|ratainLur|ireta|ire|masukinSini|masukPakEko|toru|to|buangAja|singkirkanLur|kiru|ki|potongBanh|gorokLur|ookiku|ooki|bikinGede|gedeinLur|chiisaku|chii|bikinKecil|kecilinLur|randamu|ran|acakBanh|kocokLur|shikei|shi|matiinProgram|udahKelarinAja|retsu|ret|bikinBarisan|kumpulinJawa|yomu|yo|bacainBerkas|bukaBerkasLur|kaku|ka|tulisinBerkas|coretBerkasLur|yobu|yoB|panggilBerkas|sikatBanh|ukeru|uke|ambilDataBanh|SepongMas|kanjiNi|kn|jadiObjekBanh|uraiJsonLur|kanjiMojiretsu|kmj|jadiTeksBanh|bungkusJsonLur|utsusu|utu|petainBanh|petainLur|erabu|era|saringBanh|saringLur|mitsukeru|mitu|cariinBanh|golekLur|ruuto|ru|akarPangkat|akarLur|zettaichi|zet|mutlakBanh|mutlakLur|kiriSute|ks|bawahinBanh|bawahLur|kiriAge|kia|atasinBanh|atasLur)\\b"
+          "match": "\\b(mite|mi|teriakAmba|salamkenal|kuchiMite|km|bacotAmba|cawapresin|shibaraku|siba|santuyDulu|nungguinLu|imaJikan|ima|jamBerapaBanh|cekJamLur|nagasa|naga|seginiDoang|itungPanjangLur|suji|suj|jadiAngkaBanh|ubahJadiDuit|shurui|shu|iniApaan|bendaApaanLur|beki|bek|angkatin|naikinPangkat|marume|maru|buletinBanh|ratainLur|ireta|ire|masukinSini|masukPakEko|toru|to|buangAja|singkirkanLur|kiru|ki|potongBanh|gorokLur|ookiku|ooki|bikinGede|gedeinLur|chiisaku|chii|bikinKecil|kecilinLur|randamu|ran|acakBanh|kocokLur|shikei|shi|matiinProgram|udahKelarinAja|retsu|ret|bikinBarisan|kumpulinJawa|yomu|yo|bacainBerkas|bukaBerkasLur|kaku|ka|tulisinBerkas|coretBerkasLur|yobu|yoB|panggilBerkas|sikatBanh|ukeru|uke|ambilDataBanh|SepongMas|kanjiNi|kn|jadiObjekBanh|uraiJsonLur|kanjiMojiretsu|kmj|jadiTeksBanh|bungkusJsonLur|utsusu|utu|petainBanh|petainLur|erabu|era|saringBanh|saringLur|mitsukeru|mitu|cariinBanh|golekLur|ruuto|ru|akarPangkat|akarLur|zettaichi|zet|mutlakBanh|mutlakLur|kiriSute|ks|bawahinBanh|bawahLur|kiriAge|kia|atasinBanh|atasLur|bunri|bu|pecahKata|bedahno|tsunagu|tsuna|lemKata|gandengen|okikae|oki|sulapKata|gantinen|kiri|kri|pangkas|potongen|fukumu|fuku|punyaGak|onora|narabikae|nara|rapihin|urutno|kirinuki|kinu|potongSebagian|cuplikno|gacha|gac|tarikGacha|mputerNasib)\\b"
         }
       ]
     },
@@ -130,7 +130,7 @@
       "patterns": [
         {
           "name": "keyword.operator",
-          "match": "(==|!=|<=|>=|<|>|&&|\\|\\||!|\\+|-|\\*|/|=)"
+          "match": "(==|!=|<=|>=|=>|<|>|&&|\\|\\||!|\\+|-|\\*|/|=)"
         }
       ]
     }

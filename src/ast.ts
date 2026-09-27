@@ -19,11 +19,13 @@ export type NodeType =
   | "BreakStatement"
   | "ContinueStatement"
   | "TryCatchStatement"
+  | "ForEachStatement"
 
   // Expressions
   | "AssignmentExpression"
   | "BinaryExpression"
   | "UnaryExpression"
+  | "ArrowFunctionExpression"
   | "CallExpression"
   | "Identifier"
   | "NumericLiteral"
@@ -121,6 +123,16 @@ export interface TryCatchStatement extends Statement {
 }
 
 /**
+ * Perulangan iterasi koleksi: subete (item no koleksi) { <body> }
+ */
+export interface ForEachStatement extends Statement {
+  kind: "ForEachStatement";
+  item: string;
+  collection: Expression;
+  body: Statement[];
+}
+
+/**
  * Blok pernyataan dalam kurung kurawal { ... }
  */
 export interface BlockStatement extends Statement {
@@ -140,6 +152,16 @@ export interface ExpressionStatement extends Statement {
  * Antarmuka dasar untuk semua simpul Ekspresi.
  */
 export interface Expression extends Statement {}
+
+/**
+ * Fungsi sebaris / lambda: (x, y) => x + y atau x => { <body> }
+ */
+export interface ArrowFunctionExpression extends Expression {
+  kind: "ArrowFunctionExpression";
+  parameters: string[];
+  body: Statement[];
+  isExpressionBody?: boolean | undefined;
+}
 
 /**
  * Penugasan nilai ke variabel yang sudah ada: <nama> = <nilai>
@@ -174,7 +196,7 @@ export interface UnaryExpression extends Expression {
  */
 export interface CallExpression extends Expression {
   kind: "CallExpression";
-  callee: string;
+  callee: string | Expression;
   args: Expression[];
 }
 

@@ -20,9 +20,11 @@ import type {
   BreakStatement,
   ContinueStatement,
   TryCatchStatement,
+  ForEachStatement,
   AssignmentExpression,
   BinaryExpression,
   UnaryExpression,
+  ArrowFunctionExpression,
   CallExpression,
   Identifier,
   NumericLiteral,
@@ -106,6 +108,9 @@ export class Parser {
 
       case TokenType.Loop:
         return this.parseLoopStatement();
+
+      case TokenType.ForEach:
+        return this.parseForEachStatement();
 
       case TokenType.Break:
         this.advance(); // Konsumsi 'tomare' atau 'berhentiDuluKudasai'
@@ -210,6 +215,44 @@ export class Parser {
     return {
       kind: "LoopStatement",
       condition,
+      body,
+    };
+  }
+
+  /**
+   * Perulangan iterasi koleksi: subete (item no koleksi) { ... }
+   */
+  private parseForEachStatement(): ForEachStatement {
+    this.advance(); // Konsumsi 'subete' / 'sube' / 'sikatSemua' / 'gilisemua'
+
+    this.expect(
+      TokenType.OpenParen,
+      "Diharapkan '(' setelah kata kunci perulangan iterasi koleksi."
+    );
+
+    const itemToken = this.expect(
+      TokenType.Identifier,
+      "Diharapkan nama variabel elemen perulangan."
+    );
+
+    this.expect(
+      TokenType.In,
+      "Diharapkan kata penghubung koleksi ('no', 'dari', atau 'soko') setelah nama variabel."
+    );
+
+    const collection = this.parseExpression();
+
+    this.expect(
+      TokenType.CloseParen,
+      "Diharapkan ')' setelah ekspresi koleksi perulangan."
+    );
+
+    const body = this.parseBlockOrSingleStatement();
+
+    return {
+      kind: "ForEachStatement",
+      item: itemToken.value,
+      collection,
       body,
     };
   }
@@ -599,11 +642,10 @@ export class Parser {
   }
 
   private parseCallExpression(caller: Expression): Expression {
-    if (caller.kind !== "Identifier") {
-      throw new Error("[Parser Error] Target pemanggilan fungsi harus berupa identifier.");
-    }
-
-    const callee = (caller as Identifier).symbol;
+    const callee =
+      caller.kind === "Identifier"
+        ? (caller as Identifier).symbol
+        : caller;
     const args = this.parseArgs();
 
     return {
@@ -636,7 +678,36 @@ export class Parser {
     const token = this.at();
 
     switch (token.type) {
-      case TokenType.Identifier:
+      case TokenType.Identifier: {
+        if (this.tokens[this.cursor + 1]?.type === TokenType.Arrow) {
+          const param = this.advance().value; // Konsumsi identifier parameter
+          this.advance(); // Konsumsi '=>'
+
+          if (this.at().type === TokenType.OpenBrace) {
+            const block = this.parseBlockStatement();
+            return {
+              kind: "ArrowFunctionExpression",
+              parameters: [param],
+              body: block.body,
+              isExpressionBody: false,
+            } as ArrowFunctionExpression;
+          } else {
+            const expr = this.parseExpression();
+            return {
+              kind: "ArrowFunctionExpression",
+              parameters: [param],
+              body: [{ kind: "ReturnStatement", value: expr } as ReturnStatement],
+              isExpressionBody: true,
+            } as ArrowFunctionExpression;
+          }
+        }
+
+        return {
+          kind: "Identifier",
+          symbol: this.advance().value,
+        } as Identifier;
+      }
+
       case TokenType.Print:
         return {
           kind: "Identifier",
@@ -772,6 +843,64 @@ export class Parser {
       }
 
       case TokenType.OpenParen: {
+        // Cek apakah ini tanda kurung parameter lambda: (...) => ...
+        let depth = 1;
+        let idx = this.cursor + 1;
+        while (idx < this.tokens.length && depth > 0) {
+          if (this.tokens[idx]?.type === TokenType.OpenParen) depth++;
+          else if (this.tokens[idx]?.type === TokenType.CloseParen) depth--;
+          idx++;
+        }
+        const isArrow = depth === 0 && this.tokens[idx]?.type === TokenType.Arrow;
+
+        if (isArrow) {
+          this.advance(); // Konsumsi '('
+          const parameters: string[] = [];
+          if (this.at().type !== TokenType.CloseParen) {
+            parameters.push(
+              this.expect(
+                TokenType.Identifier,
+                "Diharapkan nama parameter pada fungsi lambda sebaris."
+              ).value
+            );
+            while (this.at().type === TokenType.Comma) {
+              this.advance();
+              parameters.push(
+                this.expect(
+                  TokenType.Identifier,
+                  "Diharapkan nama parameter setelah tanda koma pada fungsi lambda."
+                ).value
+              );
+            }
+          }
+          this.expect(
+            TokenType.CloseParen,
+            "Diharapkan ')' setelah daftar parameter fungsi lambda."
+          );
+          this.expect(
+            TokenType.Arrow,
+            "Diharapkan '=>' setelah tanda kurung parameter fungsi lambda."
+          );
+
+          if (this.at().type === TokenType.OpenBrace) {
+            const block = this.parseBlockStatement();
+            return {
+              kind: "ArrowFunctionExpression",
+              parameters,
+              body: block.body,
+              isExpressionBody: false,
+            } as ArrowFunctionExpression;
+          } else {
+            const expr = this.parseExpression();
+            return {
+              kind: "ArrowFunctionExpression",
+              parameters,
+              body: [{ kind: "ReturnStatement", value: expr } as ReturnStatement],
+              isExpressionBody: true,
+            } as ArrowFunctionExpression;
+          }
+        }
+
         this.advance(); // Konsumsi '('
         const value = this.parseExpression();
         this.expect(

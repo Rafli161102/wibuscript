@@ -24,9 +24,11 @@ import type {
   BreakStatement,
   ContinueStatement,
   TryCatchStatement,
+  ForEachStatement,
   AssignmentExpression,
   BinaryExpression,
   UnaryExpression,
+  ArrowFunctionExpression,
   CallExpression,
   Identifier,
   NumericLiteral,
@@ -619,8 +621,41 @@ export function createGlobalEnvironment(
   env.declareVar("kecilinHuruf", lowercaseFn);
   env.declareVar("kecilinSemua", lowercaseFn);
 
-  // 14. Generator Acak / RNG: randamu (Murni) / ran (Singkat) / gachaBanh (Wibu) / kocokAngka (Rongawi)
+  // 14. Generator Acak & Gacha RNG: randamu/gacha (Murni) / ran/gac (Singkat) / tarikGacha/gachaBanh (Wibu) / mputerNasib/kocokAngka (Rongawi)
   const gachaFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    // Mode 1: Pengundian Item dari Barisan (Array Gacha Pull)
+    if (args.length > 0 && args[0]?.type === "array") {
+      const items = (args[0] as ArrayValue).elements;
+      if (items.length === 0) {
+        return MK_NULL();
+      }
+      const weightsArg = args[1];
+      // Pemilihan seragam jika bobot tidak diberikan
+      if (!weightsArg || weightsArg.type !== "array") {
+        const randIdx = Math.floor(Math.random() * items.length);
+        return items[randIdx] ?? MK_NULL();
+      }
+      // Pemilihan berbobot (weighted RNG)
+      const weights = (weightsArg as ArrayValue).elements.map((w) =>
+        w.type === "number" ? (w as NumberValue).value : 1
+      );
+      const totalWeight = weights.reduce((acc, curr) => acc + curr, 0);
+      if (totalWeight <= 0) {
+        const randIdx = Math.floor(Math.random() * items.length);
+        return items[randIdx] ?? MK_NULL();
+      }
+      let randomVal = Math.random() * totalWeight;
+      for (let i = 0; i < items.length; i++) {
+        const w = weights[i] ?? 1;
+        if (randomVal < w) {
+          return items[i] ?? MK_NULL();
+        }
+        randomVal -= w;
+      }
+      return items[items.length - 1] ?? MK_NULL();
+    }
+
+    // Mode 2: Bilangan Bulat Acak (min..max)
     let min = 0;
     let max = 100;
     if (args.length === 1) {
@@ -643,12 +678,15 @@ export function createGlobalEnvironment(
     const result = Math.floor(Math.random() * (high - low + 1)) + low;
     return MK_NUMBER(result);
   });
-  env.declareVar("gachaPull", gachaFn);
-  env.declareVar("gacha", gachaFn);
   env.declareVar("randamu", gachaFn);
   env.declareVar("ran", gachaFn);
+  env.declareVar("gacha", gachaFn);
+  env.declareVar("gac", gachaFn);
   env.declareVar("gachaBanh", gachaFn);
+  env.declareVar("tarikGacha", gachaFn);
   env.declareVar("kocokAngka", gachaFn);
+  env.declareVar("mputerNasib", gachaFn);
+  env.declareVar("gachaPull", gachaFn);
 
   // 15. Force Panic / Throw Error: shikei (Murni) / shi (Singkat) / matiinProgram (Wibu) / udahKelarinAja (Rongawi)
   const panicFn = MK_NATIVE_FN((args: RuntimeValue[]): never => {
@@ -1023,6 +1061,185 @@ export function createGlobalEnvironment(
   env.declareVar("atasinBanh", ceilFn);
   env.declareVar("atasLur", ceilFn);
 
+  // 25. Manipulasi Teks & String (String Utilities):
+  // Pecah String: bunri (Murni) / bu (Singkat) / pecahKata (Wibu) / bedahno (Rongawi)
+  const bunriFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const strArg = args[0];
+    const sepArg = args[1];
+    if (!strArg || strArg.type !== "string") {
+      throw new Error("[Runtime Error] Argumen pertama bunri harus berupa teks (string).");
+    }
+    const sep = sepArg && sepArg.type === "string" ? (sepArg as StringValue).value : "";
+    const parts = (strArg as StringValue).value.split(sep);
+    return MK_ARRAY(parts.map((p) => MK_STRING(p)));
+  });
+  env.declareVar("bunri", bunriFn);
+  env.declareVar("bu", bunriFn);
+  env.declareVar("pecahKata", bunriFn);
+  env.declareVar("bedahno", bunriFn);
+
+  // Gabung String: tsunagu (Murni) / tsuna (Singkat) / lemKata (Wibu) / gandengen (Rongawi)
+  const tsunaguFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const arrArg = args[0];
+    const sepArg = args[1];
+    if (!arrArg || arrArg.type !== "array") {
+      throw new Error("[Runtime Error] Argumen pertama tsunagu harus berupa barisan (array).");
+    }
+    const sep = sepArg && sepArg.type === "string" ? (sepArg as StringValue).value : "";
+    const joined = (arrArg as ArrayValue).elements
+      .map((el) => formatRuntimeValue(el))
+      .join(sep);
+    return MK_STRING(joined);
+  });
+  env.declareVar("tsunagu", tsunaguFn);
+  env.declareVar("tsuna", tsunaguFn);
+  env.declareVar("lemKata", tsunaguFn);
+  env.declareVar("gandengen", tsunaguFn);
+
+  // Ganti Substring: okikae (Murni) / oki (Singkat) / sulapKata (Wibu) / gantinen (Rongawi)
+  const okikaeFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const strArg = args[0];
+    const fromArg = args[1];
+    const toArg = args[2];
+    if (
+      !strArg ||
+      strArg.type !== "string" ||
+      !fromArg ||
+      fromArg.type !== "string" ||
+      !toArg ||
+      toArg.type !== "string"
+    ) {
+      throw new Error("[Runtime Error] Seluruh argumen okikae harus berupa teks (string).");
+    }
+    const res = (strArg as StringValue).value
+      .split((fromArg as StringValue).value)
+      .join((toArg as StringValue).value);
+    return MK_STRING(res);
+  });
+  env.declareVar("okikae", okikaeFn);
+  env.declareVar("oki", okikaeFn);
+  env.declareVar("sulapKata", okikaeFn);
+  env.declareVar("gantinen", okikaeFn);
+
+  // Pangkas Spasi: kiri (Murni) / kri (Singkat) / pangkas (Wibu) / potongen (Rongawi)
+  const kiriFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const strArg = args[0];
+    if (!strArg || strArg.type !== "string") {
+      throw new Error("[Runtime Error] Argumen kiri harus berupa teks (string).");
+    }
+    return MK_STRING((strArg as StringValue).value.trim());
+  });
+  env.declareVar("kiri", kiriFn);
+  env.declareVar("kri", kiriFn);
+  env.declareVar("pangkas", kiriFn);
+  env.declareVar("potongen", kiriFn);
+
+  // 26. Utilitas Koleksi & Array Tambahan:
+  // Cek Keberadaan (Includes): fukumu (Murni) / fuku (Singkat) / punyaGak (Wibu) / onora (Rongawi)
+  const fukumuFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const targetArg = args[0];
+    const itemArg = args[1];
+    if (!targetArg) {
+      throw new Error("[Runtime Error] Target pemeriksaan fukumu tidak boleh kosong.");
+    }
+    if (targetArg.type === "array") {
+      const arr = targetArg as ArrayValue;
+      const itemVal = itemArg ? formatRuntimeValue(itemArg) : "null";
+      const found = arr.elements.some((el) => {
+        if (el.type === itemArg?.type) {
+          if (el.type === "number") return (el as NumberValue).value === (itemArg as NumberValue).value;
+          if (el.type === "string") return (el as StringValue).value === (itemArg as StringValue).value;
+          if (el.type === "boolean") return (el as BooleanValue).value === (itemArg as BooleanValue).value;
+        }
+        return formatRuntimeValue(el) === itemVal;
+      });
+      return MK_BOOL(found);
+    }
+    if (targetArg.type === "string") {
+      const str = (targetArg as StringValue).value;
+      const sub = itemArg ? formatRuntimeValue(itemArg) : "";
+      return MK_BOOL(str.includes(sub));
+    }
+    throw new Error(
+      "[Runtime Error] Argumen pertama fukumu harus berupa barisan (array) atau teks (string)."
+    );
+  });
+  env.declareVar("fukumu", fukumuFn);
+  env.declareVar("fuku", fukumuFn);
+  env.declareVar("punyaGak", fukumuFn);
+  env.declareVar("onora", fukumuFn);
+
+  // Urutkan Barisan (Sort): narabikae (Murni) / nara (Singkat) / rapihin (Wibu) / urutno (Rongawi)
+  const narabikaeFn = MK_NATIVE_FN(
+    async (args: RuntimeValue[], scopeEnv: Environment): Promise<RuntimeValue> => {
+      const arrArg = args[0];
+      if (!arrArg || arrArg.type !== "array") {
+        throw new Error("[Runtime Error] Argumen pertama narabikae harus berupa barisan (array).");
+      }
+      const comparator = args[1];
+      const copy = [...(arrArg as ArrayValue).elements];
+
+      if (comparator && (comparator.type === "function" || comparator.type === "native-fn")) {
+        for (let i = 0; i < copy.length - 1; i++) {
+          for (let j = 0; j < copy.length - i - 1; j++) {
+            const cmpRes = await invokeFunction(comparator, [copy[j]!, copy[j + 1]!], scopeEnv);
+            const cmpNum =
+              cmpRes.type === "number"
+                ? (cmpRes as NumberValue).value
+                : isTruthy(cmpRes)
+                ? 1
+                : -1;
+            if (cmpNum > 0) {
+              const temp = copy[j]!;
+              copy[j] = copy[j + 1]!;
+              copy[j + 1] = temp;
+            }
+          }
+        }
+      } else {
+        copy.sort((a, b) => {
+          if (a.type === "number" && b.type === "number") {
+            return (a as NumberValue).value - (b as NumberValue).value;
+          }
+          return formatRuntimeValue(a).localeCompare(formatRuntimeValue(b));
+        });
+      }
+      return MK_ARRAY(copy);
+    }
+  );
+  env.declareVar("narabikae", narabikaeFn);
+  env.declareVar("nara", narabikaeFn);
+  env.declareVar("rapihin", narabikaeFn);
+  env.declareVar("urutno", narabikaeFn);
+
+  // Irisan Barisan / Teks (Slice): kirinuki (Murni) / kinu (Singkat) / potongSebagian (Wibu) / cuplikno (Rongawi)
+  const kirinukiFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const targetArg = args[0];
+    const startArg = args[1];
+    const endArg = args[2];
+    if (!targetArg) {
+      throw new Error("[Runtime Error] Argumen pertama kirinuki tidak boleh kosong.");
+    }
+    const start = startArg && startArg.type === "number" ? (startArg as NumberValue).value : 0;
+    const end = endArg && endArg.type === "number" ? (endArg as NumberValue).value : undefined;
+
+    if (targetArg.type === "array") {
+      const arr = targetArg as ArrayValue;
+      return MK_ARRAY(arr.elements.slice(start, end));
+    }
+    if (targetArg.type === "string") {
+      const str = (targetArg as StringValue).value;
+      return MK_STRING(str.slice(start, end));
+    }
+    throw new Error(
+      "[Runtime Error] Argumen pertama kirinuki harus berupa barisan (array) atau teks (string)."
+    );
+  });
+  env.declareVar("kirinuki", kirinukiFn);
+  env.declareVar("kinu", kirinukiFn);
+  env.declareVar("potongSebagian", kirinukiFn);
+  env.declareVar("cuplikno", kirinukiFn);
+
   return env;
 }
 
@@ -1050,6 +1267,9 @@ export async function evaluate(
     case "LoopStatement":
       return await evalLoopStatement(astNode as LoopStatement, env);
 
+    case "ForEachStatement":
+      return await evalForEachStatement(astNode as ForEachStatement, env);
+
     case "BreakStatement":
       return { isBreak: true };
 
@@ -1076,6 +1296,9 @@ export async function evaluate(
 
     case "UnaryExpression":
       return await evalUnaryExpression(astNode as UnaryExpression, env);
+
+    case "ArrowFunctionExpression":
+      return evalArrowFunctionExpression(astNode as ArrowFunctionExpression, env);
 
     case "CallExpression":
       return await evalCallExpression(astNode as CallExpression, env);
@@ -1249,6 +1472,61 @@ async function evalLoopStatement(
 
   while (isTruthy(unwrapSignal(await evaluate(stmt.condition, env)))) {
     const scope = new Environment(env);
+    let shouldBreak = false;
+
+    for (const s of stmt.body) {
+      const result = await evaluate(s, scope);
+
+      if (isReturnSignal(result)) {
+        return result;
+      }
+
+      if (isBreakSignal(result)) {
+        shouldBreak = true;
+        break;
+      }
+
+      if (isContinueSignal(result)) {
+        break;
+      }
+
+      lastVal = result;
+    }
+
+    if (shouldBreak) {
+      break;
+    }
+  }
+
+  return lastVal;
+}
+
+async function evalForEachStatement(
+  stmt: ForEachStatement,
+  env: Environment
+): Promise<RuntimeValue | ReturnSignal> {
+  const collectionVal = unwrapSignal(await evaluate(stmt.collection, env));
+  let items: RuntimeValue[] = [];
+
+  if (collectionVal.type === "array") {
+    items = (collectionVal as ArrayValue).elements;
+  } else if (collectionVal.type === "string") {
+    const str = (collectionVal as StringValue).value;
+    items = str.split("").map((c) => MK_STRING(c));
+  } else if (collectionVal.type === "object") {
+    const obj = collectionVal as ObjectValue;
+    items = Array.from(obj.properties.keys()).map((k) => MK_STRING(k));
+  } else {
+    throw new Error(
+      `[Runtime Error] Tipe '${collectionVal.type}' tidak dapat diiterasi dengan perulangan 'subete'.`
+    );
+  }
+
+  let lastVal: RuntimeValue = MK_NULL();
+
+  for (const item of items) {
+    const scope = new Environment(env);
+    scope.declareVar(stmt.item, item);
     let shouldBreak = false;
 
     for (const s of stmt.body) {
@@ -1511,11 +1789,27 @@ async function evalUnaryExpression(
   throw new Error(`[Runtime Error] Operator uner '${node.operator}' tidak didukung.`);
 }
 
+function evalArrowFunctionExpression(
+  node: ArrowFunctionExpression,
+  env: Environment
+): FunctionValue {
+  return {
+    type: "function",
+    name: "anonymous",
+    parameters: node.parameters,
+    declarationEnv: env,
+    body: node.body,
+  };
+}
+
 async function evalCallExpression(
   call: CallExpression,
   env: Environment
 ): Promise<RuntimeValue> {
-  const callee = env.lookupVar(call.callee);
+  const callee =
+    typeof call.callee === "string"
+      ? env.lookupVar(call.callee)
+      : unwrapSignal(await evaluate(call.callee, env));
   const evaluatedArgs: RuntimeValue[] = [];
 
   for (const arg of call.args) {

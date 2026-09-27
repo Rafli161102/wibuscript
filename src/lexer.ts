@@ -30,6 +30,8 @@ export enum TokenType {
     Await,
     Try,
     Catch,
+    ForEach,
+    In,
 
     // Tipe Data & Identifier
     Identifier,
@@ -44,6 +46,7 @@ export enum TokenType {
     LessEquals,     // <=
     GreaterThan,    // >
     GreaterEquals,  // >=
+    Arrow,          // =>
 
     // Operator Logika
     AmpersandAmpersand, // &&
@@ -182,6 +185,17 @@ export const KEYWORDS: Record<string, TokenType> = {
     "yuru": TokenType.Catch,
     "santaiAja": TokenType.Catch,
     "amanBos": TokenType.Catch,
+
+    // Iterasi Koleksi (FOR-IN / FOR-EACH)
+    "subete": TokenType.ForEach,
+    "sube": TokenType.ForEach,
+    "sikatSemua": TokenType.ForEach,
+    "gilisemua": TokenType.ForEach,
+
+    // Partikel Koleksi (IN / FROM)
+    "no": TokenType.In,
+    "dari": TokenType.In,
+    "soko": TokenType.In,
 };
 
 /**
@@ -256,7 +270,7 @@ export function tokenize(sourceCode: string): Token[] {
             continue;
         }
 
-        // 3. Operator Perbandingan Ganda & Penugasan (==, !=, <=, >=, =, <, >)
+        // 3. Operator Perbandingan Ganda & Penugasan (==, !=, <=, >=, =, <, >, =>)
         if (current === "=") {
             src.shift() as string;
             column++;
@@ -264,6 +278,10 @@ export function tokenize(sourceCode: string): Token[] {
                 src.shift() as string;
                 column++;
                 tokens.push({ type: TokenType.DoubleEquals, value: "==", line: currentLine, column: currentCol });
+            } else if (src.length > 0 && src[0] === ">") {
+                src.shift() as string;
+                column++;
+                tokens.push({ type: TokenType.Arrow, value: "=>", line: currentLine, column: currentCol });
             } else {
                 tokens.push({ type: TokenType.Equals, value: "=", line: currentLine, column: currentCol });
             }

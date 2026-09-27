@@ -153,6 +153,36 @@ zutto (nyawaMusuh > 0 && giliran <= 5) {
 moshi (nyawaMusuh > 0) {
   mite("Pertarungan berakhir imbang! Monster melarikan diri.")
 }`,
+
+  iterasiDanGacha: `// Demonstrasi Iterasi Koleksi (subete), Lambda (=>), & Mesin Gacha (v1.6.0)
+mite("=== SISTEM PETUALANGAN ISEKAI v1.6.0 ===")
+
+// 1. Perulangan Iterasi Koleksi (subete ... no)
+kore anggota = ["Megumin", "Aqua", "Darkness", "Kazuma"]
+mite("Daftar Anggota Tim Petualang:")
+subete (nama no anggota) {
+  mite("- Hero: " + nama)
+}
+
+// 2. Fungsi Lambda / Arrow Function (=>) dengan utsusu & erabu
+kore skorDadu = [12, 45, 88, 30, 95]
+kore skorBonus = utsusu(skorDadu, x => x + 5)
+kore lulus = erabu(skorBonus, s => s >= 50)
+mite(\`Jumlah hero lolos kualifikasi: \${nagasa(lulus)}\`)
+
+// 3. Mesin Gacha Probabilistik (RNG berbobot)
+kore daftarHadiah = ["SSR: Pedang Excalibur", "SR: Tongkat Sihir", "R: Ranting Kayu"]
+kore bobot = [10, 30, 60] // Peluang: 10% SSR, 30% SR, 60% R
+kore hasilGacha = gacha(daftarHadiah, bobot)
+mite(\`Hasil Tarik Gacha: \${hasilGacha}\`)
+
+// 4. Utilitas Teks & String Baru: kiri, bunri, tsunagu, fukumu
+kore kalimat = "   isekai wibu script   "
+kore bersih = kiri(kalimat)
+kore kataArray = bunri(bersih, " ")
+kore slogan = tsunagu(kataArray, " -> ")
+mite(\`Slogan Terhubung: \${slogan}\`)
+mite(\`Apakah mengandung 'script'? \${fukumu(bersih, "script")}\`)`,
 };
 
 // Data kartu referensi untuk Panel Panduan Cepat (4 Dialek Mutlak)
@@ -217,6 +247,30 @@ angka[1] = 999
 
 // Akses karakter string
 kore huruf = "Wibu"[0]`,
+  },
+  {
+    id: "iteration",
+    title: "Iterasi Koleksi & Lambda",
+    category: "FOR-IN / ARROW =>",
+    icon: Sparkles,
+    description: "Perulangan subete (For-In) dan fungsi lambda sebaris (=>)",
+    codeSnippet: `// 1. Loop subete (4 Dialek):
+// Murni: subete (x no list)
+// Singkat: sube (x no list)
+// Wibu: sikatSemua (x dari list)
+// Rongawi: gilisemua (x soko list)
+kore tim = ["Megumin", "Aqua", "Kazuma"]
+subete (hero no tim) {
+  mite("Karakter: " + hero)
+}
+
+// 2. Fungsi Lambda Sebaris (Arrow =>):
+kore kuadrat = x => x * x
+kore lipat = utsusu([1, 2, 3], x => x * 10)
+
+// 3. Pustaka Baru:
+// bunri (split), tsunagu (join), okikae (replace)
+// kiri (trim), fukumu (contains), gacha (RNG item)`,
   },
   {
     id: "trycatch",
@@ -692,6 +746,7 @@ export default function WibuScriptPlayground() {
             <option value="default">Preset: RPG Quest Isekai (Array &amp; Template)</option>
             <option value="dialekDemo">Preset: 4 Dialek Mutlak</option>
             <option value="tryCatchDemo">Preset: Penanganan Galat (Try-Catch)</option>
+            <option value="iterasiDanGacha">Preset: Iterasi Koleksi, Lambda &amp; Gacha (v1.6.0)</option>
             <option value="arrayDanJson">Preset: Operasi Array &amp; JSON</option>
             <option value="gameTebakAngka">Preset: Mini RPG Pertarungan Dadu</option>
           </select>

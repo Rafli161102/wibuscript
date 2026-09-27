@@ -29,6 +29,8 @@ export interface DialectMapping {
   matte: [string, string, string, string];
   kokoromi: [string, string, string, string];
   yurusu: [string, string, string, string];
+  subete: [string, string, string, string];
+  no: [string, string, string, string];
 
   // Pustaka Standar
   kuchiMite: [string, string, string, string];
@@ -60,6 +62,14 @@ export interface DialectMapping {
   zettaichi: [string, string, string, string];
   kiriSute: [string, string, string, string];
   kiriAge: [string, string, string, string];
+  bunri: [string, string, string, string];
+  tsunagu: [string, string, string, string];
+  okikae: [string, string, string, string];
+  kiri: [string, string, string, string];
+  fukumu: [string, string, string, string];
+  narabikae: [string, string, string, string];
+  kirinuki: [string, string, string, string];
+  gacha: [string, string, string, string];
 }
 
 // Tabel Indeks: 0 = Murni, 1 = Singkat, 2 = Wibu, 3 = Rongawi
@@ -82,6 +92,8 @@ export const DIALECT_TABLE: Record<string, [string, string, string, string]> = {
   matte: ["matte", "mat", "sabarBanh", "admindatang"],
   kokoromi: ["kokoromi", "koko", "cobaDuluBanh", "gasTesLur"],
   yurusu: ["yurusu", "yuru", "santaiAja", "amanBos"],
+  subete: ["subete", "sube", "sikatSemua", "gilisemua"],
+  no: ["no", "no", "dari", "soko"],
 
   // Pustaka Standar
   kuchiMite: ["kuchiMite", "km", "bacotAmba", "cawapresin"],
@@ -113,6 +125,14 @@ export const DIALECT_TABLE: Record<string, [string, string, string, string]> = {
   zettaichi: ["zettaichi", "zet", "mutlakBanh", "mutlakLur"],
   kiriSute: ["kiriSute", "ks", "bawahinBanh", "bawahLur"],
   kiriAge: ["kiriAge", "kia", "atasinBanh", "atasLur"],
+  bunri: ["bunri", "bu", "pecahKata", "bedahno"],
+  tsunagu: ["tsunagu", "tsuna", "lemKata", "gandengen"],
+  okikae: ["okikae", "oki", "sulapKata", "gantinen"],
+  kiri: ["kiri", "kri", "pangkas", "potongen"],
+  fukumu: ["fukumu", "fuku", "punyaGak", "onora"],
+  narabikae: ["narabikae", "nara", "rapihin", "urutno"],
+  kirinuki: ["kirinuki", "kinu", "potongSebagian", "cuplikno"],
+  gacha: ["gacha", "gac", "tarikGacha", "mputerNasib"],
 };
 
 // Buat peta terbalik: sembarang token -> grup canonical -> indeks dialek

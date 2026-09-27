@@ -73,6 +73,8 @@ Seluruh kata kunci bahasa Inggris konvensional (`let`, `const`, `if`, `while`, d
 | **Tunggu (AWAIT)** | `matte` | `mat` | `sabarBanh` | `admindatang` | `TokenType.Await` | Penanda jeda waktu atau eksekusi asinkronus. |
 | **Coba (TRY)** | `kokoromi` | `koko` | `cobaDuluBanh` | `gasTesLur` | `TokenType.Try` | Blok penanganan eksepsi berpotensi galat. |
 | **Tangani (CATCH)** | `yurusu` | `yuru` | `santaiAja` | `amanBos` | `TokenType.Catch` | Blok tangkapan dan pemulihan galat runtime. |
+| **Iterasi (FOR-IN)** | `subete` | `sube` | `sikatSemua` | `gilisemua` | `TokenType.ForEach` | Perulangan melintasi seluruh elemen koleksi barisan atau teks. |
+| **Penghubung (IN)** | `no` | `no` | `dari` | `soko` | `TokenType.In` | Partikel penghubung variabel elemen dan koleksi. |
 
 ## Pustaka Standar (Standard Library)
 
@@ -138,6 +140,14 @@ Pustaka Standar mengikuti beberapa aturan:
 | Nilai Mutlak | `zettaichi(angka)` | `zet(angka)` | `mutlakBanh(angka)` | `mutlakLur(angka)` | `Number` | Menghitung nilai mutlak / absolut sebuah bilangan (Abs). |
 | Bulat Bawah | `kiriSute(angka)` | `ks(angka)` | `bawahinBanh(angka)` | `bawahLur(angka)` | `Number` | Membulatkan pecahan ke bilangan bulat di bawahnya (Floor). |
 | Bulat Atas | `kiriAge(angka)` | `kia(angka)` | `atasinBanh(angka)` | `atasLur(angka)` | `Number` | Membulatkan pecahan ke bilangan bulat di atasnya (Ceil). |
+| Pecah Teks | `bunri(teks, pemisah)` | `bu(teks, pemisah)` | `pecahKata(teks, pemisah)` | `bedahno(teks, pemisah)` | `Array` | Memecah teks menjadi barisan string berdasarkan pemisah (Split). |
+| Gabung Teks | `tsunagu(arr, pemisah)` | `tsuna(arr, pemisah)` | `lemKata(arr, pemisah)` | `gandengen(arr, pemisah)` | `String` | Menggabungkan elemen barisan menjadi satu teks (Join). |
+| Ganti Teks | `okikae(teks, cari, ganti)` | `oki(teks, cari, ganti)` | `sulapKata(teks, cari, ganti)` | `gantinen(teks, cari, ganti)` | `String` | Mengganti seluruh kemunculan substring dalam teks (Replace). |
+| Pangkas Spasi | `kiri(teks)` | `kri(teks)` | `pangkas(teks)` | `potongen(teks)` | `String` | Menghapus spasi di awal dan akhir teks (Trim). |
+| Cek Elemen | `fukumu(koleksi, item)` | `fuku(koleksi, item)` | `punyaGak(koleksi, item)` | `onora(koleksi, item)` | `Boolean` | Memeriksa apakah elemen ada dalam barisan atau teks (Includes). |
+| Urutkan Barisan | `narabikae(arr, fn?)` | `nara(arr, fn?)` | `rapihin(arr, fn?)` | `urutno(arr, fn?)` | `Array` | Mengurutkan elemen barisan (Sort default ascending atau via fungsi). |
+| Irisan Koleksi | `kirinuki(arr, awal, akhir?)` | `kinu(arr, awal, akhir?)` | `potongSebagian(arr, awal, akhir?)` | `cuplikno(arr, awal, akhir?)` | `Array/String` | Mengambil irisan barisan atau teks berdasarkan indeks (Slice). |
+| Undian Gacha | `gacha(daftar, bobot?)` | `gac(daftar, bobot?)` | `tarikGacha(daftar, bobot?)` | `mputerNasib(daftar, bobot?)` | `RuntimeValue` | Mengundi item secara seragam atau probabilistik berbobot (Gacha RNG). |
 
 > **Catatan:** Nama-nama di atas merupakan nama permukaan masing-masing dialek. Implementasi runtime tetap menggunakan satu fungsi internal untuk setiap kemampuan.
 
@@ -312,6 +322,15 @@ npx wibu convert contoh.wibu --to rongawi -o rongawi.wibu
 ```
 
 ## Log Pembaruan (Changelog)
+
+### v1.6.0
+- **Perulangan Iterasi Koleksi (For-In / For-Each)**: Dukungan perulangan langsung melintasi elemen array, karakter string, dan kunci objek menggunakan 4 dialek: `subete (item no koleksi)` (Murni), `sube (item no koleksi)` (Singkat), `sikatSemua (item dari koleksi)` (Wibu), dan `gilisemua (item soko koleksi)` (Rongawi). Dilengkapi dukungan penuh `yame` (break) dan `tsugi` (continue).
+- **Fungsi Sebaris Lambda / Arrow (=>)**: Dukungan penulisan ekspresi fungsi ringkas kelas satu `(x, y) => x + y`, `x => x * x`, `() => nilai`, dan bentuk blok `(x) => { ... }`. Dapat dipanggil secara instan (IIFE) atau disalurkan langsung sebagai callback pada metode tingkat tinggi (`utsusu`, `erabu`, `mitsukeru`).
+- **Ekspansi Pustaka Standar (Manipulasi Teks, Barisan & Gacha)**:
+  - Manipulasi String: `bunri` (split teks), `tsunagu` (join array), `okikae` (replace substring), `kiri` (trim spasi).
+  - Utilitas Koleksi: `fukumu` (includes / contains), `narabikae` (sort dengan komparator kustom), `kirinuki` (slice).
+  - Mesin Gacha Probabilistik: `gacha` / `tarikGacha` untuk pengundian seragam maupun seleksi item berbobot (*weighted RNG*).
+- **Sinkronisasi Tooling & Web Playground**: Pembaruan Dialect Auto-Converter, JavaScript Transpiler, VS Code Extension TextMate grammar, kartu panduan cepat, dan preset petualangan isekai v1.6.0 pada Web Playground.
 
 ### v1.5.0
 - **Penanganan Galat (Try-Catch)**: Penambahan blok penanganan eksepsi `kokoromi ... yurusu` (Murni), `koko ... yuru` (Singkat), `cobaDuluBanh ... santaiAja` (Wibu), dan `gasTesLur ... amanBos` (Rongawi).
