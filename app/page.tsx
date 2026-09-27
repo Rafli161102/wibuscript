@@ -2,7 +2,8 @@
 "use client";
 
 import packageJson from "../package.json";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import Editor from "@monaco-editor/react";
 import {
   tokenize,
   Parser,
@@ -131,7 +132,6 @@ export default function WibuScriptPlayground() {
   const [tokenCount, setTokenCount] = useState<number | null>(null);
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Membaca parameter ?code= dari URL saat pertama kali dimuat di browser
   useEffect(() => {
@@ -170,7 +170,7 @@ export default function WibuScriptPlayground() {
   };
 
   // Eksekusi kode WibuScript di sisi klien (Client-Side Rendering)
-  const handleRunCode = async () => {
+  const handleRunCode = useCallback(async () => {
     if (isRunning) return;
 
     setIsRunning(true);
@@ -209,7 +209,7 @@ export default function WibuScriptPlayground() {
     } finally {
       setIsRunning(false);
     }
-  };
+  }, [code, isRunning]);
 
   const handleClearOutput = () => {
     setOutputLog([]);
@@ -225,27 +225,9 @@ export default function WibuScriptPlayground() {
     }
   };
 
-  // Dukungan tombol Tab pada text editor
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-      e.preventDefault();
-      void handleRunCode();
-      return;
-    }
-
-    if (e.key === "Tab") {
-      e.preventDefault();
-      const target = e.currentTarget;
-      const start = target.selectionStart;
-      const end = target.selectionEnd;
-
-      const newCode = code.substring(0, start) + "  " + code.substring(end);
-      setCode(newCode);
-
-      setTimeout(() => {
-        target.selectionStart = target.selectionEnd = start + 2;
-      }, 0);
-    }
+  // Handler perubahan teks dari Monaco Editor
+  const handleEditorChange = (value: string | undefined) => {
+    setCode(value ?? "");
   };
 
   return (
@@ -314,28 +296,45 @@ export default function WibuScriptPlayground() {
 
       {/* Konten Utama: 2 Kolom Editor & Terminal */}
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 lg:p-6 overflow-hidden">
-        {/* Kolom 1: Area Editor */}
+        {/* Kolom 1: Area Editor (Monaco) */}
         <section className="flex flex-col rounded-lg border border-slate-800 bg-slate-900 shadow-sm overflow-hidden">
           <div className="bg-slate-800/60 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
             <span>Editor Kode sumber (*.wibu)</span>
             <span>{code.split("\n").length} baris | {code.length} karakter</span>
           </div>
 
-          <div className="relative flex-1 bg-slate-900">
-            <textarea
-              ref={textareaRef}
+          <div className="relative flex-1 min-h-[420px]">
+            <Editor
+              height="100%"
+              defaultLanguage="javascript"
+              theme="vs-dark"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
-              onKeyDown={handleKeyDown}
-              spellCheck={false}
-              placeholder="Tulis kode WibuScript Anda di sini..."
-              aria-label="Area Editor Kode WibuScript"
-              className="w-full h-full min-h-[420px] p-4 bg-transparent text-slate-200 font-mono text-sm leading-relaxed resize-none focus:outline-none focus:ring-0 selection:bg-cyan-900/50"
+              onChange={handleEditorChange}
+              options={{
+                fontSize: 14,
+                fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Monaco, 'Courier New', monospace",
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                wordWrap: "on",
+                tabSize: 2,
+                automaticLayout: true,
+                lineNumbersMinChars: 3,
+                padding: { top: 12, bottom: 12 },
+                renderLineHighlight: "gutter",
+                bracketPairColorization: { enabled: true },
+                guides: { bracketPairs: true, indentation: true },
+                cursorBlinking: "smooth",
+                cursorSmoothCaretAnimation: "on",
+                smoothScrolling: true,
+                contextmenu: true,
+                folding: true,
+                lineDecorationsWidth: 8,
+              }}
             />
           </div>
 
           <div className="bg-slate-900/90 border-t border-slate-800 px-4 py-2 text-[11px] text-slate-500 flex justify-between items-center">
-            <span>Dukungan Sintaks: koreWa / kore, mite, moshi, chigau, tungguBentar</span>
+            <span>Monaco Editor | Dukungan Sintaks: koreWa / kore, mite, moshi, chigau, tungguBentar</span>
             <span>Tab = 2 spasi</span>
           </div>
         </section>

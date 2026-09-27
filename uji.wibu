@@ -1,0 +1,2 @@
+kore tes = { status: "Sukses", tipe: "CLI Eksekusi" };
+mite("Sistem WibuScript siap! Status: " + tes.status);
