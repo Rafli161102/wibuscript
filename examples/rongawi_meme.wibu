@@ -1,26 +1,31 @@
 // ============================================================================
-// CONTOH: MEME RONGAWI WIBUSCRIPT (v1.6 - v1.8 NGAWIVERSE SLANG)
+// CONTOH: MEME RONGAWI WIBUSCRIPT (v1.8 - NGAWIVERSE AUTHENTIC SLANG)
 // Demonstrasi arsitektur Sistem 4 Dialek Mutlak dialek Meme Rongawi
+// Kosakata: thugposting, fesnuk, Ngawiverse Reza Auditore - 100% organik
 // ============================================================================
 
 // 1. Variabel & Tetapan (pokmipokmi & bundarahma)
 pokmipokmi ksatria = "Rusdi Ngawi"
 bundarahma markas = "Istana Malaka"
-cawapresin("=== PETUALANGAN RONGAWI: " + ksatria + " DI " + markas + " ===")
+cawapresin("=== NGAWIVERSE: " + ksatria + " DI " + markas + " ===")
 
 // 2. Koleksi & Iterasi (thugshaker ... alasdaun)
-pokmipokmi daftarItem = ["Linggis Jawa", "Minyak Pelumas", "Weekly Pass"]
+// panjangberurat = nagasa/length
+pokmipokmi daftarItem = ["Linggis Jawa", "Minyak Pelumas", "Ototkawat"]
 cawapresin("Jumlah inventaris: " + panjangberurat(daftarItem))
 
 thugshaker (item alasdaun daftarItem) {
   cawapresin("- Item bawaan: " + item)
 }
 
-// 3. Destructuring Barisan & Rest Operator
-pokmipokmi [senjataUtama, ...cadangan] = daftarItem
-cawapresin("Senjata Utama: " + senjataUtama)
+// 3. Waktu & Tipe Data
+// kopihitam = imaJikan (waktu sekarang)
+// omagot = shurui (cek tipe data)
+pokmipokmi waktunya = kopihitam()
+cawapresin("Jam sekarang: " + waktunya)
+cawapresin("Tipe data ksatria: " + omagot(ksatria))
 
-// 4. Pendefinisian Kelas / Sekte (sektejomok, ambatunat, lanangmas, jalurhukum)
+// 4. Fungsi & Kelas (fufufafa & sektejomok)
 sektejomok PasukanNgawi {
   ambatunat(nama, power) {
     lanangmas.nama = nama
@@ -28,37 +33,98 @@ sektejomok PasukanNgawi {
   }
 
   unjukKekuatan() {
-    cawapresin(lanangmas.nama + " bersiap dengan kekuatan: " + lanangmas.power)
+    cawapresin("Amba bersiap dengan kekuatan: " + lanangmas.power)
+    cawapresin("Amba melancarkan jurus Thug Shaker!")
   }
 }
 
-sektejomok PasukanKhusus jalurhukum PasukanNgawi {
-  goyangMaut() {
-    cawapresin(lanangmas.nama + " melancarkan jurus Thug Shaker!")
-  }
+pokmipokmi pejuang = ambatumbas PasukanNgawi("Mas Rusdi", 9999)
+pejuang.unjukKekuatan()
+
+// 5. Kondisi (izintampil / wowok / woijawa)
+pokmipokmi power = 9999
+izintampil (power > 9000) {
+  cawapresin("Status: Menyala Abkuh! Mas Rusdi bangga!")
+} woijawa {
+  cawapresin("Status: Bocah Fana, minta habisukt dulu")
 }
 
-// 5. Instansiasi Objek (ambatumbas)
-pokmipokmi prajurit = ambatumbas PasukanKhusus("Amba", 9999)
-prajurit.unjukKekuatan()
-prajurit.goyangMaut()
+// 6. High-Order Functions - Gaya Rongawi
+// predikbola = map, morebullets = filter, fesnuker = find
+pokmipokmi angka = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-// 6. Pattern Matching (persimpangan, kenaben, yappingtolol)
-pokmipokmi statusPertarungan = "Menang"
-persimpangan (statusPertarungan) {
-  kenaben "Kalah": {
-    cawapresin("Status: Mundur ke Ngawiland!")
-  }
-  kenaben "Menang": {
-    cawapresin("Status: Menyala Abkuh! Mas Rusdi bangga!")
-  }
-  yappingtolol: {
-    cawapresin("Status: Nyocot doang tidak ada hasil.")
-  }
+fufufafa kaliDua(x) { kandabahlil x * 2 }
+fufufafa cekGenap(x) { kandabahlil x % 2 == 0 }
+
+pokmipokmi dikaliDua = predikbola(angka, kaliDua)
+cawapresin("Dikali dua: " + copascaption(dikaliDua))
+
+pokmipokmi bilGenapDoang = morebullets(angka, cekGenap)
+cawapresin("Genap doang: " + copascaption(bilGenapDoang))
+
+// salintempel = parse JSON, copascaption = stringify JSON
+pokmipokmi jsonTeks = "{\"nama\":\"Mas Rusdi\",\"kota\":\"Ngawi\"}"
+pokmipokmi objek = salintempel(jsonTeks)
+cawapresin("Nama dari JSON: " + objek.nama)
+
+// 7. Matematika Ngawiverse
+// robogor = sqrt, ironiman = abs, hutanselatan = floor, menaracukur = ceil
+cawapresin("Akar kuadrat 144: " + robogor(144))
+cawapresin("Nilai mutlak -420: " + ironiman(-420))
+cawapresin("Bulatkan 7.3 ke bawah: " + hutanselatan(7.3))
+cawapresin("Bulatkan 6.1 ke atas: " + menaracukur(6.1))
+
+// 8. String Utils
+// cukurfade = trim, lendirmurni = join, pecahkepala = split
+// gakhabisgila = uppercase, monyetbanyumas = lowercase
+pokmipokmi kata = "  Thug Posting Ngawi  "
+cawapresin("Setelah cukurfade: '" + cukurfade(kata) + "'")
+cawapresin("Uppercase: " + gakhabisgila(cukurfade(kata)))
+cawapresin("Lowercase: " + monyetbanyumas(cukurfade(kata)))
+
+pokmipokmi pecahan = pecahkepala("Rusdi-Ngawi-Jago", "-")
+cawapresin("Pecah: " + copascaption(pecahan))
+cawapresin("Gabung: " + lendirmurni(pecahan, " x "))
+
+// 9. Gacha / Random
+// rudalmentah = acak (random), weeklypass = gacha item
+pokmipokmi nomorLucky = rudalmentah(1, 100)
+cawapresin("Nomor lucky Rongawi: " + nomorLucky)
+
+pokmipokmi hadiah = ["Akun Tumbal", "Cukur Fade Gratis", "Weekly Pass", "Linggis Jawa"]
+cawapresin("Hadiah Gacha: " + weeklypass(hadiah))
+
+// 10. Berkas I/O
+// ototkawat = baca berkas, teksusang = tulis berkas
+// (dinonaktifkan di playground karena butuh filesystem)
+// ototkawat("contoh.wibu")
+// teksusang("output.txt", "Rongawi menyala!")
+
+// 11. Push & Pop Array
+// priaotot = push, keluarinBarang = pop
+pokmipokmi tim = ["Mas Rusdi", "Mas Nasir"]
+priaotot(tim, "Mas Fuad")
+cawapresin("Tim setelah priaotot: " + copascaption(tim))
+pokmipokmi keluar = keluarinBarang(tim)
+cawapresin("Yang keluar: " + keluar)
+
+// 12. Try-Catch (ragnamok / amanBos)
+ragnamok {
+  cawapresin("Mencoba sesuatu yang berisiko...")
+  pokmipokmi hasil = ironiman(-999)
+  cawapresin("Berhasil: " + hasil)
+} amanBos(e) {
+  cawapresin("Error ditangkap: " + e)
 }
 
-// 7. Undian Gacha RNG (weeklypass)
-pokmipokmi gachaReward = weeklypass(["Akun Tumbal", "Minyak Urut", "Pedang Daging"])
-cawapresin("Hadiah Gacha: " + gachaReward)
+// 13. Goyangpantat = Sort
+pokmipokmi nilai = [9, 3, 7, 1, 5]
+cawapresin("Sebelum goyangpantat: " + copascaption(nilai))
+pokmipokmi urut = goyangpantat(nilai)
+cawapresin("Sesudah goyangpantat: " + copascaption(urut))
 
-cawapresin("=== EKSEKUSI RONGAWI SELESAI ===")
+// 14. Monyetijo = includes
+pokmipokmi adaMasRusdi = monyetijo(tim, "Mas Rusdi")
+cawapresin("Ada Mas Rusdi di tim? " + adaMasRusdi)
+
+cawapresin("=== EKSEKUSI RONGAWI SELESAI - MENYALA ABKUH! ===")

@@ -322,9 +322,9 @@ describe("WibuScript v1.7.0 - Phase 2: OOP & Module System", () => {
       `;
 
       const wibu = convertDialect(source, "wibu");
-      expect(wibu).toContain("paguyuban Ninja");
-      expect(wibu).toContain("lahiran(n)");
-      expect(wibu).toContain("siAing.n = n");
+      expect(wibu).toContain("nakama Ninja");
+      expect(wibu).toContain("umareta(n)");
+      expect(wibu).toContain("oreSama.n = n");
       expect(wibu).toContain("sebarJutsu { Ninja }");
       expect(wibu).toContain('summonJutsu { Katana } dari "./senjata.wibu"');
 

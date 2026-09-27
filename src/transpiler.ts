@@ -56,13 +56,16 @@ const STDLIB_MAP: Record<string, string> = {
   kuchiMite: "console.log",
   km: "console.log",
   bacotAmba: "console.log",
+  omaeWaIu: "console.log",
   cawapresin: "console.log",
 
   // Waktu
   imaJikan: "(() => new Date().toISOString())",
   ima: "(() => new Date().toISOString())",
   jamBerapaBanh: "(() => new Date().toISOString())",
-  cekJamLur: "(() => new Date().toISOString())",
+  nanjiDesu: "(() => new Date().toISOString())",
+  kopihitam: "(() => new Date().toISOString())",
+  cekJamLur: "(() => new Date().toISOString())", // deprecated
 
   // Konversi Angka
   suji: "Number",
@@ -76,19 +79,27 @@ const STDLIB_MAP: Record<string, string> = {
   ruuto: "Math.sqrt",
   ru: "Math.sqrt",
   akarPangkat: "Math.sqrt",
-  akarLur: "Math.sqrt",
+  robogor: "Math.sqrt",
+  heihoukon: "Math.sqrt",
+  akarLur: "Math.sqrt", // deprecated
   zettaichi: "Math.abs",
   zet: "Math.abs",
   mutlakBanh: "Math.abs",
-  mutlakLur: "Math.abs",
+  ironiman: "Math.abs",
+  zettaiChi: "Math.abs",
+  mutlakLur: "Math.abs", // deprecated
   kiriSute: "Math.floor",
   ks: "Math.floor",
   bawahinBanh: "Math.floor",
-  bawahLur: "Math.floor",
+  hutanselatan: "Math.floor",
+  shitaKiri: "Math.floor",
+  bawahLur: "Math.floor", // deprecated
   kiriAge: "Math.ceil",
   kia: "Math.ceil",
   atasinBanh: "Math.ceil",
-  atasLur: "Math.ceil",
+  menaracukur: "Math.ceil",
+  ueKiri: "Math.ceil",
+  atasLur: "Math.ceil", // deprecated
   marume: "Math.round",
   beki: "Math.pow",
 
@@ -96,11 +107,15 @@ const STDLIB_MAP: Record<string, string> = {
   kanjiNi: "JSON.parse",
   kn: "JSON.parse",
   jadiObjekBanh: "JSON.parse",
-  uraiJsonLur: "JSON.parse",
+  salintempel: "JSON.parse",
+  wakattaYo: "JSON.parse",
+  uraiJsonLur: "JSON.parse", // deprecated
   kanjiMojiretsu: "JSON.stringify",
   kmj: "JSON.stringify",
   jadiTeksBanh: "JSON.stringify",
-  bungkusJsonLur: "JSON.stringify",
+  copascaption: "JSON.stringify",
+  oshieteNe: "JSON.stringify",
+  bungkusJsonLur: "JSON.stringify", // deprecated
 
   // Inisialisasi Barisan
   retsu: "((...args) => args)",
@@ -108,6 +123,7 @@ const STDLIB_MAP: Record<string, string> = {
   bikinBarisan: "((...args) => args)",
   kumpulinBocah: "((...args) => args)",
   budakhitam: "((...args) => args)",
+  nakamaTachi: "((...args) => args)",
   kumpulinJawa: "((...args) => args)",
 };
 
@@ -570,19 +586,19 @@ export class Transpiler {
         const calleeName = typeof callee === "string" ? callee : "";
 
         // Penanganan metode barisan & pustaka khusus
-        if (["utsusu", "utu", "petainBanh", "petainLur"].includes(calleeName)) {
+        if (["utsusu", "utu", "petainBanh", "henshinSuru", "predikbola"].includes(calleeName)) {
           const arr = this.transpileExpression(call.args[0]!);
           const fn = this.transpileExpression(call.args[1]!);
           return `__utsusu(${arr}, ${fn})`;
         }
 
-        if (["erabu", "era", "saringBanh", "saringLur"].includes(calleeName)) {
+        if (["erabu", "era", "saringBanh", "senbatsuNe", "morebullets"].includes(calleeName)) {
           const arr = this.transpileExpression(call.args[0]!);
           const fn = this.transpileExpression(call.args[1]!);
           return `__erabu(${arr}, ${fn})`;
         }
 
-        if (["mitsukeru", "mitu", "cariinBanh", "golekLur", "ciduk", "fesnuker"].includes(calleeName)) {
+        if (["mitsukeru", "mitu", "cariinBanh", "mitsuketaYo", "fesnuker"].includes(calleeName)) {
           const arr = this.transpileExpression(call.args[0]!);
           const fn = this.transpileExpression(call.args[1]!);
           return `__mitsukeru(${arr}, ${fn})`;
@@ -637,7 +653,7 @@ export class Transpiler {
           return `__gacha(${items}, ${weights})`;
         }
 
-        if (["nagasa", "naga", "seginiDoang", "itungPanjangLur", "tolongCekNagasa", "cekUkuran", "panjangberurat"].includes(calleeName)) {
+        if (["nagasa", "naga", "seginiDoang", "doreKurai", "panjangberurat", "tolongCekNagasa", "cekUkuran"].includes(calleeName)) {
           const arg = this.transpileExpression(call.args[0]!);
           return `__nagasa(${arg})`;
         }

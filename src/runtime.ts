@@ -533,6 +533,7 @@ export function createGlobalEnvironment(
   env.declareVar("kuchiMite", printFn);
   env.declareVar("km", printFn);
   env.declareVar("bacotAmba", printFn);
+  env.declareVar("omaeWaIu", printFn);
   env.declareVar("cawapresin", printFn);
 
   // 2. Delay: shibaraku (Murni) / siba (Singkat) / santuyDulu (Wibu) / nungguinLu (Rongawi)
@@ -554,9 +555,10 @@ export function createGlobalEnvironment(
   env.declareVar("shibaraku", delayFn);
   env.declareVar("siba", delayFn);
   env.declareVar("santuyDulu", delayFn);
+  env.declareVar("matteNeSikit", delayFn);
   env.declareVar("nungguinLu", delayFn);
 
-  // 3. Waktu Lokal: imaJikan (Murni) / ima (Singkat) / jamBerapaBanh (Wibu) / cekJamLur (Rongawi)
+  // 3. Waktu Lokal: imaJikan (Murni) / ima (Singkat) / jamBerapaBanh (Wibu) / kopihitam (Rongawi)
   const waktuSekarangFn = MK_NATIVE_FN((): RuntimeValue => {
     return MK_STRING(new Date().toLocaleTimeString());
   });
@@ -566,9 +568,11 @@ export function createGlobalEnvironment(
   env.declareVar("waktuSekarang", waktuSekarangFn);
   env.declareVar("imaJikan", waktuSekarangFn);
   env.declareVar("jamBerapaBanh", waktuSekarangFn);
-  env.declareVar("cekJamLur", waktuSekarangFn);
+  env.declareVar("nanjiDesu", waktuSekarangFn);
+  env.declareVar("kopihitam", waktuSekarangFn);
+  env.declareVar("cekJamLur", waktuSekarangFn); // alias lama (deprecated)
 
-  // 4. Panjang/Length: nagasa (Murni) / naga (Singkat) / seginiDoang (Wibu) / itungPanjangLur (Rongawi)
+  // 4. Panjang/Length: nagasa (Murni) / naga (Singkat) / seginiDoang (Wibu) / panjangberurat (Rongawi)
   const panjangFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const arg = args[0];
     if (!arg) {
@@ -589,9 +593,10 @@ export function createGlobalEnvironment(
   env.declareVar("panjangTeks", panjangFn);
   env.declareVar("naga", panjangFn);
   env.declareVar("seginiDoang", panjangFn);
-  env.declareVar("itungPanjangLur", panjangFn);
-  env.declareVar("cekUkuran", panjangFn);
+  env.declareVar("doreKurai", panjangFn);
   env.declareVar("panjangberurat", panjangFn);
+  env.declareVar("cekUkuran", panjangFn);
+  env.declareVar("itungPanjangLur", panjangFn); // alias lama (deprecated)
 
   // 5. Konversi Angka: suji (Murni) / suj (Singkat) / jadiAngkaBanh (Wibu) / ubahJadiDuit (Rongawi)
   const ubahAngkaFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
@@ -613,6 +618,7 @@ export function createGlobalEnvironment(
   env.declareVar("suji", ubahAngkaFn);
   env.declareVar("suj", ubahAngkaFn);
   env.declareVar("jadiAngkaBanh", ubahAngkaFn);
+  env.declareVar("suujiNi", ubahAngkaFn);
   env.declareVar("ubahJadiDuit", ubahAngkaFn);
 
   // 6. Tipe Data: shurui (Murni) / shu (Singkat) / iniApaan (Wibu) / bendaApaanLur (Rongawi)
@@ -646,7 +652,9 @@ export function createGlobalEnvironment(
   env.declareVar("tipeNani", tipeDataFn);
   env.declareVar("shu", tipeDataFn);
   env.declareVar("iniApaan", tipeDataFn);
-  env.declareVar("bendaApaanLur", tipeDataFn);
+  env.declareVar("naniTypeNe", tipeDataFn);
+  env.declareVar("omagot", tipeDataFn);
+  env.declareVar("bendaApaanLur", tipeDataFn); // alias lama (deprecated)
 
   // 7. Pangkat: beki (Murni) / bek (Singkat) / angkatin (Wibu) / naikinPangkat (Rongawi)
   const pangkatFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
@@ -663,6 +671,7 @@ export function createGlobalEnvironment(
   env.declareVar("pangkatSuji", pangkatFn);
   env.declareVar("bek", pangkatFn);
   env.declareVar("angkatin", pangkatFn);
+  env.declareVar("tsuyokuNare", pangkatFn);
   env.declareVar("naikinPangkat", pangkatFn);
 
   // 8. Pembulatan: marume (Murni) / maru (Singkat) / bulatinBanh (Wibu) / rapihinAngka (Rongawi)
@@ -678,8 +687,9 @@ export function createGlobalEnvironment(
   env.declareVar("maru", bulatFn);
   env.declareVar("bulatinBanh", bulatFn);
   env.declareVar("rapihinAngka", bulatFn);
+  env.declareVar("maneNi", bulatFn);
 
-  // 9. Tambah Array: ireta (Murni) / ire (Singkat) / masukinLur (Wibu) / tambahBarang (Rongawi)
+  // 9. Tambah Array: ireta (Murni) / ire (Singkat) / masukinSini (Wibu) / priaotot (Rongawi)
   const pushRetsuFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const target = args[0];
     const item = args[1] ?? MK_NULL();
@@ -694,10 +704,12 @@ export function createGlobalEnvironment(
   env.declareVar("isiRetsu", pushRetsuFn);
   env.declareVar("ireta", pushRetsuFn);
   env.declareVar("ire", pushRetsuFn);
-  env.declareVar("masukinLur", pushRetsuFn);
+  env.declareVar("priaotot", pushRetsuFn);
+  env.declareVar("haireNe", pushRetsuFn);
   env.declareVar("tambahBarang", pushRetsuFn);
+  env.declareVar("masukinLur", pushRetsuFn); // alias lama (deprecated)
 
-  // 10. Ambil Array: toru (Murni) / tor (Singkat) / ambilBelakang (Wibu) / keluarinBarang (Rongawi)
+  // 10. Ambil Array: toru (Murni) / tor (Singkat) / deteike (Wibu) / danaterbakar (Rongawi)
   const popRetsuFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const target = args[0];
     if (target && target.type === "array") {
@@ -711,7 +723,9 @@ export function createGlobalEnvironment(
   env.declareVar("buangRetsu", popRetsuFn);
   env.declareVar("toru", popRetsuFn);
   env.declareVar("tor", popRetsuFn);
+  env.declareVar("deteike", popRetsuFn);
   env.declareVar("ambilBelakang", popRetsuFn);
+  env.declareVar("danaterbakar", popRetsuFn);
   env.declareVar("keluarinBarang", popRetsuFn);
 
   // 11. Substring: potongKoreNagasa (Ekstensi) vs kiru (Shorthand)
@@ -739,10 +753,13 @@ export function createGlobalEnvironment(
   env.declareVar("kiru", potongTeksFn);
   env.declareVar("potongTeks", potongTeksFn);
   env.declareVar("kir", potongTeksFn);
-  env.declareVar("potongSini", potongTeksFn);
+  env.declareVar("kertaslecek", potongTeksFn);
+  env.declareVar("kiriteNe", potongTeksFn);
   env.declareVar("cuilTeks", potongTeksFn);
+  env.declareVar("potongSini", potongTeksFn);
+  env.declareVar("gorokLur", potongTeksFn); // alias lama (deprecated)
 
-  // 12. Uppercase: ookiku (Murni) / ook (Singkat) / gedeinHuruf (Wibu) / besarinSemua (Rongawi)
+  // 12. Uppercase: ookiku (Murni) / ook (Singkat) / gedeinHuruf (Wibu) / gakhabisgila (Rongawi)
   const uppercaseFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const arg = args[0];
     if (!arg) return MK_STRING("");
@@ -757,9 +774,12 @@ export function createGlobalEnvironment(
   env.declareVar("ookiku", uppercaseFn);
   env.declareVar("ook", uppercaseFn);
   env.declareVar("gedeinHuruf", uppercaseFn);
+  env.declareVar("gakhabisgila", uppercaseFn);
+  env.declareVar("ookiVoice", uppercaseFn);
   env.declareVar("besarinSemua", uppercaseFn);
+  env.declareVar("gedeinLur", uppercaseFn); // alias lama (deprecated)
 
-  // 13. Lowercase: chiisaku (Murni) / chi (Singkat) / kecilinHuruf (Wibu) / kecilinSemua (Rongawi)
+  // 13. Lowercase: chiisaku (Murni) / chi (Singkat) / kecilinHuruf (Wibu) / monyetbanyumas (Rongawi)
   const lowercaseFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const arg = args[0];
     if (!arg) return MK_STRING("");
@@ -773,7 +793,10 @@ export function createGlobalEnvironment(
   env.declareVar("chiisaku", lowercaseFn);
   env.declareVar("chi", lowercaseFn);
   env.declareVar("kecilinHuruf", lowercaseFn);
+  env.declareVar("monyetbanyumas", lowercaseFn);
+  env.declareVar("chiisaiVoice", lowercaseFn);
   env.declareVar("kecilinSemua", lowercaseFn);
+  env.declareVar("kecilinLur", lowercaseFn); // alias lama (deprecated)
 
   // 14. Generator Acak & Gacha RNG: randamu/gacha (Murni) / ran/gac (Singkat) / tarikGacha/gachaBanh (Wibu) / mputerNasib/kocokAngka (Rongawi)
   const gachaFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
@@ -838,11 +861,14 @@ export function createGlobalEnvironment(
   env.declareVar("gac", gachaFn);
   env.declareVar("gachaBanh", gachaFn);
   env.declareVar("tarikGacha", gachaFn);
+  env.declareVar("rudalmentah", gachaFn);
+  env.declareVar("unmeiGacha", gachaFn);
   env.declareVar("kocokAngka", gachaFn);
   env.declareVar("mputerNasib", gachaFn);
   env.declareVar("spinZeus", gachaFn);
   env.declareVar("weeklypass", gachaFn);
   env.declareVar("gachaPull", gachaFn);
+  env.declareVar("kocokLur", gachaFn); // alias lama (deprecated)
 
   // 15. Force Panic / Throw Error: shikei (Murni) / shi (Singkat) / matiinProgram (Wibu) / udahKelarinAja (Rongawi)
   const panicFn = MK_NATIVE_FN((args: RuntimeValue[]): never => {
@@ -857,6 +883,7 @@ export function createGlobalEnvironment(
   env.declareVar("shikei", panicFn);
   env.declareVar("shi", panicFn);
   env.declareVar("matiinProgram", panicFn);
+  env.declareVar("shineeeYo", panicFn);
   env.declareVar("udahKelarinAja", panicFn);
 
   // 16. Inisialisasi Barisan/Array: retsu (Murni) / ret (Singkat) / bikinBarisan (Wibu) / kumpulinJawa (Rongawi)
@@ -867,6 +894,7 @@ export function createGlobalEnvironment(
   env.declareVar("retsu", retsuFn);
   env.declareVar("ret", retsuFn);
   env.declareVar("bikinBarisan", retsuFn);
+  env.declareVar("nakamaTachi", retsuFn);
   env.declareVar("kumpulinJawa", retsuFn);
   env.declareVar("kumpulinBocah", retsuFn);
   env.declareVar("budakhitam", retsuFn);
@@ -910,9 +938,11 @@ export function createGlobalEnvironment(
   env.declareVar("bacaBerkas", bacaBerkasFn);
   env.declareVar("yo", bacaBerkasFn);
   env.declareVar("bacainBerkas", bacaBerkasFn);
-  env.declareVar("bukaBerkasLur", bacaBerkasFn);
+  env.declareVar("yomimasuNe", bacaBerkasFn);
+  env.declareVar("ototkawat", bacaBerkasFn);
+  env.declareVar("bukaBerkasLur", bacaBerkasFn); // alias lama (deprecated)
 
-  // 19. Tulis Berkas: kaku (Murni) / ka (Singkat) / tulisinBerkas (Wibu) / coretBerkasLur (Rongawi)
+  // 19. Tulis Berkas: kaku (Murni) / ka (Singkat) / tulisinBerkas (Wibu) / teksusang (Rongawi)
   const tulisBerkasFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     checkNodeEnvironment();
 
@@ -951,7 +981,9 @@ export function createGlobalEnvironment(
   env.declareVar("tulisBerkas", tulisBerkasFn);
   env.declareVar("ka", tulisBerkasFn);
   env.declareVar("tulisinBerkas", tulisBerkasFn);
-  env.declareVar("coretBerkasLur", tulisBerkasFn);
+  env.declareVar("kakimasuNe", tulisBerkasFn);
+  env.declareVar("teksusang", tulisBerkasFn);
+  env.declareVar("coretBerkasLur", tulisBerkasFn); // alias lama (deprecated)
 
   // 20. Impor Modul: yobu (Murni) / yoB (Singkat) / panggilBerkas (Wibu) / sikatBanh (Rongawi)
   const imporModulFn = MK_NATIVE_FN(
@@ -1007,6 +1039,7 @@ export function createGlobalEnvironment(
   env.declareVar("panggilModul", imporModulFn);
   env.declareVar("yoB", imporModulFn);
   env.declareVar("panggilBerkas", imporModulFn);
+  env.declareVar("mottekite", imporModulFn);
   env.declareVar("sikatBanh", imporModulFn);
 
   // 21. HTTP Fetch API: ukeru (Murni) / uke (Singkat) / ambilDataBanh (Wibu) / SepongMas (Rongawi)
@@ -1049,10 +1082,11 @@ export function createGlobalEnvironment(
   env.declareVar("ukeru", fetchFn);
   env.declareVar("uke", fetchFn);
   env.declareVar("ambilDataBanh", fetchFn);
+  env.declareVar("tottekiteNe", fetchFn);
   env.declareVar("SepongMas", fetchFn);
 
   // 22. Penguraian & Pembungkusan JSON:
-  // Parse: kanjiNi (Murni) / kn (Singkat) / jadiObjekBanh (Wibu) / uraiJsonLur (Rongawi)
+  // Parse: kanjiNi (Murni) / kn (Singkat) / jadiObjekBanh (Wibu) / salintempel (Rongawi)
   const jsonParseFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const textArg = args[0];
     if (!textArg) {
@@ -1070,9 +1104,11 @@ export function createGlobalEnvironment(
   env.declareVar("kanjiNi", jsonParseFn);
   env.declareVar("kn", jsonParseFn);
   env.declareVar("jadiObjekBanh", jsonParseFn);
-  env.declareVar("uraiJsonLur", jsonParseFn);
+  env.declareVar("wakattaYo", jsonParseFn);
+  env.declareVar("salintempel", jsonParseFn);
+  env.declareVar("uraiJsonLur", jsonParseFn); // alias lama (deprecated)
 
-  // Stringify: kanjiMojiretsu (Murni) / kmj (Singkat) / jadiTeksBanh (Wibu) / bungkusJsonLur (Rongawi)
+  // Stringify: kanjiMojiretsu (Murni) / kmj (Singkat) / jadiTeksBanh (Wibu) / copascaption (Rongawi)
   const jsonStringifyFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const valArg = args[0] ?? MK_NULL();
     const jsObj = runtimeValueToJsValue(valArg);
@@ -1081,10 +1117,12 @@ export function createGlobalEnvironment(
   env.declareVar("kanjiMojiretsu", jsonStringifyFn);
   env.declareVar("kmj", jsonStringifyFn);
   env.declareVar("jadiTeksBanh", jsonStringifyFn);
-  env.declareVar("bungkusJsonLur", jsonStringifyFn);
+  env.declareVar("oshieteNe", jsonStringifyFn);
+  env.declareVar("copascaption", jsonStringifyFn);
+  env.declareVar("bungkusJsonLur", jsonStringifyFn); // alias lama (deprecated)
 
   // 23. Fungsi Tingkat Tinggi Barisan / Array:
-  // Map: utsusu (Murni) / utu (Singkat) / petainBanh (Wibu) / petainLur (Rongawi)
+  // Map: utsusu (Murni) / utu (Singkat) / petainBanh (Wibu) / predikbola (Rongawi)
   const mapFn = MK_NATIVE_FN(async (args: RuntimeValue[], scopeEnv: Environment): Promise<RuntimeValue> => {
     const arrArg = args[0];
     const fnArg = args[1];
@@ -1106,9 +1144,11 @@ export function createGlobalEnvironment(
   env.declareVar("utsusu", mapFn);
   env.declareVar("utu", mapFn);
   env.declareVar("petainBanh", mapFn);
-  env.declareVar("petainLur", mapFn);
+  env.declareVar("henshinSuru", mapFn);
+  env.declareVar("predikbola", mapFn);
+  env.declareVar("petainLur", mapFn); // alias lama (deprecated)
 
-  // Filter: erabu (Murni) / era (Singkat) / saringBanh (Wibu) / saringLur (Rongawi)
+  // Filter: erabu (Murni) / era (Singkat) / saringBanh (Wibu) / morebullets (Rongawi)
   const filterFn = MK_NATIVE_FN(async (args: RuntimeValue[], scopeEnv: Environment): Promise<RuntimeValue> => {
     const arrArg = args[0];
     const fnArg = args[1];
@@ -1132,9 +1172,11 @@ export function createGlobalEnvironment(
   env.declareVar("erabu", filterFn);
   env.declareVar("era", filterFn);
   env.declareVar("saringBanh", filterFn);
-  env.declareVar("saringLur", filterFn);
+  env.declareVar("senbatsuNe", filterFn);
+  env.declareVar("morebullets", filterFn);
+  env.declareVar("saringLur", filterFn); // alias lama (deprecated)
 
-  // Find: mitsukeru (Murni) / mitu (Singkat) / cariinBanh (Wibu) / golekLur (Rongawi)
+  // Find: mitsukeru (Murni) / mitu (Singkat) / cariinBanh (Wibu) / fesnuker (Rongawi)
   const findFn = MK_NATIVE_FN(async (args: RuntimeValue[], scopeEnv: Environment): Promise<RuntimeValue> => {
     const arrArg = args[0];
     const fnArg = args[1];
@@ -1157,12 +1199,11 @@ export function createGlobalEnvironment(
   env.declareVar("mitsukeru", findFn);
   env.declareVar("mitu", findFn);
   env.declareVar("cariinBanh", findFn);
-  env.declareVar("golekLur", findFn);
-  env.declareVar("ciduk", findFn);
+  env.declareVar("mitsuketaYo", findFn);
   env.declareVar("fesnuker", findFn);
 
   // 24. Matematika Tingkat Lanjut:
-  // Akar Kuadrat (SQRT): ruuto (Murni) / ru (Singkat) / akarPangkat (Wibu) / akarLur (Rongawi)
+  // Akar Kuadrat (SQRT): ruuto (Murni) / ru (Singkat) / akarPangkat (Wibu) / robogor (Rongawi)
   const sqrtFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const val = args[0];
     if (!val || val.type !== "number") {
@@ -1173,9 +1214,11 @@ export function createGlobalEnvironment(
   env.declareVar("ruuto", sqrtFn);
   env.declareVar("ru", sqrtFn);
   env.declareVar("akarPangkat", sqrtFn);
-  env.declareVar("akarLur", sqrtFn);
+  env.declareVar("heihoukon", sqrtFn);
+  env.declareVar("robogor", sqrtFn);
+  env.declareVar("akarLur", sqrtFn); // alias lama (deprecated)
 
-  // Nilai Mutlak (ABS): zettaichi (Murni) / zet (Singkat) / mutlakBanh (Wibu) / mutlakLur (Rongawi)
+  // Nilai Mutlak (ABS): zettaichi (Murni) / zet (Singkat) / mutlakBanh (Wibu) / ironiman (Rongawi)
   const absFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const val = args[0];
     if (!val || val.type !== "number") {
@@ -1186,9 +1229,11 @@ export function createGlobalEnvironment(
   env.declareVar("zettaichi", absFn);
   env.declareVar("zet", absFn);
   env.declareVar("mutlakBanh", absFn);
-  env.declareVar("mutlakLur", absFn);
+  env.declareVar("zettaiChi", absFn);
+  env.declareVar("ironiman", absFn);
+  env.declareVar("mutlakLur", absFn); // alias lama (deprecated)
 
-  // Pembulatan ke Bawah (FLOOR): kiriSute (Murni) / ks (Singkat) / bawahinBanh (Wibu) / bawahLur (Rongawi)
+  // Pembulatan ke Bawah (FLOOR): kiriSute (Murni) / ks (Singkat) / bawahinBanh (Wibu) / hutanselatan (Rongawi)
   const floorFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const val = args[0];
     if (!val || val.type !== "number") {
@@ -1199,9 +1244,11 @@ export function createGlobalEnvironment(
   env.declareVar("kiriSute", floorFn);
   env.declareVar("ks", floorFn);
   env.declareVar("bawahinBanh", floorFn);
-  env.declareVar("bawahLur", floorFn);
+  env.declareVar("shitaKiri", floorFn);
+  env.declareVar("hutanselatan", floorFn);
+  env.declareVar("bawahLur", floorFn); // alias lama (deprecated)
 
-  // Pembulatan ke Atas (CEIL): kiriAge (Murni) / kia (Singkat) / atasinBanh (Wibu) / atasLur (Rongawi)
+  // Pembulatan ke Atas (CEIL): kiriAge (Murni) / kia (Singkat) / atasinBanh (Wibu) / menaracukur (Rongawi)
   const ceilFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     const val = args[0];
     if (!val || val.type !== "number") {
@@ -1212,7 +1259,9 @@ export function createGlobalEnvironment(
   env.declareVar("kiriAge", ceilFn);
   env.declareVar("kia", ceilFn);
   env.declareVar("atasinBanh", ceilFn);
-  env.declareVar("atasLur", ceilFn);
+  env.declareVar("ueKiri", ceilFn);
+  env.declareVar("menaracukur", ceilFn);
+  env.declareVar("atasLur", ceilFn); // alias lama (deprecated)
 
   // 25. Manipulasi Teks & String (String Utilities):
   // Pecah String: bunri (Murni) / bu (Singkat) / pecahKata (Wibu) / bedahno (Rongawi)
@@ -1229,6 +1278,7 @@ export function createGlobalEnvironment(
   env.declareVar("bunri", bunriFn);
   env.declareVar("bu", bunriFn);
   env.declareVar("pecahKata", bunriFn);
+  env.declareVar("barabara", bunriFn);
   env.declareVar("bedahno", bunriFn);
   env.declareVar("pecahin", bunriFn);
   env.declareVar("pecahkepala", bunriFn);
@@ -1249,6 +1299,7 @@ export function createGlobalEnvironment(
   env.declareVar("tsunagu", tsunaguFn);
   env.declareVar("tsuna", tsunaguFn);
   env.declareVar("lemKata", tsunaguFn);
+  env.declareVar("isshoNi", tsunaguFn);
   env.declareVar("gandengen", tsunaguFn);
   env.declareVar("lemin", tsunaguFn);
   env.declareVar("lendirmurni", tsunaguFn);
@@ -1276,6 +1327,7 @@ export function createGlobalEnvironment(
   env.declareVar("okikae", okikaeFn);
   env.declareVar("oki", okikaeFn);
   env.declareVar("sulapKata", okikaeFn);
+  env.declareVar("irekaeruNe", okikaeFn);
   env.declareVar("gantinen", okikaeFn);
   env.declareVar("tumbalkan", okikaeFn);
   env.declareVar("akuntumbal", okikaeFn);
@@ -1291,6 +1343,7 @@ export function createGlobalEnvironment(
   env.declareVar("kiri", kiriFn);
   env.declareVar("kri", kiriFn);
   env.declareVar("pangkas", kiriFn);
+  env.declareVar("kireeNi", kiriFn);
   env.declareVar("potongen", kiriFn);
   env.declareVar("cukur", kiriFn);
   env.declareVar("cukurfade", kiriFn);
@@ -1328,6 +1381,7 @@ export function createGlobalEnvironment(
   env.declareVar("fukumu", fukumuFn);
   env.declareVar("fuku", fukumuFn);
   env.declareVar("punyaGak", fukumuFn);
+  env.declareVar("hairuKana", fukumuFn);
   env.declareVar("onora", fukumuFn);
   env.declareVar("adaGak", fukumuFn);
   env.declareVar("monyetijo", fukumuFn);
@@ -1373,6 +1427,7 @@ export function createGlobalEnvironment(
   env.declareVar("narabikae", narabikaeFn);
   env.declareVar("nara", narabikaeFn);
   env.declareVar("rapihin", narabikaeFn);
+  env.declareVar("narabeteNe", narabikaeFn);
   env.declareVar("urutno", narabikaeFn);
   env.declareVar("barisin", narabikaeFn);
   env.declareVar("goyangpantat", narabikaeFn);
@@ -1403,6 +1458,7 @@ export function createGlobalEnvironment(
   env.declareVar("kirinuki", kirinukiFn);
   env.declareVar("kinu", kirinukiFn);
   env.declareVar("potongSebagian", kirinukiFn);
+  env.declareVar("sukoshiDake", kirinukiFn);
   env.declareVar("cuplikno", kirinukiFn);
   env.declareVar("comot", kirinukiFn);
   env.declareVar("pedangdaging", kirinukiFn);
@@ -2174,9 +2230,10 @@ async function evalMemberExpr(
         prop === "nagasa" ||
         prop === "naga" ||
         prop === "seginiDoang" ||
-        prop === "itungPanjangLur" ||
+        prop === "panjangberurat" ||
         prop === "panjang" ||
         prop === "cekUkuran" ||
+        prop === "itungPanjangLur" || // deprecated
         prop === "dawa"
       ) {
         return MK_NUMBER(arr.elements.length);
@@ -2205,9 +2262,10 @@ async function evalMemberExpr(
         prop === "nagasa" ||
         prop === "naga" ||
         prop === "seginiDoang" ||
-        prop === "itungPanjangLur" ||
+        prop === "panjangberurat" ||
         prop === "panjang" ||
         prop === "cekUkuran" ||
+        prop === "itungPanjangLur" || // deprecated
         prop === "dawa"
       ) {
         return MK_NUMBER(str.length);

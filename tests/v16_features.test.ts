@@ -323,10 +323,10 @@ describe("WibuScript v1.6.0 Feature Expansion", () => {
         }
       `;
       const wibuCode = convertDialect(murniCode, "wibu");
-      expect(wibuCode).toContain("sikatSemua");
+      expect(wibuCode).toContain("zenbuNe");
       expect(wibuCode).toContain("dari");
-      expect(wibuCode).toContain("pecahKata");
-      expect(wibuCode).toContain("pangkas");
+      expect(wibuCode).toContain("barabara");
+      expect(wibuCode).toContain("kireeNi");
 
       const rongawiCode = convertDialect(wibuCode, "rongawi");
       expect(rongawiCode).toContain("thugshaker");

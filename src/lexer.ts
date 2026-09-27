@@ -100,72 +100,82 @@ export interface Token {
 }
 
 // Sistem 4 Dialek Mutlak WibuScript
-// Memetakan kosakata 4 dialek (Jepang Murni, Jepang Singkat, Wibu Absurd, Meme Rongawi) ke TokenType internal
 export const KEYWORDS: Record<string, TokenType> = {
     // Variabel (LET)
     "kore": TokenType.Var,
     "ko": TokenType.Var,
-    "siImut": TokenType.Var,
+    "iniDesu": TokenType.Var,
     "pokmipokmi": TokenType.Var,
+    "siImut": TokenType.Var, // deprecated
 
     // Tetapan (CONST)
     "zettai": TokenType.Const,
     "ze": TokenType.Const,
-    "hargaMati": TokenType.Const,
+    "zettaiDa": TokenType.Const,
     "bundarahma": TokenType.Const,
+    "hargaMati": TokenType.Const, // deprecated
 
     // Kosong (NULL)
     "munashi": TokenType.Null,
     "mu": TokenType.Null,
-    "maafLancang": TokenType.Null,
+    "naniKore": TokenType.Null,
     "blukutuk": TokenType.Null,
+    "maafLancang": TokenType.Null, // deprecated
 
     // Benar (TRUE)
     "hontou": TokenType.True,
     "hon": TokenType.True,
-    "menyalaAbkuh": TokenType.True,
+    "hontouNi": TokenType.True,
     "unjukkebolehan": TokenType.True,
+    "menyalaAbkuh": TokenType.True, // deprecated
 
-    // Salah (FALSE) - 'uso' dipakai ganda untuk Jepang Murni dan Singkat
+    // Salah (FALSE)
     "uso": TokenType.False,
-    "ladehBanh": TokenType.False,
+    "chigauYo": TokenType.False,
     "keracunanmbg": TokenType.False,
+    "ladehBanh": TokenType.False, // deprecated
 
     // Jika (IF)
     "moshi": TokenType.If,
     "mo": TokenType.If,
-    "whenYh": TokenType.If,
+    "moShiKalo": TokenType.If,
     "izintampil": TokenType.If,
+    "whenYh": TokenType.If, // deprecated
 
     // Selain Jika (ELSE IF)
     "soretomo": TokenType.ElseIf,
     "sore": TokenType.ElseIf,
-    "kaloGakGitu": TokenType.ElseIf,
+    "soredemoNe": TokenType.ElseIf,
     "wowok": TokenType.ElseIf,
+    "kaloGakGitu": TokenType.ElseIf, // deprecated
 
     // Selainnya (ELSE)
     "hoka": TokenType.Else,
     "ho": TokenType.Else,
-    "yaudahlahYa": TokenType.Else,
+    "shoganaiNe": TokenType.Else,
     "woijawa": TokenType.Else,
+    "yaudahlahYa": TokenType.Else, // deprecated
 
     // Perulangan (WHILE)
     "zutto": TokenType.Loop,
     "zu": TokenType.Loop,
-    "gasSampePagi": TokenType.Loop,
+    "zuttoLoop": TokenType.Loop,
     "nyawit": TokenType.Loop,
+    "gasSampePagi": TokenType.Loop, // deprecated
 
     // Berhenti (BREAK)
     "yame": TokenType.Break,
     "ya": TokenType.Break,
-    "ampunSepuh": TokenType.Break,
+    "yameteKure": TokenType.Break,
     "bijisatu": TokenType.Break,
+    "ampunSepuh": TokenType.Break, // deprecated
 
     // Lanjut (CONTINUE)
     "tsugi": TokenType.Continue,
     "tsu": TokenType.Continue,
-    "lanjutPart2": TokenType.Continue,
+    "tsugiNe": TokenType.Continue,
     "ambatukam": TokenType.Continue,
+    "lanjutPart2": TokenType.Continue, // deprecated
 
     // Fungsi (FUNCTION)
     "jutsu": TokenType.Function,
@@ -176,38 +186,45 @@ export const KEYWORDS: Record<string, TokenType> = {
     // Kembalikan (RETURN)
     "kaesu": TokenType.Return,
     "kae": TokenType.Return,
-    "kasihPaham": TokenType.Return,
+    "haiBeri": TokenType.Return,
     "kandabahlil": TokenType.Return,
+    "kasihPaham": TokenType.Return, // deprecated
 
     // Tampilkan (PRINT)
     "mite": TokenType.Print,
     "mi": TokenType.Print,
-    "teriakAmba": TokenType.Print,
+    "iuYo": TokenType.Print,
     "salamkenal": TokenType.Print,
+    "teriakAmba": TokenType.Print, // deprecated
 
     // Tunggu (AWAIT)
     "matte": TokenType.Await,
     "mat": TokenType.Await,
-    "sabarBanh": TokenType.Await,
+    "matteNe": TokenType.Await,
     "admindatang": TokenType.Await,
+    "sabarBanh": TokenType.Await, // deprecated
 
     // Coba (TRY)
     "kokoromi": TokenType.Try,
     "koko": TokenType.Try,
-    "cobaDuluBanh": TokenType.Try,
-    "gasTesLur": TokenType.Try,
+    "yatteMiyo": TokenType.Try,
+    "ragnamok": TokenType.Try,
+    "cobaDuluBanh": TokenType.Try, // deprecated
+    "gasTesLur": TokenType.Try,    // deprecated
 
     // Tangani (CATCH)
     "yurusu": TokenType.Catch,
     "yuru": TokenType.Catch,
-    "santaiAja": TokenType.Catch,
+    "gomennasai": TokenType.Catch,
     "amanBos": TokenType.Catch,
+    "santaiAja": TokenType.Catch, // deprecated
 
     // Iterasi Koleksi (FOR-IN / FOR-EACH)
     "subete": TokenType.ForEach,
     "sube": TokenType.ForEach,
-    "sikatSemua": TokenType.ForEach,
+    "zenbuNe": TokenType.ForEach,
     "thugshaker": TokenType.ForEach,
+    "sikatSemua": TokenType.ForEach, // deprecated
 
     // Partikel Koleksi (IN)
     "no": TokenType.In,
@@ -217,32 +234,37 @@ export const KEYWORDS: Record<string, TokenType> = {
     // Kelas / Sekte (CLASS)
     "sekte": TokenType.Class,
     "sek": TokenType.Class,
-    "paguyuban": TokenType.Class,
+    "nakama": TokenType.Class,
     "sektejomok": TokenType.Class,
+    "paguyuban": TokenType.Class, // deprecated
 
     // Konstruktor (CONSTRUCTOR)
     "tanjou": TokenType.Constructor,
     "tan": TokenType.Constructor,
-    "lahiran": TokenType.Constructor,
+    "umareta": TokenType.Constructor,
     "ambatunat": TokenType.Constructor,
+    "lahiran": TokenType.Constructor, // deprecated
 
     // Instansiasi Baru (NEW)
     "atarashii": TokenType.New,
     "ata": TokenType.New,
-    "bikinBaru": TokenType.New,
+    "atarashiiNe": TokenType.New,
     "ambatumbas": TokenType.New,
+    "bikinBaru": TokenType.New, // deprecated
 
     // Pewarisan (EXTENDS)
     "keishou": TokenType.Extends,
     "kei": TokenType.Extends,
-    "turunanDari": TokenType.Extends,
+    "kouhaiDesu": TokenType.Extends,
     "jalurhukum": TokenType.Extends,
+    "turunanDari": TokenType.Extends, // deprecated
 
     // Diri Sendiri (THIS / SELF)
     "jibun": TokenType.This,
     "ji": TokenType.This,
-    "siAing": TokenType.This,
+    "oreSama": TokenType.This,
     "lanangmas": TokenType.This,
+    "siAing": TokenType.This, // deprecated
 
     // Ekspor Modul (EXPORT)
     "koukai": TokenType.Export,

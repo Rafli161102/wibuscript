@@ -154,10 +154,10 @@ describe("WibuScript Fitur Baru & Rekomendasi Lengkap", () => {
       expect(result.value).toBe("santai");
     });
 
-    it("harus menangani galat pada dialek Meme Rongawi (gasTesLur ... amanBos)", async () => {
+    it("harus menangani galat pada dialek Meme Rongawi (ragnamok ... amanBos)", async () => {
       const result = (await runCode(`
         pokmipokmi hasil = "tes";
-        gasTesLur {
+        ragnamok {
           10 / 0;
         } amanBos (err) {
           hasil = "selamet";
