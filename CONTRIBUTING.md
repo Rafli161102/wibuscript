@@ -1,100 +1,134 @@
 <!-- File: CONTRIBUTING.md -->
-# Panduan Kontribusi WibuScript
+# Panduan Kontribusi Standar Enterprise WibuScript
 
-Terima kasih atas ketertarikan Anda untuk berkontribusi pada proyek open-source WibuScript! Dokumen ini berisi pedoman dan instruksi langkah demi langkah bagi pengembang yang ingin mengajukan perbaikan bug, penambahan fitur, pembaruan dokumentasi, atau peningkatan kinerja pada ekosistem WibuScript.
+Dokumen ini menetapkan standar kontribusi, tata kelola cabang (*branching strategy*), dan alur kerja integrasi berkelanjutan (*CI/CD*) untuk pengembangan ekosistem WibuScript. Seluruh kontributor diwajibkan mematuhi panduan ini guna memastikan stabilitas, integritas arsitektur, dan kompatibilitas jangka panjang.
 
 ---
 
-## 1. Alur Kerja Pengembangan (Workflow)
+## 1. Kebijakan Proteksi Branch Utama
 
-### A. Melakukan Fork dan Kloning Repositori
-1. Lakukan **Fork** pada repositori resmi WibuScript ke akun GitHub pribadi Anda.
-2. Gandakan (*clone*) repositori hasil *fork* tersebut ke lingkungan lokal:
-   ```bash
-   git clone https://github.com/<USERNAME_ANDA>/wibuscript.git
-   cd wibuscript
-   ```
-3. Tambahkan repositori hulu (*upstream*) untuk memudahkan sinkronisasi:
-   ```bash
-   git remote add upstream https://github.com/Rafli161102/wibuscript.git
-   ```
+Proyek WibuScript menerapkan **Strict Branching Strategy** setingkat Enterprise. 
 
-### B. Membuat Branch Fitur
-Buat *branch* kerja baru dengan nama yang deskriptif dari branch `main`:
-```bash
-git checkout -b feat/penambahan-fitur-baru
-# atau untuk perbaikan bug:
-git checkout -b fix/perbaikan-lexer-newline
+- **Dilarang keras melakukan direct push ke branch `main` (`git push origin main`).**
+- Branch `main` merupakan cabang produksi yang dilindungi (*protected branch*).
+- Setiap pembaruan kode mutlak harus diajukan melalui mekanisme **Pull Request (PR)** yang telah tervalidasi penuh oleh pipeline otomatis GitHub Actions.
+- Penggabungan (*merge*) hanya dapat dilakukan setelah status check CI berstatus hijau (*passed*) dan disetujui oleh *maintainer*.
+
+---
+
+## 2. Konvensi Penamaan Branch
+
+Seluruh pekerjaan baru wajib diisolasi dalam branch terpisah yang dicabangkan langsung dari versi terbaru `main`. Gunakan konvensi penamaan standar industri dengan awalan (*prefix*) berikut:
+
+| Tipe Branch | Format Penamaan | Deskripsi Penggunaan |
+| :--- | :--- | :--- |
+| **Feature** | `feature/nama-fitur` | Penambahan sintaks baru, modul, atau kapabilitas runtime baru |
+| **Bugfix** | `fix/nama-bug` | Perbaikan error kompilator, parser, lexer, atau runtime |
+| **Chore** | `chore/nama-tugas` | Pembaruan dependensi, dokumentasi, konfigurasi tooling, atau skrip build |
+
+Contoh penamaan yang valid:
+- `feature/array-filter-method`
+- `fix/parser-newline-conflict`
+- `chore/upgrade-vitest-v2`
+
+---
+
+## 3. Alur Standar Pengembangan (Enterprise Workflow)
+
+Setiap kontribusi wajib mengikuti alur kerja enam tahap:
+
+```text
+Branch -> Commit -> Push -> Pull Request -> CI Check -> Merge
 ```
 
+### Tahap 1: Branch (Pembuatan Cabang Terisolasi)
+Pastikan branch `main` lokal Anda sinkron dengan repositori hulu sebelum mencabangkan:
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b feature/nama-fitur
+```
+
+### Tahap 2: Commit (Penerapan Conventional Commits)
+Gunakan pesan commit yang terstruktur dan bermakna sesuai standar Conventional Commits:
+
+```bash
+# Format: <tipe>: <deskripsi perubahan>
+git commit -m "feat: tambahkan operator modulo pada dialek wibu absurd"
+git commit -m "fix: tangani token newline berulang pada lexer"
+git commit -m "chore: perbarui dependensi typescript ke versi terbaru"
+```
+
+### Tahap 3: Push (Unggah Branch Kerja ke Remote)
+Unggah branch kerja Anda ke remote repository:
+
+```bash
+git push origin feature/nama-fitur
+```
+*Catatan: Jangan pernah menjalankan `git push origin main`.*
+
+### Tahap 4: Pull Request (Pengajuan PR Terstruktur)
+1. Buka antarmuka repositori di GitHub dan klik **Compare & pull request**.
+2. Pastikan target branch tujuan adalah `main` dan sumber branch adalah branch kerja Anda.
+3. Isi seluruh bagian pada templat Pull Request (`.github/PULL_REQUEST_TEMPLATE.md`):
+   - Deskripsi Perubahan teknis dan konteks implementasi.
+   - Penandaan Tipe PR (`Feature`, `Bugfix`, `Refactor`, `Breaking Change`).
+   - Pemenuhan seluruh poin pada Checklist Validasi.
+
+### Tahap 5: CI Check (Validasi Otomatis Status Check)
+Setelah PR diajukan, GitHub Actions akan secara otomatis menjalankan workflow `Enterprise PR Validation` pada runner `ubuntu-latest` dengan tahapan berurutan:
+1. `npm ci` : Pemasangan dependensi bersih dan deterministik berdasarkan `package-lock.json`.
+2. `npm run build` : Pemeriksaan tipe data TypeScript (*type checking*) dan kompilasi modul inti.
+3. `npm run test` : Validasi unit test secara absolut menggunakan Vitest (seluruh test suite wajib lolos 100%).
+
+Status check `enterprise-validation` mutlak harus berwarna hijau (*passed*) sebelum PR diizinkan untuk di-merge.
+
+### Tahap 6: Merge (Penggabungan ke Main)
+Setelah tinjauan kode disetujui (*code review approved*) dan seluruh status check CI berhasil, PR akan digabungkan ke `main` menggunakan metode *Squash and Merge* atau *Rebase and Merge* oleh maintainer untuk menjaga riwayat git tetap rapi.
+
 ---
 
-## 2. Persiapan Lingkungan dan Instalasi Dependensi
+## 4. Persiapan Lingkungan dan Verifikasi Mandiri Lokal
 
-Pastikan perangkat Anda telah terpasang **Node.js (>= v18.0.0)** dan **npm (>= v9.0.0)**. Pasang seluruh dependensi proyek dengan menjalankan:
+Sebelum mengajukan Pull Request, kontributor diwajibkan menjalankan verifikasi mandiri di lingkungan lokal:
 
+### Prasyarat Perangkat Lunak
+- Node.js (>= v18.0.0 atau v20.0.0)
+- npm (>= v9.0.0)
+
+### Instalasi Dependensi
 ```bash
 npm install
 ```
 
----
-
-## 3. Menjalankan Pengujian Otomatis (Unit Testing)
-
-Setiap perubahan pada modul inti (*Lexer*, *Parser*, *Runtime*, atau *Pustaka Standar*) wajib disertai atau diverifikasi dengan pengujian otomatis menggunakan **Vitest**:
-
+### Eksekusi Pengujian Mandiri
 ```bash
-# Menjalankan unit test secara menyeluruh
+# Menjalankan seluruh pengujian unit otomatis
 npm test
 
-# Menjalankan unit test dalam mode interaktif (watch mode)
-npx vitest
+# Menjalankan kompilasi TypeScript dan build proyek
+npm run build
 
-# Menguji skrip demonstrasi langsung via CLI lokal
+# Menguji eksekusi skrip wibuscript secara langsung melalui CLI lokal
 npm run core:test
 ```
 
-Pastikan seluruh rangkaian pengujian (*test suite*) berstatus **PASS** sebelum mengajukan *commit*.
+Pastikan tidak ada kegagalan pengujian (*zero test failures*) dan tidak ada peringatan kompilasi TypeScript sebelum melakukan push.
 
 ---
 
-## 4. Konvensi Pesan Commit (Conventional Commits)
+## 5. Kepatuhan Arsitektur dan Dialek WibuScript
 
-Proyek ini menerapkan standar **Conventional Commits** yang bersih dan terstruktur untuk menjaga keterbacaan riwayat git. Format penamaan commit yang diwajibkan:
+WibuScript memiliki aturan arsitektur ketat yang wajib dipatuhi:
 
-```text
-<tipe>: <deskripsi singkat dalam bahasa yang jelas>
-```
-
-### Daftar Tipe yang Diterima:
-- `feat:` Penambahan fitur baru pada bahasa, runtime, atau Web Playground.
-- `fix:` Perbaikan bug pada interpretasi sintaks, parsing, atau eksekusi runtime.
-- `docs:` Pembaruan atau penambahan dokumentasi teknis (README, panduan kontribusi, dll.).
-- `test:` Penambahan atau perbaikan unit test pada modul `tests/`.
-- `refactor:` Restrukturisasi kode tanpa mengubah fungsionalitas eksternal.
-- `style:` Pembaruan format kode atau styling UI (Tailwind CSS) tanpa memengaruhi logika bahasa.
-- `chore:` Pemeliharaan dependensi, konfigurasi build, atau skrip rilis.
-
-**Contoh Commit:**
-```bash
-git commit -m "feat: tambahkan fungsi matematika trigonometri ke pustaka standar"
-git commit -m "fix: tangani escape sequence pada parsing string literal"
-git commit -m "docs: perbarui spesifikasi sintaks untuk sistem alias"
-```
-
----
-
-## 5. Mengajukan Pull Request (PR)
-
-1. Sinkronkan branch Anda dengan branch `main` repositori hulu:
-   ```bash
-   git fetch upstream
-   git rebase upstream/main
-   ```
-2. Unggah perubahan ke repositori fork Anda:
-   ```bash
-   git push origin feat/nama-fitur
-   ```
-3. Buka repositori utama di GitHub dan ajukan **Pull Request**.
-4. Isi templat Pull Request yang disediakan secara lengkap, jelaskan perubahan yang dibuat, dan pastikan seluruh ceklis verifikasi telah terpenuhi.
-5. Tunggu proses peninjauan (*code review*) dari *maintainer*. Tanggapi masukan atau revisi yang diberikan secara konstruktif.
+1. **Pelestarian 4 Dialek Mutlak**:
+   Setiap perubahan pada Lexer (`src/lexer.ts`) dan Parser (`src/parser.ts`) wajib mempertahankan kesetaraan semantik pada keempat dialek resmi:
+   - Jepang Murni
+   - Jepang Singkat
+   - Wibu Absurd
+   - Meme Rongawi
+2. **Backward Compatibility**:
+   Kata kunci terdahulu dan alias pustaka standar tidak boleh dihapus tanpa persetujuan RFC major version. Seluruh alias yang tercatat pada `README.md` harus tetap berfungsi.
+3. **Bebas Ambiguitas Token**:
+   Hindari penugasan kata kunci yang saling menimpa (*collision*) pada pemetaan token lexer.

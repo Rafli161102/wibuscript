@@ -1,29 +1,41 @@
 <!-- File: .github/PULL_REQUEST_TEMPLATE.md -->
-## Ringkasan Perubahan (Summary)
-<!-- Jelaskan secara ringkas perubahan apa yang Anda ajukan dan motivasi di balik perubahan tersebut. -->
+## Konteks Perubahan (Deskripsi)
+<!-- Jelaskan secara rinci perubahan teknis yang diajukan, motivasi arsitektural, dan konteks implementasi. -->
 
-## Tipe Perubahan (Type of Change)
-<!-- Tandai dengan tanda [x] pada kotak yang sesuai: -->
-- [ ] **Bugfix** (Perbaikan masalah yang tidak merusak kompatibilitas yang ada)
-- [ ] **Feature** (Penambahan fungsionalitas baru yang tidak merusak kompatibilitas)
-- [ ] **Breaking Change** (Perubahan yang menyebabkan fungsionalitas sebelumnya tidak berjalan semestinya)
-- [ ] **Documentation** (Pembaruan atau penambahan dokumentasi)
-- [ ] **Refactoring** (Penyusunan ulang kode tanpa mengubah perilaku eksternal)
-- [ ] **Testing** (Penambahan atau perbaikan unit test)
-
-## Masalah Terkait (Related Issues)
-<!-- Tautkan issue yang diselesaikan oleh PR ini (contoh: Menutup #12 atau Mengatasi #34). -->
+### Referensi Isu Terkait
+<!-- Tautkan issue yang diselesaikan oleh PR ini (contoh: Closes #123, Fixes #456). -->
 Closes #
 
-## Ceklis Kesiapan (Pre-submission Checklist)
-<!-- Pastikan seluruh item berikut telah diverifikasi sebelum meminta peninjauan: -->
-- [ ] Kode saya telah mengikuti pedoman gaya dan standar penulisan kode proyek.
-- [ ] Saya telah melakukan peninjauan mandiri (*self-review*) terhadap kode saya.
-- [ ] Seluruh pengujian otomatis telah dijalankan dan berstatus lolos (`npm test`).
-- [ ] Pengujian manual lokal dengan CLI WibuScript berjalan lancar (`npm run core:test`).
-- [ ] Saya telah menambahkan unit test baru yang relevan untuk memvalidasi perubahan ini (jika berlaku).
-- [ ] Dokumentasi yang relevan telah diperbarui sejalan dengan perubahan kode.
-- [ ] Perubahan saya tidak memicu *warning* atau *error* baru pada kompilasi TypeScript (`npm run build`).
+---
 
-## Tangkapan Layar / Bukti Eksekusi (Opsional)
-<!-- Sisipkan cuplikan terminal atau tangkapan layar jika ada perubahan pada antarmuka Web Playground atau output CLI. -->
+## Tipe PR
+<!-- Tandai opsi yang relevan dengan tanda [x]: -->
+- [ ] **Fitur** (Penambahan sintaks baru, modul, atau kapabilitas runtime baru)
+- [ ] **Bugfix** (Perbaikan error kompilator, parser, lexer, atau runtime)
+- [ ] **Refaktor** (Restrukturisasi kode tanpa mengubah perilaku fungsional atau AST)
+- [ ] **Breaking Change** (Perubahan yang memengaruhi backward compatibility atau API publik)
+
+---
+
+## Checklist Mutlak
+<!-- Pastikan seluruh kriteria kepatuhan berikut telah terpenuhi sebelum mengajukan review: -->
+- [ ] Lulus 100% Vitest (`npm test`) secara absolut di lingkungan lokal tanpa kegagalan.
+- [ ] Mempertahankan arsitektur 4 Dialek Mutlak (Jepang Murni, Jepang Singkat, Wibu Absurd, Meme Rongawi).
+- [ ] Tidak melanggar Pustaka Standar serta menjaga backward compatibility untuk alias kata kunci.
+- [ ] Tidak ada konflik ambiguitas token pada Parser (`src/parser.ts`) dan Lexer (`src/lexer.ts`).
+- [ ] Kompilasi dan verifikasi tipe data TypeScript berhasil tanpa error (`npm run build`).
+- [ ] Branch kerja dibuat dari branch `main` terbaru menggunakan konvensi penamaan (`feature/`, `fix/`, `chore/`).
+- [ ] Tidak melakukan direct push ke branch `main`.
+
+---
+
+## Bukti Pengujian Mandiri
+<!-- Cantumkan salinan log eksekusi lokal dari terminal (misal: ringkasan npm test atau npm run core:test). -->
+```text
+
+```
+
+---
+
+## Catatan Tambahan (Opsional)
+<!-- Tambahkan informasi relevan mengenai dependensi baru, kinerja, atau panduan migrasi jika diperlukan. -->

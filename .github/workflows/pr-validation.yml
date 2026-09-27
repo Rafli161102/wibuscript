@@ -1,5 +1,5 @@
-# File: .github/workflows/ci.yml
-name: CI
+# File: .github/workflows/pr-validation.yml
+name: Enterprise PR Validation
 
 on:
   pull_request:
@@ -23,8 +23,8 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Compile Project
+      - name: Type Checking and Compilation
         run: npm run build
 
-      - name: Run Automated Tests
-        run: npm test
+      - name: Absolute Unit Test Validation
+        run: npm run test
