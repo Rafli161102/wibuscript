@@ -1,12 +1,14 @@
 <!-- File: README.md -->
 # WibuScript
 
+[![npm version](https://img.shields.io/npm/v/wibuscript.svg?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/wibuscript)
+[![npm downloads](https://img.shields.io/npm/dm/wibuscript.svg?style=for-the-badge&logo=npm&color=blue)](https://www.npmjs.com/package/wibuscript)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
-![Status](https://img.shields.io/badge/Status-Stable-brightgreen?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Stable%20v1.9.1-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-WibuScript adalah bahasa pemrograman esoterik (*esoteric programming language*) yang diimplementasikan menggunakan TypeScript dan berjalan di atas arsitektur *Tree-Walking Interpreter*. Bahasa ini mengabstraksi konstruksi sintaks pemrograman melalui arsitektur Sistem 4 Dialek Mutlak (Jepang Murni, Jepang Singkat, Wibu Absurd, dan Meme Rongawi). Proyek ini dilengkapi modul inti (*Core Engine*) yang sepenuhnya universal dan aman untuk peramban, serta antarmuka Web Playground interaktif berbasis Next.js App Router untuk eksekusi kode secara *client-side*.
+WibuScript adalah bahasa pemrograman esoterik (*esoteric programming language*) yang diimplementasikan menggunakan TypeScript dan berjalan di atas arsitektur *Tree-Walking Interpreter*. Bahasa ini mengabstraksi konstruksi sintaks pemrograman melalui arsitektur Sistem 4 Dialek Mutlak (Jepang Murni, Jepang Singkat, Wibu Absurd Cringe Indo-Jepang, dan Meme Rongawi Otentik Ngawiverse). Proyek ini tersedia secara publik di npm (`npm install -g wibuscript`) dan GitHub Packages, dilengkapi modul inti (*Core Engine*) yang sepenuhnya universal dan aman untuk peramban, serta antarmuka Web Playground interaktif berbasis Next.js App Router untuk eksekusi kode secara *client-side*.
 
 ## Arsitektur Sistem
 
@@ -333,6 +335,26 @@ npx wibu convert contoh.wibu --to rongawi -o rongawi.wibu
 ```
 
 ## Log Pembaruan (Changelog)
+
+### v1.9.1 (Official NPM & GitHub Packages Release)
+- **Publikasi Resmi ke NPM Global**: Paket `wibuscript` secara resmi dirilis dan dipublikasikan secara publik ke registry npm global ([https://www.npmjs.com/package/wibuscript](https://www.npmjs.com/package/wibuscript)).
+  - Pemasangan global CLI: `npm install -g wibuscript`
+  - Eksekusi instan: `npx wibuscript --help` atau `npx wibuscript repl`
+  - Dependensi proyek: `npm install wibuscript`
+- **Integrasi GitHub Packages Registry**: Menambahkan alur kerja otomatisasi GitHub Actions (`.github/workflows/publish-package.yml`) untuk mempublikasikan paket `@rafli161102/wibuscript` ke GitHub Packages Registry.
+- **Sinkronisasi Versi CLI**: Memperbarui dan menyelaraskan penanda versi `wibu --version` dan `-v` ke v1.9.1.
+- **Git Tagging & Release Management**: Menandai Git tag resmi `v1.9.1` pada repositori GitHub.
+
+### v1.9.0 (Redesign Dialek Wibu Absurd & Pemutakhiran Dialek Meme Rongawi Otentik)
+- **Redesign Dialek Wibu Absurd (Slang Cringe Indo-Jepang Internet)**:
+  - Merombak total dialek Wibu menjadi gaya bahasa internet wibu Indonesia-Jepang yang cringe, natural, dan ekspresif.
+  - Alur & Deklarasi: `iniDesu` (var), `zettaiDa` (const), `naniKore` (null), `hontouNi` (true), `chigauYo` (false), `moShiKalo` (if), `soredemoNe` (else if), `shoganaiNe` (else), `zuttoLoop` (while), `yameteKure` (break), `tsugiNe` (continue), `watashiJutsu` / `mybini` (function), `haiBeri` (return), `iuYo` (print), `matteNe` (await), `yatteMiyo` (try), `gomennasai` (catch), `zenbuNe` (for-in), `karaNe` / `dari` (in).
+  - OOP & Modul: `nakama` (class), `umareta` (constructor), `atarashiiNe` (new), `kouhaiDesu` (extends), `oreSama` (this), `sebarJutsu` (export), `summonJutsu` (import).
+  - Pustaka Standar Wibu: `omaeWaIu` (print), `matteNeSikit` (delay), `nanjiDesu` (time), `doreKurai` (length), `suujiNi` (number), `naniTypeNe` (typeof), `tsuyokuNare` (pow), `maneNi` (round), `haireNe` (push), `deteike` (pop), `kiriteNe` (substring), `ookiVoice` (uppercase), `chiisaiVoice` (lowercase), `unmeiGacha` (random), `shineeeYo` (panic), `nakamaTachi` (array), `yomimasuNe` (readFile), `kakimasuNe` (writeFile), `mottekite` (import mod), `tottekiteNe` (fetch), `wakattaYo` (JSON.parse), `oshieteNe` (JSON.stringify), `henshinSuru` (map), `senbatsuNe` (filter), `mitsuketaYo` (find), `heihoukon` (sqrt), `zettaiChi` (abs), `shitaKiri` (floor), `ueKiri` (ceil), `barabara` (split), `isshoNi` (join), `irekaeruNe` (replace), `kireeNi` (trim), `hairuKana` (includes), `narabeteNe` (sort), `sukoshiDake` (slice).
+- **Pembersihan Kosakata Rongawi Otentik (Ngawiverse & Thugposting)**:
+  - Standardisasi 100% kosakata Meme Rongawi tanpa ada istilah buatan atau akhiran "-lur": `kopihitam` (waktu), `panjangberurat` (panjang), `priaotot` (push), `danaterbakar` (pop), `kertaslecek` (substring), `gakhabisgila` (uppercase), `monyetbanyumas` (lowercase), `rudalmentah` (random), `robogor` (sqrt), `ironiman` (abs), `hutanselatan` (floor), `menaracukur` (ceil), `salintempel` (JSON.parse), `copascaption` (JSON.stringify), `predikbola` (map), `morebullets` (filter), `fesnuker` (find), `ragnamok` (try), `omagot` (typeof), `ototkawat` (readFile), `teksusang` (writeFile).
+- **Kompatibilitas Mundur (Backward Compatibility)**: Seluruh alias lama tetap didukung di lingkungan runtime sehingga skrip lawas tetap dapat dieksekusi tanpa galat.
+- **Suite Pengujian Vitest**: 96/96 automated unit dan integration tests lulus 100%.
 
 ### v1.8.0 (Upgrade Phase 3: Pattern Matching, Destructuring & Bug Fixes)
 - **Analisis & Perbaikan Bug Sistem**:
