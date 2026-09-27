@@ -19,14 +19,17 @@ import type {
   ExpressionStatement,
   BreakStatement,
   ContinueStatement,
+  TryCatchStatement,
   AssignmentExpression,
   BinaryExpression,
+  UnaryExpression,
   CallExpression,
   Identifier,
   NumericLiteral,
   StringLiteral,
   BooleanLiteral,
   NullLiteral,
+  ArrayLiteral,
   ObjectLiteral,
   Property,
   MemberExpr,
@@ -123,6 +126,9 @@ export class Parser {
 
       case TokenType.Return:
         return this.parseReturnStatement();
+
+      case TokenType.Try:
+        return this.parseTryCatchStatement();
 
       case TokenType.OpenBrace:
         return this.parseBlockStatement();
@@ -265,6 +271,44 @@ export class Parser {
   }
 
   /**
+   * Penanganan galat: kokoromi { ... } yurusu (err) { ... }
+   */
+  private parseTryCatchStatement(): TryCatchStatement {
+    this.advance(); // Konsumsi kata kunci TRY (kokoromi, koko, cobaDuluBanh, gasTesLur)
+
+    const tryBranch = this.parseBlockOrSingleStatement();
+
+    this.expect(
+      TokenType.Catch,
+      "Diharapkan kata kunci CATCH (yurusu / yuru / santaiAja / amanBos) setelah blok TRY."
+    );
+
+    let catchVariable: string | undefined = undefined;
+    if (this.at().type === TokenType.OpenParen) {
+      this.advance(); // Konsumsi '('
+      catchVariable = this.expect(
+        TokenType.Identifier,
+        "Diharapkan nama variabel galat (error) di dalam tanda kurung."
+      ).value;
+      this.expect(
+        TokenType.CloseParen,
+        "Diharapkan tanda kurung tutup ')' setelah nama variabel galat."
+      );
+    } else if (this.at().type === TokenType.Identifier) {
+      catchVariable = this.advance().value;
+    }
+
+    const catchBranch = this.parseBlockOrSingleStatement();
+
+    return {
+      kind: "TryCatchStatement",
+      tryBranch,
+      catchVariable,
+      catchBranch,
+    };
+  }
+
+  /**
    * Blok kode: { statement1; statement2; }
    */
   private parseBlockStatement(): BlockStatement {
@@ -315,26 +359,66 @@ export class Parser {
   }
 
   /**
-   * Penugasan nilai: variabel = nilai
+   * Penugasan nilai: variabel = nilai atau objek.prop = nilai atau arr[indeks] = nilai
    */
   private parseAssignmentExpression(): Expression {
-    const left = this.parseComparisonExpression();
+    const left = this.parseLogicalOrExpression();
 
     if (this.at().type === TokenType.Equals) {
       this.advance(); // Konsumsi '='
       const value = this.parseAssignmentExpression();
 
-      if (left.kind !== "Identifier") {
+      if (left.kind !== "Identifier" && left.kind !== "MemberExpr") {
         throw new Error(
-          "[Parser Error] Sisi kiri dari tanda penugasan '=' harus berupa identifier variabel."
+          "[Parser Error] Sisi kiri dari tanda penugasan '=' harus berupa identifier variabel atau akses anggota objek/barisan."
         );
       }
 
       return {
         kind: "AssignmentExpression",
-        assignee: (left as Identifier).symbol,
+        assignee: left,
         value,
       } as AssignmentExpression;
+    }
+
+    return left;
+  }
+
+  /**
+   * Operator logika OR: ||
+   */
+  private parseLogicalOrExpression(): Expression {
+    let left = this.parseLogicalAndExpression();
+
+    while (this.at().type === TokenType.PipePipe) {
+      const operator = this.advance().value;
+      const right = this.parseLogicalAndExpression();
+      left = {
+        kind: "BinaryExpression",
+        left,
+        operator,
+        right,
+      } as BinaryExpression;
+    }
+
+    return left;
+  }
+
+  /**
+   * Operator logika AND: &&
+   */
+  private parseLogicalAndExpression(): Expression {
+    let left = this.parseComparisonExpression();
+
+    while (this.at().type === TokenType.AmpersandAmpersand) {
+      const operator = this.advance().value;
+      const right = this.parseComparisonExpression();
+      left = {
+        kind: "BinaryExpression",
+        left,
+        operator,
+        right,
+      } as BinaryExpression;
     }
 
     return left;
@@ -391,11 +475,11 @@ export class Parser {
    * Operator perkalian dan pembagian: *, /
    */
   private parseMultiplicativeExpression(): Expression {
-    let left = this.parseCallMemberExpression();
+    let left = this.parseUnaryExpression();
 
     while (this.at().type === TokenType.Multiply || this.at().type === TokenType.Divide) {
       const operator = this.advance().value;
-      const right = this.parseCallMemberExpression();
+      const right = this.parseUnaryExpression();
       left = {
         kind: "BinaryExpression",
         left,
@@ -408,29 +492,61 @@ export class Parser {
   }
 
   /**
-   * Pemanggilan fungsi dan akses anggota: fn() atau obj.prop
+   * Operator uner: !<ekspresi> atau -<angka>
+   */
+  private parseUnaryExpression(): Expression {
+    if (this.at().type === TokenType.Not || this.at().type === TokenType.Minus) {
+      const operator = this.advance().value;
+      const operand = this.parseUnaryExpression();
+      return {
+        kind: "UnaryExpression",
+        operator,
+        operand,
+      } as UnaryExpression;
+    }
+
+    return this.parseCallMemberExpression();
+  }
+
+  /**
+   * Pemanggilan fungsi dan akses anggota: fn() atau obj.prop atau arr[indeks]
    */
   private parseCallMemberExpression(): Expression {
     let member = this.parseMemberExpression();
 
     while (this.at().type === TokenType.OpenParen) {
       member = this.parseCallExpression(member);
-      // Jika setelah pemanggilan terdapat akses properti berantai: fn().prop
-      while (this.at().type === TokenType.Dot) {
-        this.advance();
-        const propToken = this.expect(
-          TokenType.Identifier,
-          "Diharapkan nama properti setelah tanda titik '.'."
-        );
-        member = {
-          kind: "MemberExpr",
-          object: member,
-          property: {
-            kind: "Identifier",
-            symbol: propToken.value,
-          },
-          computed: false,
-        } as MemberExpr;
+      // Jika setelah pemanggilan terdapat akses anggota berantai: fn().prop atau fn()[indeks]
+      while (this.at().type === TokenType.Dot || this.at().type === TokenType.OpenBracket) {
+        if (this.at().type === TokenType.Dot) {
+          this.advance();
+          const propToken = this.expect(
+            TokenType.Identifier,
+            "Diharapkan nama properti setelah tanda titik '.'."
+          );
+          member = {
+            kind: "MemberExpr",
+            object: member,
+            property: {
+              kind: "Identifier",
+              symbol: propToken.value,
+            },
+            computed: false,
+          } as MemberExpr;
+        } else {
+          this.advance(); // Konsumsi '['
+          const property = this.parseExpression();
+          this.expect(
+            TokenType.CloseBracket,
+            "Diharapkan tanda kurung siku tutup ']' setelah indeks barisan."
+          );
+          member = {
+            kind: "MemberExpr",
+            object: member,
+            property,
+            computed: true,
+          } as MemberExpr;
+        }
       }
     }
 
@@ -438,29 +554,45 @@ export class Parser {
   }
 
   /**
-   * Akses anggota dengan titik: objek.properti.subProperti
+   * Akses anggota dengan titik atau tanda kurung siku: objek.properti atau objek[indeks]
    */
   private parseMemberExpression(): Expression {
     let object = this.parsePrimaryExpression();
 
-    while (this.at().type === TokenType.Dot) {
-      this.advance(); // Konsumsi '.'
-      const propertyToken = this.expect(
-        TokenType.Identifier,
-        "Diharapkan nama properti setelah tanda titik '.'."
-      );
+    while (this.at().type === TokenType.Dot || this.at().type === TokenType.OpenBracket) {
+      if (this.at().type === TokenType.Dot) {
+        this.advance(); // Konsumsi '.'
+        const propertyToken = this.expect(
+          TokenType.Identifier,
+          "Diharapkan nama properti setelah tanda titik '.'."
+        );
 
-      const property: Identifier = {
-        kind: "Identifier",
-        symbol: propertyToken.value,
-      };
+        const property: Identifier = {
+          kind: "Identifier",
+          symbol: propertyToken.value,
+        };
 
-      object = {
-        kind: "MemberExpr",
-        object,
-        property,
-        computed: false,
-      } as MemberExpr;
+        object = {
+          kind: "MemberExpr",
+          object,
+          property,
+          computed: false,
+        } as MemberExpr;
+      } else {
+        this.advance(); // Konsumsi '['
+        const property = this.parseExpression();
+        this.expect(
+          TokenType.CloseBracket,
+          "Diharapkan tanda kurung siku tutup ']' setelah indeks barisan."
+        );
+
+        object = {
+          kind: "MemberExpr",
+          object,
+          property,
+          computed: true,
+        } as MemberExpr;
+      }
     }
 
     return object;
@@ -543,6 +675,34 @@ export class Parser {
           kind: "NullLiteral",
           value: null,
         } as NullLiteral;
+
+      // Literal Barisan / Array: [ el1, el2, ... ]
+      case TokenType.OpenBracket: {
+        this.advance(); // Konsumsi '['
+        const elements: Expression[] = [];
+
+        while (this.at().type !== TokenType.CloseBracket && !this.isAtEnd()) {
+          elements.push(this.parseExpression());
+          if (this.at().type === TokenType.Comma) {
+            this.advance();
+          } else if (this.at().type !== TokenType.CloseBracket) {
+            this.expect(
+              TokenType.CloseBracket,
+              "Diharapkan tanda koma ',' atau kurung siku tutup ']' setelah elemen barisan."
+            );
+          }
+        }
+
+        this.expect(
+          TokenType.CloseBracket,
+          "Diharapkan kurung siku tutup ']' pada akhir literal barisan (array)."
+        );
+
+        return {
+          kind: "ArrayLiteral",
+          elements,
+        } as ArrayLiteral;
+      }
 
       // Objek Literal: { kunci: nilai, ... }
       case TokenType.OpenBrace: {

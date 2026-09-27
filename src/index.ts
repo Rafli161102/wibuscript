@@ -1,7 +1,7 @@
 // ============================================================================
 // WIBUSCRIPT CORE ENGINE ENTRY POINT
-// Ekspor modul murni WibuScript (Lexer, Parser, AST, Runtime, Environment).
-// 100% aman untuk lingkungan Web Browser dan Client Components (Next.js).
+// Ekspor modul murni WibuScript (Lexer, Parser, AST, Runtime, Environment,
+// Dialect Converter, JavaScript Transpiler, dan REPL).
 // ============================================================================
 
 import { tokenize, TokenType, KEYWORDS, type Token } from "./lexer";
@@ -12,23 +12,32 @@ import {
   runWibuScriptAsync,
   unwrapSignal,
   formatRuntimeValue,
+  invokeFunction,
+  jsValueToRuntimeValue,
+  runtimeValueToJsValue,
   Environment,
   MK_NULL,
   MK_NUMBER,
   MK_BOOL,
   MK_STRING,
+  MK_ARRAY,
+  MK_OBJECT,
   MK_NATIVE_FN,
   type RuntimeValue,
   type NullValue,
   type NumberValue,
   type BooleanValue,
   type StringValue,
+  type ArrayValue,
+  type ObjectValue,
   type NativeFnValue,
   type FunctionValue,
   type ReturnSignal,
   type ExecutionResult,
   type EnvironmentOptions,
 } from "./runtime";
+import { convertDialect, type Dialect, DIALECT_TABLE } from "./converter";
+import { transpileToJS, Transpiler } from "./transpiler";
 
 export {
   tokenize,
@@ -41,22 +50,34 @@ export {
   runWibuScriptAsync,
   unwrapSignal,
   formatRuntimeValue,
+  invokeFunction,
+  jsValueToRuntimeValue,
+  runtimeValueToJsValue,
   Environment,
   MK_NULL,
   MK_NUMBER,
   MK_BOOL,
   MK_STRING,
+  MK_ARRAY,
+  MK_OBJECT,
   MK_NATIVE_FN,
   type RuntimeValue,
   type NullValue,
   type NumberValue,
   type BooleanValue,
   type StringValue,
+  type ArrayValue,
+  type ObjectValue,
   type NativeFnValue,
   type FunctionValue,
   type ReturnSignal,
   type ExecutionResult,
   type EnvironmentOptions,
+  convertDialect,
+  type Dialect,
+  DIALECT_TABLE,
+  transpileToJS,
+  Transpiler,
 };
 
 export * from "./ast";

@@ -15,7 +15,10 @@
     "lint": "next lint",
     "test": "vitest run",
     "core:test": "tsx src/cli.ts contoh.wibu",
-    "core:build": "tsc -p tsconfig.build.json && node scripts/fix-esm-imports.cjs"
+    "core:build": "tsc -p tsconfig.build.json && node scripts/fix-esm-imports.cjs",
+    "repl": "tsx src/cli.ts repl",
+    "build:wibu": "tsx src/cli.ts build",
+    "convert": "tsx src/cli.ts convert"
   },
   "files": [
     "dist",

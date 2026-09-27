@@ -28,6 +28,8 @@ export enum TokenType {
     Function,
     Return,
     Await,
+    Try,
+    Catch,
 
     // Tipe Data & Identifier
     Identifier,
@@ -43,6 +45,11 @@ export enum TokenType {
     GreaterThan,    // >
     GreaterEquals,  // >=
 
+    // Operator Logika
+    AmpersandAmpersand, // &&
+    PipePipe,           // ||
+    Not,                // !
+
     // Operator Aritmatika
     Plus,           // +
     Minus,          // -
@@ -54,6 +61,8 @@ export enum TokenType {
     CloseParen,     // )
     OpenBrace,      // {
     CloseBrace,     // }
+    OpenBracket,    // [
+    CloseBracket,   // ]
     Comma,          // ,
     Semicolon,      // ;
     Dot,            // .
@@ -161,6 +170,18 @@ export const KEYWORDS: Record<string, TokenType> = {
     "mat": TokenType.Await,
     "sabarBanh": TokenType.Await,
     "admindatang": TokenType.Await,
+
+    // Coba (TRY)
+    "kokoromi": TokenType.Try,
+    "koko": TokenType.Try,
+    "cobaDuluBanh": TokenType.Try,
+    "gasTesLur": TokenType.Try,
+
+    // Tangani (CATCH)
+    "yurusu": TokenType.Catch,
+    "yuru": TokenType.Catch,
+    "santaiAja": TokenType.Catch,
+    "amanBos": TokenType.Catch,
 };
 
 /**
@@ -257,9 +278,33 @@ export function tokenize(sourceCode: string): Token[] {
                 column++;
                 tokens.push({ type: TokenType.NotEquals, value: "!=", line: currentLine, column: currentCol });
             } else {
-                throw new Error(`[Lexer Error] Karakter '!' tunggal tidak didukung pada baris ${currentLine}, kolom ${currentCol}. Gunakan '!='.`);
+                tokens.push({ type: TokenType.Not, value: "!", line: currentLine, column: currentCol });
             }
             continue;
+        }
+
+        if (current === "&") {
+            src.shift() as string;
+            column++;
+            if (src.length > 0 && src[0] === "&") {
+                src.shift() as string;
+                column++;
+                tokens.push({ type: TokenType.AmpersandAmpersand, value: "&&", line: currentLine, column: currentCol });
+                continue;
+            }
+            throw new Error(`[Lexer Error] Karakter '&' tunggal tidak didukung pada baris ${currentLine}, kolom ${currentCol}. Gunakan '&&'.`);
+        }
+
+        if (current === "|") {
+            src.shift() as string;
+            column++;
+            if (src.length > 0 && src[0] === "|") {
+                src.shift() as string;
+                column++;
+                tokens.push({ type: TokenType.PipePipe, value: "||", line: currentLine, column: currentCol });
+                continue;
+            }
+            throw new Error(`[Lexer Error] Karakter '|' tunggal tidak didukung pada baris ${currentLine}, kolom ${currentCol}. Gunakan '||'.`);
         }
 
         if (current === "<") {
@@ -332,6 +377,18 @@ export function tokenize(sourceCode: string): Token[] {
             continue;
         }
 
+        if (current === "[") {
+            tokens.push({ type: TokenType.OpenBracket, value: src.shift() as string, line: currentLine, column: currentCol });
+            column++;
+            continue;
+        }
+
+        if (current === "]") {
+            tokens.push({ type: TokenType.CloseBracket, value: src.shift() as string, line: currentLine, column: currentCol });
+            column++;
+            continue;
+        }
+
         if (current === ",") {
             tokens.push({ type: TokenType.Comma, value: src.shift() as string, line: currentLine, column: currentCol });
             column++;
@@ -353,6 +410,135 @@ export function tokenize(sourceCode: string): Token[] {
         if (current === ":") {
             tokens.push({ type: TokenType.Colon, value: src.shift() as string, line: currentLine, column: currentCol });
             column++;
+            continue;
+        }
+
+        // Deteksi Literal Template String (`...${...}...`)
+        if (current === "`") {
+            src.shift();
+            column++;
+
+            // Cek apakah string mengandung interpolasi ${...}
+            let hasInterpolation = false;
+            for (let i = 0; i < src.length; i++) {
+                if (src[i] === "`") break;
+                if (src[i] === "\\" && i + 1 < src.length) {
+                    i++;
+                    continue;
+                }
+                if (src[i] === "$" && i + 1 < src.length && src[i + 1] === "{") {
+                    hasInterpolation = true;
+                    break;
+                }
+            }
+
+            if (!hasInterpolation) {
+                let str = "";
+                while (src.length > 0 && src[0] !== "`") {
+                    if (src[0] === "\n") {
+                        line++;
+                        column = 1;
+                        str += src.shift() as string;
+                    } else if (src[0] === "\\") {
+                        src.shift();
+                        column++;
+                        if (src.length === 0) break;
+                        const esc = src.shift() as string;
+                        column++;
+                        if (esc === "n") str += "\n";
+                        else if (esc === "t") str += "\t";
+                        else if (esc === "r") str += "\r";
+                        else if (esc === "\\") str += "\\";
+                        else if (esc === "`") str += "`";
+                        else if (esc === "$") str += "$";
+                        else str += esc;
+                    } else {
+                        str += src.shift() as string;
+                        column++;
+                    }
+                }
+                if (src.length === 0) {
+                    throw new Error(`[Lexer Error] Literal template string belum ditutup sebelum akhir berkas pada baris ${currentLine}, kolom ${currentCol}.`);
+                }
+                src.shift(); // Konsumsi '`' penutup
+                column++;
+                tokens.push({ type: TokenType.String, value: str, line: currentLine, column: currentCol });
+                continue;
+            }
+
+            // Desugaring interpolasi: `A ${b} C` -> ( "A " + ( b ) + " C" )
+            tokens.push({ type: TokenType.OpenParen, value: "(", line: currentLine, column: currentCol });
+            let currentText = "";
+
+            while (src.length > 0 && src[0] !== "`") {
+                if (src[0] === "\n") {
+                    line++;
+                    column = 1;
+                    currentText += src.shift() as string;
+                } else if (src[0] === "\\") {
+                    src.shift();
+                    column++;
+                    if (src.length === 0) break;
+                    const esc = src.shift() as string;
+                    column++;
+                    if (esc === "n") currentText += "\n";
+                    else if (esc === "t") currentText += "\t";
+                    else if (esc === "r") currentText += "\r";
+                    else if (esc === "\\") currentText += "\\";
+                    else if (esc === "`") currentText += "`";
+                    else if (esc === "$") currentText += "$";
+                    else currentText += esc;
+                } else if (src[0] === "$" && src.length > 1 && src[1] === "{") {
+                    // Masukkan teks sebelumnya
+                    tokens.push({ type: TokenType.String, value: currentText, line: currentLine, column: currentCol });
+                    tokens.push({ type: TokenType.Plus, value: "+", line: currentLine, column: currentCol });
+                    currentText = "";
+
+                    src.shift(); // '$'
+                    src.shift(); // '{'
+                    column += 2;
+
+                    let exprCode = "";
+                    let braceDepth = 1;
+                    while (src.length > 0 && braceDepth > 0) {
+                        const ch = src[0] as string;
+                        if (ch === "{") {
+                            braceDepth++;
+                        } else if (ch === "}") {
+                            braceDepth--;
+                            if (braceDepth === 0) {
+                                src.shift();
+                                column++;
+                                break;
+                            }
+                        } else if (ch === "\n") {
+                            line++;
+                            column = 1;
+                        } else {
+                            column++;
+                        }
+                        exprCode += src.shift() as string;
+                    }
+
+                    const innerTokens = tokenize(exprCode).filter(t => t.type !== TokenType.EOF);
+                    tokens.push({ type: TokenType.OpenParen, value: "(", line: currentLine, column: currentCol });
+                    tokens.push(...innerTokens);
+                    tokens.push({ type: TokenType.CloseParen, value: ")", line: currentLine, column: currentCol });
+                    tokens.push({ type: TokenType.Plus, value: "+", line: currentLine, column: currentCol });
+                } else {
+                    currentText += src.shift() as string;
+                    column++;
+                }
+            }
+
+            if (src.length === 0) {
+                throw new Error(`[Lexer Error] Literal template string belum ditutup sebelum akhir berkas pada baris ${currentLine}, kolom ${currentCol}.`);
+            }
+            src.shift(); // Konsumsi '`' penutup
+            column++;
+
+            tokens.push({ type: TokenType.String, value: currentText, line: currentLine, column: currentCol });
+            tokens.push({ type: TokenType.CloseParen, value: ")", line: currentLine, column: currentCol });
             continue;
         }
 

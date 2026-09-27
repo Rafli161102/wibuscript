@@ -26,6 +26,9 @@
     },
     {
       "include": "#support-functions"
+    },
+    {
+      "include": "#operators"
     }
   ],
   "repository": {
@@ -34,6 +37,11 @@
         {
           "name": "comment.line.double-slash",
           "match": "//.*$"
+        },
+        {
+          "name": "comment.block",
+          "begin": "/\\*",
+          "end": "\\*/"
         }
       ]
     },
@@ -60,6 +68,21 @@
               "match": "\\\\."
             }
           ]
+        },
+        {
+          "name": "string.quoted.backtick",
+          "begin": "`",
+          "end": "`",
+          "patterns": [
+            {
+              "name": "constant.character.escape",
+              "match": "\\\\."
+            },
+            {
+              "name": "variable.parameter",
+              "match": "\\$\\{[^}]*\\}"
+            }
+          ]
         }
       ]
     },
@@ -75,7 +98,7 @@
       "patterns": [
         {
           "name": "constant.language",
-          "match": "\\b(majiBener|maji|chigauBener|chigau|karappo|mu)\\b"
+          "match": "\\b(hontou|hon|menyalaAbkuh|unjukkebolehan|uso|ladehBanh|keracunanmbg|munashi|mu|maafLancang|blukutuk|maji|majiBener|kara|kosongZannen)\\b"
         }
       ]
     },
@@ -83,7 +106,7 @@
       "patterns": [
         {
           "name": "keyword.control",
-          "match": "\\b(moshi|kaloMoshi|soreTomo|tomo|hokaNo|hoka|ulangZutto|zutto|berhentiDuluKudasai|tomare|lanjutAksiSugi|tsugi)\\b"
+          "match": "\\b(moshi|mo|whenYh|izintampil|soretomo|sore|kaloGakGitu|wowok|hoka|ho|yaudahlahYa|woijawa|zutto|zu|gasSampePagi|nyawit|yame|ya|ampunSepuh|bijisatu|tsugi|tsu|lanjutPart2|ambatukam|matte|mat|sabarBanh|admindatang|kokoromi|koko|cobaDuluBanh|gasTesLur|yurusu|yuru|santaiAja|amanBos)\\b"
         }
       ]
     },
@@ -91,7 +114,7 @@
       "patterns": [
         {
           "name": "keyword.declaration",
-          "match": "\\b(koreWa|kore)\\b"
+          "match": "\\b(kore|ko|siImut|pokmipokmi|zettai|ze|hargaMati|bundarahma|jutsu|ju|mybini|fufufafa|kaesu|kae|kasihPaham|kandabahlil)\\b"
         }
       ]
     },
@@ -99,7 +122,15 @@
       "patterns": [
         {
           "name": "support.function",
-          "match": "\\b(kasihMite|mite|bikinJutsu|jutsu|balikInDesu|balikinDesu|modoru|imaDesu|ima|gacha|nagasa|sujiNi|dekaku|chiisaku|tsuika|sakujo)\\b"
+          "match": "\\b(mite|mi|teriakAmba|salamkenal|kuchiMite|km|bacotAmba|cawapresin|shibaraku|siba|santuyDulu|nungguinLu|imaJikan|ima|jamBerapaBanh|cekJamLur|nagasa|naga|seginiDoang|itungPanjangLur|suji|suj|jadiAngkaBanh|ubahJadiDuit|shurui|shu|iniApaan|bendaApaanLur|beki|bek|angkatin|naikinPangkat|marume|maru|buletinBanh|ratainLur|ireta|ire|masukinSini|masukPakEko|toru|to|buangAja|singkirkanLur|kiru|ki|potongBanh|gorokLur|ookiku|ooki|bikinGede|gedeinLur|chiisaku|chii|bikinKecil|kecilinLur|randamu|ran|acakBanh|kocokLur|shikei|shi|matiinProgram|udahKelarinAja|retsu|ret|bikinBarisan|kumpulinJawa|yomu|yo|bacainBerkas|bukaBerkasLur|kaku|ka|tulisinBerkas|coretBerkasLur|yobu|yoB|panggilBerkas|sikatBanh|ukeru|uke|ambilDataBanh|SepongMas|kanjiNi|kn|jadiObjekBanh|uraiJsonLur|kanjiMojiretsu|kmj|jadiTeksBanh|bungkusJsonLur|utsusu|utu|petainBanh|petainLur|erabu|era|saringBanh|saringLur|mitsukeru|mitu|cariinBanh|golekLur|ruuto|ru|akarPangkat|akarLur|zettaichi|zet|mutlakBanh|mutlakLur|kiriSute|ks|bawahinBanh|bawahLur|kiriAge|kia|atasinBanh|atasLur)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator",
+          "match": "(==|!=|<=|>=|<|>|&&|\\|\\||!|\\+|-|\\*|/|=)"
         }
       ]
     }

@@ -23,13 +23,16 @@ import type {
   ExpressionStatement,
   BreakStatement,
   ContinueStatement,
+  TryCatchStatement,
   AssignmentExpression,
   BinaryExpression,
+  UnaryExpression,
   CallExpression,
   Identifier,
   NumericLiteral,
   StringLiteral,
   BooleanLiteral,
+  ArrayLiteral,
   ObjectLiteral,
   MemberExpr,
 } from "./ast";
@@ -185,6 +188,87 @@ export function formatRuntimeValue(val: RuntimeValue): string {
     default:
       return "undefined";
   }
+}
+
+export function jsValueToRuntimeValue(val: unknown): RuntimeValue {
+  if (val === null || val === undefined) return MK_NULL();
+  if (typeof val === "boolean") return MK_BOOL(val);
+  if (typeof val === "number") return MK_NUMBER(val);
+  if (typeof val === "string") return MK_STRING(val);
+  if (Array.isArray(val)) {
+    return MK_ARRAY(val.map(jsValueToRuntimeValue));
+  }
+  if (typeof val === "object") {
+    const map = new Map<string, RuntimeValue>();
+    for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
+      map.set(k, jsValueToRuntimeValue(v));
+    }
+    return MK_OBJECT(map);
+  }
+  return MK_STRING(String(val));
+}
+
+export function runtimeValueToJsValue(val: RuntimeValue): unknown {
+  switch (val.type) {
+    case "null":
+      return null;
+    case "boolean":
+      return (val as BooleanValue).value;
+    case "number":
+      return (val as NumberValue).value;
+    case "string":
+      return (val as StringValue).value;
+    case "array":
+      return (val as ArrayValue).elements.map(runtimeValueToJsValue);
+    case "object": {
+      const obj: Record<string, unknown> = {};
+      for (const [k, v] of (val as ObjectValue).properties.entries()) {
+        obj[k] = runtimeValueToJsValue(v);
+      }
+      return obj;
+    }
+    default:
+      return formatRuntimeValue(val);
+  }
+}
+
+export async function invokeFunction(
+  callee: RuntimeValue,
+  args: RuntimeValue[],
+  env: Environment
+): Promise<RuntimeValue> {
+  if (callee.type === "native-fn") {
+    const result = (callee as NativeFnValue).call(args, env);
+    return result instanceof Promise ? await result : result;
+  }
+
+  if (callee.type === "function") {
+    const fn = callee as FunctionValue;
+    const scope = new Environment(fn.declarationEnv);
+
+    for (let i = 0; i < fn.parameters.length; i++) {
+      const paramName = fn.parameters[i];
+      if (paramName !== undefined) {
+        const argVal = args[i] ?? MK_NULL();
+        scope.declareVar(paramName, argVal);
+      }
+    }
+
+    let lastVal: RuntimeValue = MK_NULL();
+    for (const stmt of fn.body) {
+      const result = await evaluate(stmt, scope);
+      if (isReturnSignal(result)) {
+        return result.value;
+      }
+      lastVal = result as RuntimeValue;
+    }
+
+    return lastVal;
+  }
+
+  throw new Error(
+    `[Runtime Error] Tipe '${callee.type}' bukan merupakan fungsi yang dapat dipanggil.`
+  );
 }
 
 // ----------------------------------------------------------------------------
@@ -778,6 +862,167 @@ export function createGlobalEnvironment(
   env.declareVar("ambilDataBanh", fetchFn);
   env.declareVar("SepongMas", fetchFn);
 
+  // 22. Penguraian & Pembungkusan JSON:
+  // Parse: kanjiNi (Murni) / kn (Singkat) / jadiObjekBanh (Wibu) / uraiJsonLur (Rongawi)
+  const jsonParseFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const textArg = args[0];
+    if (!textArg) {
+      throw new Error("[Runtime Error] Argumen teks JSON diperlukan untuk kanjiNi / urai JSON.");
+    }
+    const raw = textArg.type === "string" ? (textArg as StringValue).value : formatRuntimeValue(textArg);
+    try {
+      const parsed = JSON.parse(raw);
+      return jsValueToRuntimeValue(parsed);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      throw new Error(`[Runtime Error] Format JSON tidak valid: ${msg}`);
+    }
+  });
+  env.declareVar("kanjiNi", jsonParseFn);
+  env.declareVar("kn", jsonParseFn);
+  env.declareVar("jadiObjekBanh", jsonParseFn);
+  env.declareVar("uraiJsonLur", jsonParseFn);
+
+  // Stringify: kanjiMojiretsu (Murni) / kmj (Singkat) / jadiTeksBanh (Wibu) / bungkusJsonLur (Rongawi)
+  const jsonStringifyFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const valArg = args[0] ?? MK_NULL();
+    const jsObj = runtimeValueToJsValue(valArg);
+    return MK_STRING(JSON.stringify(jsObj));
+  });
+  env.declareVar("kanjiMojiretsu", jsonStringifyFn);
+  env.declareVar("kmj", jsonStringifyFn);
+  env.declareVar("jadiTeksBanh", jsonStringifyFn);
+  env.declareVar("bungkusJsonLur", jsonStringifyFn);
+
+  // 23. Fungsi Tingkat Tinggi Barisan / Array:
+  // Map: utsusu (Murni) / utu (Singkat) / petainBanh (Wibu) / petainLur (Rongawi)
+  const mapFn = MK_NATIVE_FN(async (args: RuntimeValue[], scopeEnv: Environment): Promise<RuntimeValue> => {
+    const arrArg = args[0];
+    const fnArg = args[1];
+    if (!arrArg || arrArg.type !== "array") {
+      throw new Error("[Runtime Error] Argumen pertama utsusu harus berupa barisan (array).");
+    }
+    if (!fnArg || (fnArg.type !== "function" && fnArg.type !== "native-fn")) {
+      throw new Error("[Runtime Error] Argumen kedua utsusu harus berupa fungsi callback.");
+    }
+    const arr = arrArg as ArrayValue;
+    const mapped: RuntimeValue[] = [];
+    for (let i = 0; i < arr.elements.length; i++) {
+      const el = arr.elements[i] as RuntimeValue;
+      const res = await invokeFunction(fnArg, [el, MK_NUMBER(i), arr], scopeEnv);
+      mapped.push(res);
+    }
+    return MK_ARRAY(mapped);
+  });
+  env.declareVar("utsusu", mapFn);
+  env.declareVar("utu", mapFn);
+  env.declareVar("petainBanh", mapFn);
+  env.declareVar("petainLur", mapFn);
+
+  // Filter: erabu (Murni) / era (Singkat) / saringBanh (Wibu) / saringLur (Rongawi)
+  const filterFn = MK_NATIVE_FN(async (args: RuntimeValue[], scopeEnv: Environment): Promise<RuntimeValue> => {
+    const arrArg = args[0];
+    const fnArg = args[1];
+    if (!arrArg || arrArg.type !== "array") {
+      throw new Error("[Runtime Error] Argumen pertama erabu harus berupa barisan (array).");
+    }
+    if (!fnArg || (fnArg.type !== "function" && fnArg.type !== "native-fn")) {
+      throw new Error("[Runtime Error] Argumen kedua erabu harus berupa fungsi callback.");
+    }
+    const arr = arrArg as ArrayValue;
+    const filtered: RuntimeValue[] = [];
+    for (let i = 0; i < arr.elements.length; i++) {
+      const el = arr.elements[i] as RuntimeValue;
+      const res = await invokeFunction(fnArg, [el, MK_NUMBER(i), arr], scopeEnv);
+      if (isTruthy(res)) {
+        filtered.push(el);
+      }
+    }
+    return MK_ARRAY(filtered);
+  });
+  env.declareVar("erabu", filterFn);
+  env.declareVar("era", filterFn);
+  env.declareVar("saringBanh", filterFn);
+  env.declareVar("saringLur", filterFn);
+
+  // Find: mitsukeru (Murni) / mitu (Singkat) / cariinBanh (Wibu) / golekLur (Rongawi)
+  const findFn = MK_NATIVE_FN(async (args: RuntimeValue[], scopeEnv: Environment): Promise<RuntimeValue> => {
+    const arrArg = args[0];
+    const fnArg = args[1];
+    if (!arrArg || arrArg.type !== "array") {
+      throw new Error("[Runtime Error] Argumen pertama mitsukeru harus berupa barisan (array).");
+    }
+    if (!fnArg || (fnArg.type !== "function" && fnArg.type !== "native-fn")) {
+      throw new Error("[Runtime Error] Argumen kedua mitsukeru harus berupa fungsi callback.");
+    }
+    const arr = arrArg as ArrayValue;
+    for (let i = 0; i < arr.elements.length; i++) {
+      const el = arr.elements[i] as RuntimeValue;
+      const res = await invokeFunction(fnArg, [el, MK_NUMBER(i), arr], scopeEnv);
+      if (isTruthy(res)) {
+        return el;
+      }
+    }
+    return MK_NULL();
+  });
+  env.declareVar("mitsukeru", findFn);
+  env.declareVar("mitu", findFn);
+  env.declareVar("cariinBanh", findFn);
+  env.declareVar("golekLur", findFn);
+
+  // 24. Matematika Tingkat Lanjut:
+  // Akar Kuadrat (SQRT): ruuto (Murni) / ru (Singkat) / akarPangkat (Wibu) / akarLur (Rongawi)
+  const sqrtFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const val = args[0];
+    if (!val || val.type !== "number") {
+      throw new Error("[Runtime Error] Argumen perhitungan akar harus berupa angka.");
+    }
+    return MK_NUMBER(Math.sqrt((val as NumberValue).value));
+  });
+  env.declareVar("ruuto", sqrtFn);
+  env.declareVar("ru", sqrtFn);
+  env.declareVar("akarPangkat", sqrtFn);
+  env.declareVar("akarLur", sqrtFn);
+
+  // Nilai Mutlak (ABS): zettaichi (Murni) / zet (Singkat) / mutlakBanh (Wibu) / mutlakLur (Rongawi)
+  const absFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const val = args[0];
+    if (!val || val.type !== "number") {
+      throw new Error("[Runtime Error] Argumen perhitungan nilai mutlak harus berupa angka.");
+    }
+    return MK_NUMBER(Math.abs((val as NumberValue).value));
+  });
+  env.declareVar("zettaichi", absFn);
+  env.declareVar("zet", absFn);
+  env.declareVar("mutlakBanh", absFn);
+  env.declareVar("mutlakLur", absFn);
+
+  // Pembulatan ke Bawah (FLOOR): kiriSute (Murni) / ks (Singkat) / bawahinBanh (Wibu) / bawahLur (Rongawi)
+  const floorFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const val = args[0];
+    if (!val || val.type !== "number") {
+      throw new Error("[Runtime Error] Argumen pembulatan ke bawah harus berupa angka.");
+    }
+    return MK_NUMBER(Math.floor((val as NumberValue).value));
+  });
+  env.declareVar("kiriSute", floorFn);
+  env.declareVar("ks", floorFn);
+  env.declareVar("bawahinBanh", floorFn);
+  env.declareVar("bawahLur", floorFn);
+
+  // Pembulatan ke Atas (CEIL): kiriAge (Murni) / kia (Singkat) / atasinBanh (Wibu) / atasLur (Rongawi)
+  const ceilFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    const val = args[0];
+    if (!val || val.type !== "number") {
+      throw new Error("[Runtime Error] Argumen pembulatan ke atas harus berupa angka.");
+    }
+    return MK_NUMBER(Math.ceil((val as NumberValue).value));
+  });
+  env.declareVar("kiriAge", ceilFn);
+  env.declareVar("kia", ceilFn);
+  env.declareVar("atasinBanh", ceilFn);
+  env.declareVar("atasLur", ceilFn);
+
   return env;
 }
 
@@ -814,6 +1059,9 @@ export async function evaluate(
     case "ReturnStatement":
       return await evalReturnStatement(astNode as ReturnStatement, env);
 
+    case "TryCatchStatement":
+      return await evalTryCatchStatement(astNode as TryCatchStatement, env);
+
     case "BlockStatement":
       return await evalBlockStatement(astNode as BlockStatement, env);
 
@@ -826,11 +1074,17 @@ export async function evaluate(
     case "BinaryExpression":
       return await evalBinaryExpression(astNode as BinaryExpression, env);
 
+    case "UnaryExpression":
+      return await evalUnaryExpression(astNode as UnaryExpression, env);
+
     case "CallExpression":
       return await evalCallExpression(astNode as CallExpression, env);
 
     case "MemberExpr":
       return await evalMemberExpr(astNode as MemberExpr, env);
+
+    case "ArrayLiteral":
+      return await evalArrayLiteral(astNode as ArrayLiteral, env);
 
     case "ObjectLiteral":
       return await evalObjectLiteral(astNode as ObjectLiteral, env);
@@ -1073,13 +1327,73 @@ async function evalAssignment(
   env: Environment
 ): Promise<RuntimeValue> {
   const value = unwrapSignal(await evaluate(node.value, env));
-  return env.assignVar(node.assignee, value);
+
+  if (node.assignee.kind === "Identifier") {
+    return env.assignVar((node.assignee as Identifier).symbol, value);
+  }
+
+  if (node.assignee.kind === "MemberExpr") {
+    const member = node.assignee as MemberExpr;
+    const target = unwrapSignal(await evaluate(member.object, env));
+
+    if (target.type === "object") {
+      const obj = target as ObjectValue;
+      let propKey: string;
+      if (member.computed) {
+        const evaluatedKey = unwrapSignal(await evaluate(member.property, env));
+        propKey = formatRuntimeValue(evaluatedKey);
+      } else {
+        propKey = (member.property as Identifier).symbol;
+      }
+      obj.properties.set(propKey, value);
+      return value;
+    }
+
+    if (target.type === "array") {
+      const arr = target as ArrayValue;
+      const evaluatedIdx = unwrapSignal(await evaluate(member.property, env));
+      if (evaluatedIdx.type !== "number") {
+        throw new Error("[Runtime Error] Indeks barisan (array) harus berupa angka.");
+      }
+      const idx = (evaluatedIdx as NumberValue).value;
+      if (idx < 0 || idx >= arr.elements.length) {
+        throw new Error(
+          `[Runtime Error] Indeks array di luar batas: ${idx} (panjang barisan: ${arr.elements.length}).`
+        );
+      }
+      arr.elements[idx] = value;
+      return value;
+    }
+
+    throw new Error(
+      `[Runtime Error] Tidak dapat menugaskan properti ke nilai bertipe '${target.type}'.`
+    );
+  }
+
+  throw new Error("[Runtime Error] Target penugasan '=' tidak valid.");
 }
 
 async function evalBinaryExpression(
   binop: BinaryExpression,
   env: Environment
 ): Promise<RuntimeValue> {
+  // Evaluasi short-circuit untuk operator logika AND (&&) dan OR (||)
+  if (binop.operator === "&&") {
+    const left = unwrapSignal(await evaluate(binop.left, env));
+    if (!isTruthy(left)) {
+      return left;
+    }
+    return unwrapSignal(await evaluate(binop.right, env));
+  }
+
+  if (binop.operator === "||") {
+    const left = unwrapSignal(await evaluate(binop.left, env));
+    if (isTruthy(left)) {
+      return left;
+    }
+    return unwrapSignal(await evaluate(binop.right, env));
+  }
+
   const left = unwrapSignal(await evaluate(binop.left, env));
   const right = unwrapSignal(await evaluate(binop.right, env));
 
@@ -1175,6 +1489,28 @@ async function evalBinaryExpression(
   );
 }
 
+async function evalUnaryExpression(
+  node: UnaryExpression,
+  env: Environment
+): Promise<RuntimeValue> {
+  const operand = unwrapSignal(await evaluate(node.operand, env));
+
+  if (node.operator === "!") {
+    return MK_BOOL(!isTruthy(operand));
+  }
+
+  if (node.operator === "-") {
+    if (operand.type === "number") {
+      return MK_NUMBER(-(operand as NumberValue).value);
+    }
+    throw new Error(
+      `[Runtime Error] Operator uner '-' hanya berlaku untuk tipe number, bukan '${operand.type}'.`
+    );
+  }
+
+  throw new Error(`[Runtime Error] Operator uner '${node.operator}' tidak didukung.`);
+}
+
 async function evalCallExpression(
   call: CallExpression,
   env: Environment
@@ -1186,38 +1522,18 @@ async function evalCallExpression(
     evaluatedArgs.push(unwrapSignal(await evaluate(arg, env)));
   }
 
-  if (callee.type === "native-fn") {
-    const result = (callee as NativeFnValue).call(evaluatedArgs, env);
-    return result instanceof Promise ? await result : result;
+  return await invokeFunction(callee, evaluatedArgs, env);
+}
+
+async function evalArrayLiteral(
+  node: ArrayLiteral,
+  env: Environment
+): Promise<RuntimeValue> {
+  const elements: RuntimeValue[] = [];
+  for (const el of node.elements) {
+    elements.push(unwrapSignal(await evaluate(el, env)));
   }
-
-  if (callee.type === "function") {
-    const fn = callee as FunctionValue;
-    const scope = new Environment(fn.declarationEnv);
-
-    for (let i = 0; i < fn.parameters.length; i++) {
-      const paramName = fn.parameters[i];
-      if (paramName !== undefined) {
-        const argVal = evaluatedArgs[i] ?? MK_NULL();
-        scope.declareVar(paramName, argVal);
-      }
-    }
-
-    let lastVal: RuntimeValue = MK_NULL();
-    for (const stmt of fn.body) {
-      const result = await evaluate(stmt, scope);
-      if (isReturnSignal(result)) {
-        return result.value;
-      }
-      lastVal = result as RuntimeValue;
-    }
-
-    return lastVal;
-  }
-
-  throw new Error(
-    `[Runtime Error] Identifier '${call.callee}' bukan merupakan fungsi yang dapat dipanggil.`
-  );
+  return MK_ARRAY(elements);
 }
 
 async function evalObjectLiteral(
@@ -1242,20 +1558,101 @@ async function evalMemberExpr(
 ): Promise<RuntimeValue> {
   const objectVal = unwrapSignal(await evaluate(node.object, env));
 
-  if (objectVal.type !== "object") {
-    throw new Error(
-      `[Runtime Error] Tidak dapat mengakses properti '${node.property.symbol}' dari tipe '${objectVal.type}'.`
-    );
+  if (objectVal.type === "object") {
+    const obj = objectVal as ObjectValue;
+    let propKey: string;
+    if (node.computed) {
+      const evaluatedKey = unwrapSignal(await evaluate(node.property, env));
+      propKey = formatRuntimeValue(evaluatedKey);
+    } else {
+      propKey = (node.property as Identifier).symbol;
+    }
+
+    if (!obj.properties.has(propKey)) {
+      return MK_NULL();
+    }
+
+    return obj.properties.get(propKey) as RuntimeValue;
   }
 
-  const obj = objectVal as ObjectValue;
-  const propertyName = node.property.symbol;
-
-  if (!obj.properties.has(propertyName)) {
-    return MK_NULL();
+  if (objectVal.type === "array") {
+    const arr = objectVal as ArrayValue;
+    if (!node.computed) {
+      const prop = (node.property as Identifier).symbol;
+      if (prop === "length" || prop === "nagasa" || prop === "naga") {
+        return MK_NUMBER(arr.elements.length);
+      }
+      throw new Error(
+        `[Runtime Error] Properti '${prop}' tidak ditemukan pada barisan. Gunakan [indeks].`
+      );
+    }
+    const idxVal = unwrapSignal(await evaluate(node.property, env));
+    if (idxVal.type !== "number") {
+      throw new Error("[Runtime Error] Indeks barisan (array) harus berupa angka.");
+    }
+    const idx = (idxVal as NumberValue).value;
+    if (idx < 0 || idx >= arr.elements.length) {
+      return MK_NULL();
+    }
+    return arr.elements[idx] as RuntimeValue;
   }
 
-  return obj.properties.get(propertyName) as RuntimeValue;
+  if (objectVal.type === "string" && node.computed) {
+    const str = (objectVal as StringValue).value;
+    const idxVal = unwrapSignal(await evaluate(node.property, env));
+    if (idxVal.type === "number") {
+      const idx = (idxVal as NumberValue).value;
+      if (idx >= 0 && idx < str.length) {
+        return MK_STRING(str[idx] as string);
+      }
+      return MK_NULL();
+    }
+  }
+
+  throw new Error(
+    `[Runtime Error] Tidak dapat mengakses properti dari tipe '${objectVal.type}'.`
+  );
+}
+
+async function evalTryCatchStatement(
+  stmt: TryCatchStatement,
+  env: Environment
+): Promise<RuntimeValue | ControlSignal> {
+  try {
+    const tryScope = new Environment(env);
+    let lastVal: RuntimeValue = MK_NULL();
+    for (const s of stmt.tryBranch) {
+      const res = await evaluate(s, tryScope);
+      if (
+        isReturnSignal(res) ||
+        isBreakSignal(res) ||
+        isContinueSignal(res)
+      ) {
+        return res;
+      }
+      lastVal = res as RuntimeValue;
+    }
+    return lastVal;
+  } catch (err: unknown) {
+    const catchScope = new Environment(env);
+    if (stmt.catchVariable) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      catchScope.declareVar(stmt.catchVariable, MK_STRING(errMsg));
+    }
+    let lastVal: RuntimeValue = MK_NULL();
+    for (const s of stmt.catchBranch) {
+      const res = await evaluate(s, catchScope);
+      if (
+        isReturnSignal(res) ||
+        isBreakSignal(res) ||
+        isContinueSignal(res)
+      ) {
+        return res;
+      }
+      lastVal = res as RuntimeValue;
+    }
+    return lastVal;
+  }
 }
 
 // ----------------------------------------------------------------------------

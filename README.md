@@ -71,6 +71,8 @@ Seluruh kata kunci bahasa Inggris konvensional (`let`, `const`, `if`, `while`, d
 | **Kembalikan (RETURN)** | `kaesu` | `kae` | `kasihPaham` | `kandabahlil` | `TokenType.Return` | Menghentikan fungsi dan mengembalikan nilai. |
 | **Tampilkan (PRINT)** | `mite` | `mi` | `teriakAmba` | `salamkenal` | `TokenType.Print` | Mencetak pesan ke konsol terminal (*stdout*). |
 | **Tunggu (AWAIT)** | `matte` | `mat` | `sabarBanh` | `admindatang` | `TokenType.Await` | Penanda jeda waktu atau eksekusi asinkronus. |
+| **Coba (TRY)** | `kokoromi` | `koko` | `cobaDuluBanh` | `gasTesLur` | `TokenType.Try` | Blok penanganan eksepsi berpotensi galat. |
+| **Tangani (CATCH)** | `yurusu` | `yuru` | `santaiAja` | `amanBos` | `TokenType.Catch` | Blok tangkapan dan pemulihan galat runtime. |
 
 ## Pustaka Standar (Standard Library)
 
@@ -127,6 +129,15 @@ Pustaka Standar mengikuti beberapa aturan:
 | Tulis Berkas | `kaku(lokasi, isi)` | `ka(lokasi, isi)` | `tulisinBerkas(lokasi, isi)` | `coretBerkasLur(lokasi, isi)` | `Null` | Menulis teks ke berkas pada lingkungan CLI. |
 | Muat Modul | `yobu(lokasi)` | `yoB(lokasi)` | `panggilBerkas(lokasi)` | `sikatBanh(lokasi)` | `RuntimeValue` | Memuat dan menjalankan berkas .wibu lain. |
 | Ambil Data | `ukeru(url)` | `uke(url)` | `ambilDataBanh(url)` | `SepongMas(url)` | `String` | Mengambil data menggunakan HTTP GET. |
+| Urai JSON | `kanjiNi(teks)` | `kn(teks)` | `jadiObjekBanh(teks)` | `uraiJsonLur(teks)` | `Object/Array` | Mengurai string format JSON menjadi objek atau barisan. |
+| Bungkus JSON | `kanjiMojiretsu(nilai)` | `kmj(nilai)` | `jadiTeksBanh(nilai)` | `bungkusJsonLur(nilai)` | `String` | Mengonversi nilai runtime menjadi teks string JSON. |
+| Petakan Barisan | `utsusu(arr, fn)` | `utu(arr, fn)` | `petainBanh(arr, fn)` | `petainLur(arr, fn)` | `Array` | Memetakan setiap elemen barisan melalui fungsi callback (Map). |
+| Saring Barisan | `erabu(arr, fn)` | `era(arr, fn)` | `saringBanh(arr, fn)` | `saringLur(arr, fn)` | `Array` | Menyaring elemen barisan yang memenuhi kondisi predikat (Filter). |
+| Cari Elemen | `mitsukeru(arr, fn)` | `mitu(arr, fn)` | `cariinBanh(arr, fn)` | `golekLur(arr, fn)` | `RuntimeValue` | Mencari elemen pertama yang memenuhi kriteria pencarian (Find). |
+| Akar Kuadrat | `ruuto(angka)` | `ru(angka)` | `akarPangkat(angka)` | `akarLur(angka)` | `Number` | Menghitung akar kuadrat dari sebuah angka (Sqrt). |
+| Nilai Mutlak | `zettaichi(angka)` | `zet(angka)` | `mutlakBanh(angka)` | `mutlakLur(angka)` | `Number` | Menghitung nilai mutlak / absolut sebuah bilangan (Abs). |
+| Bulat Bawah | `kiriSute(angka)` | `ks(angka)` | `bawahinBanh(angka)` | `bawahLur(angka)` | `Number` | Membulatkan pecahan ke bilangan bulat di bawahnya (Floor). |
+| Bulat Atas | `kiriAge(angka)` | `kia(angka)` | `atasinBanh(angka)` | `atasLur(angka)` | `Number` | Membulatkan pecahan ke bilangan bulat di atasnya (Ceil). |
 
 > **Catatan:** Nama-nama di atas merupakan nama permukaan masing-masing dialek. Implementasi runtime tetap menggunakan satu fungsi internal untuk setiap kemampuan.
 
@@ -281,14 +292,41 @@ npm run build
 npm run start
 ```
 
-### 5. Eksekusi Berkas Melalui CLI
-Untuk mengeksekusi berkas kode sumber `.wibu` secara langsung di terminal tanpa peramban:
+### 5. Penggunaan Perintah Baris Perintah (CLI)
+WibuScript CLI menyediakan fungsionalitas menyeluruh untuk pengembangan lokal:
 
 ```bash
-npx tsx src/cli.ts contoh.wibu
+# 1. Memulai REPL Interaktif (Read-Eval-Print Loop)
+npm run repl
+# atau jika diinstal secara global:
+wibu
+
+# 2. Menjalankan berkas kode sumber .wibu
+npx wibu run contoh.wibu
+
+# 3. Mengompilasi kode WibuScript ke JavaScript modern (ES2022+)
+npx wibu build contoh.wibu -o hasil.js
+
+# 4. Mengonversi kode sumber secara otomatis antar-4 dialek
+npx wibu convert contoh.wibu --to rongawi -o rongawi.wibu
 ```
 
 ## Log Pembaruan (Changelog)
+
+### v1.5.0
+- **Penanganan Galat (Try-Catch)**: Penambahan blok penanganan eksepsi `kokoromi ... yurusu` (Murni), `koko ... yuru` (Singkat), `cobaDuluBanh ... santaiAja` (Wibu), dan `gasTesLur ... amanBos` (Rongawi).
+- **Literal Array & Pengindeksan Kurung Siku**: Dukungan literal barisan `[1, 2, 3]`, pengindeksan `arr[0]`, penugasan `arr[0] = nilai`, akses dinamis properti objek `obj[kunci]`, dan indeks string `"wibu"[0]`.
+- **Operator Logika & Uner**: Dukungan operator logika berprioritas standar (`&&`, `||`, `!`) dengan evaluasi *short-circuit*, serta operator numerik uner (`-`).
+- **Template String / Interpolasi**: Dukungan literal string backtick dengan interpolasi ekspresi dinamis `` `Halo ${nama}!` ``.
+- **Ekspansi Pustaka Standar**:
+  - Manipulasi JSON: `kanjiNi` (parse) dan `kanjiMojiretsu` (stringify).
+  - Metode Barisan Tingkat Tinggi: `utsusu` (map), `erabu` (filter), dan `mitsukeru` (find).
+  - Matematika Tingkat Lanjut: `ruuto` (sqrt), `zettaichi` (abs), `kiriSute` (floor), dan `kiriAge` (ceil).
+- **Developer Experience & Tooling**:
+  - Interactive REPL (`wibu repl` / `wibu`).
+  - Dialect Auto-Converter (`wibu convert <file> --to <dialek>`).
+  - JavaScript Transpiler (`wibu build <file> -o output.js`).
+- **Pembaruan Web Playground**: Dialect switcher real-time, panel multi-tab (Terminal, Token Inspector, AST Tree Viewer, JavaScript Transpiled), dan Monaco Tokenizer diperbarui.
 
 ### v1.4.0
 - **Standarisasi Sistem 4 Dialek Mutlak**: Refaktor penuh Lexer, Tokenizer, dan Pustaka Standar ke dalam arsitektur 4 dialek (Jepang Murni, Jepang Singkat, Wibu Absurd, Meme Rongawi) untuk seluruh token inti dan fungsi bawaan.

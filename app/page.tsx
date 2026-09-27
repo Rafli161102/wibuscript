@@ -17,13 +17,23 @@ import {
   Zap,
   Variable,
   GitFork,
+  Layers,
+  FileCode,
+  ShieldAlert,
+  Sparkles,
+  Brackets,
 } from "lucide-react";
 import {
   tokenize,
+  TokenType,
+  type Token,
   Parser,
   evaluate,
   createGlobalEnvironment,
   unwrapSignal,
+  convertDialect,
+  type Dialect,
+  transpileToJS,
 } from "../src/index";
 
 // Kumpulan template kode WibuScript bawaan
@@ -32,25 +42,23 @@ const CODE_PRESETS: Record<string, string> = {
 kore namaKsatria = "Ren"
 zettai level = 99
 kore statusIsekai = hontou
+kore inventaris = ["Pedang Cahaya", "Ramuan Mana", "Batu Sihir"]
 
-mite("Memulai petualangan di dunia baru...")
+mite(\`Memulai petualangan di dunia baru bersama \${namaKsatria}...\`)
+mite(\`Item pertama di tas: \${inventaris[0]}\`)
 
-moshi (statusIsekai == hontou) {
-  mite("Karakter petualang: " + namaKsatria)
-  mite("Tingkat kekuatan awal: " + level)
+moshi (statusIsekai == hontou && level >= 50) {
+  mite("Status petualang: MENYALA! Siap menaklukkan dungeon tingkat S.")
 } hoka {
-  mite("Peringatan: Karakter belum terdaftar di guild!")
+  mite("Peringatan: Persiapan belum memenuhi syarat guild!")
 }
 
-jutsu kalkulasiDayaSerang(lvl) {
-  moshi (lvl >= 50) {
-    kaesu lvl * 15
-  }
-  kaesu lvl * 5
+jutsu kalkulasiDayaSerang(lvl, senjata) {
+  kaesu (lvl * 15) + nagasa(senjata)
 }
 
-kore totalSerangan = kalkulasiDayaSerang(level)
-mite("Total daya serang kalkulasi: " + totalSerangan)
+kore totalSerangan = kalkulasiDayaSerang(level, inventaris[0])
+mite(\`Total daya serang kalkulasi: \${totalSerangan}\`)
 mite("Simulasi sistem petualangan selesai.")`,
 
   dialekDemo: `// Demonstrasi Sistem 4 Dialek Mutlak WibuScript
@@ -64,55 +72,87 @@ ze aktif = hon
 
 // 3. Wibu Absurd (siImut, hargaMati, menyalaAbkuh, whenYh, yaudahlahYa, mybini, kasihPaham, teriakAmba)
 siImut waifu = "Aqua"
-teriakAmba("Karakter aktif: " + nama + " | Waifu: " + waifu)
+teriakAmba(\`Karakter aktif: \${nama} | Waifu: \${waifu}\`)
 
 // 4. Meme Rongawi (pokmipokmi, bundarahma, unjukkebolehan, izintampil, woijawa, fufufafa, kandabahlil, salamkenal)
 pokmipokmi mana = 9999
-salamkenal("Kekuatan Mana: " + mana)
+salamkenal(\`Kekuatan Mana: \${mana}\`)
 
 moshi (aktif == hon) {
   mi("Status pertarungan: MENYALA ABKUH!")
 }`,
 
-  asyncLoop: `// Demonstrasi Perulangan (WHILE) & Cetak (PRINT)
-mite("Mengisi energi kristal sihir:")
+  tryCatchDemo: `// Demonstrasi Penanganan Galat (Try-Catch) - 4 Dialek
+mite("=== PENGUJIAN PENANGANAN GALAT ===")
 
-kore persentase = 3
-zutto (persentase > 0) {
-  mite("Mengisi daya kristal... level " + persentase)
-  persentase = persentase - 1
+// Jepang Murni: kokoromi ... yurusu
+kokoromi {
+  mite("Mencoba operasi pembagian berbahaya...")
+  kore hasil = 100 / 0
+  mite("Baris ini tidak akan dieksekusi")
+} yurusu (kesalahan) {
+  mite(\`Tertangkap (Jepang Murni): \${kesalahan}\`)
 }
 
-mite("Pengisian selesai! Kristal siap digunakan.")`,
-
-  objekDanLoop: `// Demonstrasi Tipe Data Objek dan Kontrol Perulangan (Break & Continue)
-kore pahlawan = { 
-  nama: "Ksatria", 
-  elemen: "Cahaya", 
-  level: 1 
-};
-
-mite("Karakter: " + pahlawan.nama + " | Elemen: " + pahlawan.elemen);
-mite("Memulai simulasi grinding...");
-
-kore hitung = 0;
-zutto (hitung < 5) {
-  hitung = hitung + 1;
-
-  moshi (hitung == 2) {
-    mite("Sesi 2 dilewati (tsugi / Continue)");
-    tsugi;
-  }
-
-  mite("Menyelesaikan sesi ke-" + hitung);
-
-  moshi (hitung == 4) {
-    mite("Stamina habis! (yame / Break)");
-    yame;
-  }
+// Wibu Absurd: cobaDuluBanh ... santaiAja
+cobaDuluBanh {
+  mite("Mencoba akses indeks di luar batas...")
+  kore arr = [1, 2]
+  arr[99] = 100
+} santaiAja (err) {
+  mite(\`Tertangkap (Wibu Absurd): \${err}\`)
 }
 
-mite("Simulasi selesai.");`,
+mite("Seluruh penanganan galat berhasil diselesaikan dengan anggun!")`,
+
+  arrayDanJson: `// Demonstrasi Literal Array [], Indeks, & Operasi JSON
+mite("=== OPERASI ARRAY & JSON ===")
+
+// 1. Array Literals & Indeks
+kore angka = [10, 20, 30, 40, 50]
+mite(\`Panjang array: \${nagasa(angka)}\`)
+mite(\`Elemen ke-2: \${angka[2]}\`)
+
+angka[0] = 999
+mite(\`Elemen pertama setelah diubah: \${angka[0]}\`)
+
+// 2. Fungsi Tingkat Tinggi: utsusu (Map) & erabu (Filter)
+jutsu kuadrat(x) { kaesu x * x; }
+kore hasilKuadrat = utsusu([1, 2, 3, 4], kuadrat)
+mite(\`Hasil pemetaan (kuadrat): \${kanjiMojiretsu(hasilKuadrat)}\`)
+
+jutsu genap(x) { kaesu (x > 20); }
+kore tersaring = erabu(angka, genap)
+mite(\`Hasil saringan (> 20): \${kanjiMojiretsu(tersaring)}\`)
+
+// 3. Penguraian JSON: kanjiNi
+kore jsonString = "{\\"guild\\": \\"Crimson Demon\\", \\"anggota\\": 42}"
+kore dataObjek = kanjiNi(jsonString)
+mite(\`Nama Guild dari JSON: \${dataObjek.guild}\`)`,
+
+  gameTebakAngka: `// Mini Game Simulasi: Pertarungan RPG Dadu
+kore nyawaMusuh = 50
+kore giliran = 1
+
+mite("Musuh Monster Isekai muncul! Nyawa musuh: " + nyawaMusuh)
+
+zutto (nyawaMusuh > 0 && giliran <= 5) {
+  kore serangan = 15
+  nyawaMusuh = nyawaMusuh - serangan
+  mite(\`Giliran ke-\${giliran}: Menyerang monster dengan daya \${serangan}!\`)
+
+  moshi (nyawaMusuh <= 0) {
+    mite("Monster berhasil dikalahkan! Kemenangan mutlak!")
+    yame
+  }
+
+  mite(\`Sisa nyawa monster: \${nyawaMusuh}\`)
+  giliran = giliran + 1
+}
+
+moshi (nyawaMusuh > 0) {
+  mite("Pertarungan berakhir imbang! Monster melarikan diri.")
+}`,
 };
 
 // Data kartu referensi untuk Panel Panduan Cepat (4 Dialek Mutlak)
@@ -147,40 +187,72 @@ pokmipokmi saldo = 50000`,
   },
   {
     id: "print",
-    title: "Cetak Output",
-    category: "PRINT",
+    title: "Cetak & Template",
+    category: "PRINT / STRING",
     icon: Terminal,
-    description: "Mencetak teks ke terminal virtual di 4 dialek.",
-    codeSnippet: `// 1. Murni: mite
+    description: "Cetak output dan template literal ${...}",
+    codeSnippet: `// Cetak Output 4 Dialek:
+// mite | mi | teriakAmba | salamkenal
 mite("Halo Dunia!")
 
-// 2. Singkat: mi
-mi("Halo Singkat")
+// Template Literals (Interpolasi Ekspresi)
+kore nama = "Aqua"
+kore level = 99
+mite(\`Nama: \${nama}, Level: \${level + 1}\`)`,
+  },
+  {
+    id: "array",
+    title: "Array & Indeks [ ]",
+    category: "ARRAY / INDEX",
+    icon: Brackets,
+    description: "Literal barisan [ ] dan pengindeksan kurung siku.",
+    codeSnippet: `// Literal barisan
+kore angka = [10, 20, 30]
 
-// 3. Wibu: teriakAmba
-teriakAmba("Menyala Abkuh!")
+// Akses indeks elemen
+kore pertama = angka[0]
 
-// 4. Rongawi: salamkenal
-salamkenal("Salam kenal sepuh")`,
+// Penugasan nilai indeks
+angka[1] = 999
+
+// Akses karakter string
+kore huruf = "Wibu"[0]`,
+  },
+  {
+    id: "trycatch",
+    title: "Penanganan Galat",
+    category: "TRY / CATCH",
+    icon: ShieldAlert,
+    description: "Menangani eksepsi galat pada 4 dialek.",
+    codeSnippet: `// 1. Murni: kokoromi ... yurusu
+kokoromi {
+  kore hasil = 10 / 0
+} yurusu (err) {
+  mite("Galat: " + err)
+}
+
+// 2. Singkat: koko ... yuru
+// 3. Wibu: cobaDuluBanh ... santaiAja
+// 4. Rongawi: gasTesLur ... amanBos`,
   },
   {
     id: "condition",
     title: "Logika Percabangan",
     category: "IF / ELSE IF / ELSE",
     icon: GitFork,
-    description: "Percabangan kondisi logika if, else if, dan else.",
-    codeSnippet: `// 1. Murni: moshi, soretomo, hoka
-moshi (skor >= 90) {
+    description: "Percabangan kondisi logika serta operator &&, ||, !",
+    codeSnippet: `// Operator Logika: &&, ||, !
+moshi (skor >= 90 && !gagal) {
   mite("Peringkat S")
-} soretomo moshi (skor >= 70) {
+} soretomo moshi (skor >= 70 || adaBonus) {
   mite("Peringkat A")
 } hoka {
   mite("Coba Lagi")
 }
 
-// 2. Singkat: mo, sore, ho
-// 3. Wibu: whenYh, kaloGakGitu, yaudahlahYa
-// 4. Rongawi: izintampil, wowok, woijawa`,
+// Singkat: mo, sore, ho
+// Wibu: whenYh, kaloGakGitu, yaudahlahYa
+// Rongawi: izintampil, wowok, woijawa`,
   },
   {
     id: "function",
@@ -202,6 +274,22 @@ ju kali(a, b) {
 // 4. Rongawi: fufufafa & kandabahlil`,
   },
   {
+    id: "jsonmath",
+    title: "Pustaka JSON & Math",
+    category: "STDLIB",
+    icon: Sparkles,
+    description: "Operasi JSON, Array Map/Filter, dan Matematika.",
+    codeSnippet: `// JSON: kanjiNi (parse) & kanjiMojiretsu (stringify)
+kore data = kanjiNi('{"waifu": "Rem"}')
+kore teksJson = kanjiMojiretsu(data)
+
+// Array Functional: utsusu (map) & erabu (filter)
+kore dikali = utsusu([1, 2, 3], jutsu(x) { kaesu x * 2; })
+
+// Matematika: ruuto (sqrt), zettaichi (abs), kiriSute, kiriAge
+kore akar = ruuto(64) // 8`,
+  },
+  {
     id: "loop",
     title: "Perulangan & Kontrol",
     category: "WHILE / BREAK / CONT",
@@ -220,24 +308,6 @@ zutto (i < 5) {
 // 3. Wibu: gasSampePagi, ampunSepuh, lanjutPart2
 // 4. Rongawi: nyawit, bijisatu, ambatukam`,
   },
-  {
-    id: "literals",
-    title: "Literal Khusus",
-    category: "TRUE / FALSE / NULL",
-    icon: Code,
-    description: "Nilai boolean dan null dalam 4 dialek.",
-    codeSnippet: `// Benar (TRUE):
-// hontou | hon | menyalaAbkuh | unjukkebolehan
-kore aktif = hontou
-
-// Salah (FALSE):
-// uso | ladehBanh | keracunanmbg
-kore gagal = uso
-
-// Kosong (NULL):
-// munashi | mu | maafLancang | blukutuk
-kore data = munashi`,
-  },
 ];
 
 // Fungsi utilitas konversi Base64 yang aman untuk UTF-8
@@ -249,25 +319,17 @@ function encodeBase64(str: string): string {
   }
 }
 
-function decodeBase64(base64: string): string {
+function decodeBase64(str: string): string {
   try {
-    const binary = atob(base64);
-    try {
-      return decodeURIComponent(binary);
-    } catch {
-      return binary;
-    }
+    return decodeURIComponent(atob(str));
   } catch {
-    return "";
+    return atob(str);
   }
 }
 
-// Registrasi bahasa kustom WibuScript ke Monaco Editor sebelum render
 function handleEditorWillMount(monaco: Monaco): void {
-  // Daftarkan identitas bahasa
   monaco.languages.register({ id: "wibuscript" });
 
-  // Definisikan Monarch Tokenizer untuk pewarnaan sintaks
   monaco.languages.setMonarchTokensProvider("wibuscript", {
     defaultToken: "",
     ignoreCase: false,
@@ -281,6 +343,8 @@ function handleEditorWillMount(monaco: Monaco): void {
       "yame", "ya", "ampunSepuh", "bijisatu",
       "tsugi", "tsu", "lanjutPart2", "ambatukam",
       "matte", "mat", "sabarBanh", "admindatang",
+      "kokoromi", "koko", "cobaDuluBanh", "gasTesLur",
+      "yurusu", "yuru", "santaiAja", "amanBos",
     ],
 
     // Kata kunci deklarasi & subrutin (4 Dialek Mutlak)
@@ -294,32 +358,35 @@ function handleEditorWillMount(monaco: Monaco): void {
     // Fungsi pendukung dan pustaka standar
     supportFunctions: [
       "mite", "mi", "teriakAmba", "salamkenal",
-      "imaDesu", "ima", "imaJikan", "waktuSekarang",
-      "gacha",
-      "nagasa",
-      "sujiNi",
-      "dekaku",
-      "chiisaku",
-      "tsuika",
-      "sakujo",
-      "mate",
-      "tolongCekNagasa", "cekNagasa", "panjangTeks",
-      "bikinJadiSuji", "jadiSuji", "ubahAngka",
-      "apaTipeKoreWa", "tipeNani", "shurui",
-      "kalkulasiPangkatSuji", "pangkatSuji", "beki",
-      "bikinBulatSuji", "bulatSuji", "marume",
-      "masukinKeRetsu", "isiRetsu",
-      "keluarinDariRetsu", "buangRetsu",
-      "bikinRetsu", "retsu",
-      "potongKoreNagasa", "potongTeks", "kiru",
-      "bikinGedeKore", "bikinKecilKore",
-      "gachaPull",
-      "yameteKudasai", "yamete",
-      "tolongBacaBerkas", "yomu", "bacaBerkas",
-      "tolongTulisBerkas", "kaku", "tulisBerkas",
-      "tolongPanggilModul", "yobu", "panggilModul",
-      "tolongAmbilData", "totte", "ambilData",
-      "print",
+      "kuchiMite", "km", "bacotAmba", "cawapresin",
+      "shibaraku", "siba", "santuyDulu", "nungguinLu",
+      "imaJikan", "ima", "jamBerapaBanh", "cekJamLur",
+      "nagasa", "naga", "seginiDoang", "itungPanjangLur",
+      "suji", "suj", "jadiAngkaBanh", "ubahJadiDuit",
+      "shurui", "shu", "iniApaan", "bendaApaanLur",
+      "beki", "bek", "angkatin", "naikinPangkat",
+      "marume", "maru", "buletinBanh", "ratainLur",
+      "ireta", "ire", "masukinSini", "masukPakEko",
+      "toru", "to", "buangAja", "singkirkanLur",
+      "kiru", "ki", "potongBanh", "gorokLur",
+      "ookiku", "ooki", "bikinGede", "gedeinLur",
+      "chiisaku", "chii", "bikinKecil", "kecilinLur",
+      "randamu", "ran", "acakBanh", "kocokLur",
+      "shikei", "shi", "matiinProgram", "udahKelarinAja",
+      "retsu", "ret", "bikinBarisan", "kumpulinJawa",
+      "yomu", "yo", "bacainBerkas", "bukaBerkasLur",
+      "kaku", "ka", "tulisinBerkas", "coretBerkasLur",
+      "yobu", "yoB", "panggilBerkas", "sikatBanh",
+      "ukeru", "uke", "ambilDataBanh", "SepongMas",
+      "kanjiNi", "kn", "jadiObjekBanh", "uraiJsonLur",
+      "kanjiMojiretsu", "kmj", "jadiTeksBanh", "bungkusJsonLur",
+      "utsusu", "utu", "petainBanh", "petainLur",
+      "erabu", "era", "saringBanh", "saringLur",
+      "mitsukeru", "mitu", "cariinBanh", "golekLur",
+      "ruuto", "ru", "akarPangkat", "akarLur",
+      "zettaichi", "zet", "mutlakBanh", "mutlakLur",
+      "kiriSute", "ks", "bawahinBanh", "bawahLur",
+      "kiriAge", "kia", "atasinBanh", "atasLur",
     ],
 
     // Konstanta bahasa (4 Dialek Mutlak)
@@ -329,9 +396,10 @@ function handleEditorWillMount(monaco: Monaco): void {
       "munashi", "mu", "maafLancang", "blukutuk",
     ],
 
-    // Operator perbandingan dan aritmatika
+    // Operator
     operators: [
       "==", "!=", "<=", ">=", "<", ">",
+      "&&", "||", "!",
       "+", "-", "*", "/", "%", "=",
     ],
 
@@ -339,21 +407,20 @@ function handleEditorWillMount(monaco: Monaco): void {
 
     tokenizer: {
       root: [
-        // Deteksi komentar yang dimulai dengan //
         [/\/\/.*$/, "comment.line.double-slash"],
+        [/\/\*/, "comment.block", "@comment_block"],
 
-        // Deteksi string diapit tanda kutip ganda
         [/"([^"\\]|\\.)*$/, "string.invalid"],
         [/"/, "string.quoted.double", "@string_double"],
 
-        // Deteksi string diapit tanda kutip tunggal
         [/'([^'\\]|\\.)*$/, "string.invalid"],
         [/'/, "string", "@string_single"],
 
-        // Angka (desimal dan bulat)
+        [/`([^`\\]|\\.)*$/, "string.invalid"],
+        [/`/, "string.quoted.double", "@string_backtick"],
+
         [/\b\d+(\.\d+)?\b/, "number"],
 
-        // Identifier dan aturan kata kunci Sistem Alias
         [/[a-zA-Z_]\w*/, {
           cases: {
             "@controlKeywords": "keyword.control",
@@ -364,7 +431,6 @@ function handleEditorWillMount(monaco: Monaco): void {
           },
         }],
 
-        // Operator
         [/@symbols/, {
           cases: {
             "@operators": "operator",
@@ -372,11 +438,14 @@ function handleEditorWillMount(monaco: Monaco): void {
           },
         }],
 
-        // Tanda kurung, kurung siku, kurung kurawal
         [/[{}()[\]]/, "@brackets"],
-
-        // Pemisah
         [/[;,.]/, "delimiter"],
+      ],
+
+      comment_block: [
+        [/[^/*]+/, "comment.block"],
+        [/\*\//, "comment.block", "@pop"],
+        [/[/*]/, "comment.block"],
       ],
 
       string_double: [
@@ -390,13 +459,20 @@ function handleEditorWillMount(monaco: Monaco): void {
         [/\\./, "string.escape"],
         [/'/, "string", "@pop"],
       ],
+
+      string_backtick: [
+        [/\$\{[^}]*\}/, "variable.parameter"],
+        [/[^\\`$]+/, "string.quoted.double"],
+        [/\\./, "string.escape"],
+        [/`/, "string.quoted.double", "@pop"],
+      ],
     },
   });
 
-  // Konfigurasi fitur bahasa (auto-closing brackets, komentar, dll.)
   monaco.languages.setLanguageConfiguration("wibuscript", {
     comments: {
       lineComment: "//",
+      blockComment: ["/*", "*/"],
     },
     brackets: [
       ["{", "}"],
@@ -409,6 +485,7 @@ function handleEditorWillMount(monaco: Monaco): void {
       { open: "(", close: ")" },
       { open: '"', close: '"' },
       { open: "'", close: "'" },
+      { open: "`", close: "`" },
     ],
     surroundingPairs: [
       { open: "{", close: "}" },
@@ -416,17 +493,8 @@ function handleEditorWillMount(monaco: Monaco): void {
       { open: "(", close: ")" },
       { open: '"', close: '"' },
       { open: "'", close: "'" },
+      { open: "`", close: "`" },
     ],
-    folding: {
-      markers: {
-        start: /\{/,
-        end: /\}/,
-      },
-    },
-    indentationRules: {
-      increaseIndentPattern: /\{[^}]*$/,
-      decreaseIndentPattern: /^\s*\}/,
-    },
   });
 }
 
@@ -440,9 +508,16 @@ export default function WibuScriptPlayground() {
   const [statusMessage, setStatusMessage] = useState<string>("Siap");
   const [tokenCount, setTokenCount] = useState<number | null>(null);
 
+  // Fitur Baru: Inspeksi & Dialek
+  const [activeTab, setActiveTab] = useState<"terminal" | "tokens" | "ast" | "js">("terminal");
+  const [tokensList, setTokensList] = useState<Token[]>([]);
+  const [astJson, setAstJson] = useState<string>("");
+  const [transpiledJs, setTranspiledJs] = useState<string>("");
+  const [currentDialect, setCurrentDialect] = useState<Dialect>("murni");
+  const [tokenFilter, setTokenFilter] = useState<string>("");
+
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
-  // Membaca parameter ?code= dari URL saat pertama kali dimuat di browser
   useEffect(() => {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
@@ -456,12 +531,12 @@ export default function WibuScriptPlayground() {
     }
   }, []);
 
-  // Auto-scroll terminal virtual saat ada output baru
   useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [outputLog]);
+    if (activeTab === "terminal") {
+      terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [outputLog, activeTab]);
 
-  // Menyalin URL lengkap berisi parameter Base64 ke clipboard pengguna
   const handleShareCode = async () => {
     if (typeof window === "undefined") return;
 
@@ -477,7 +552,6 @@ export default function WibuScriptPlayground() {
     }
   };
 
-  // Menyalin snippet kode dari kartu panduan
   const handleCopySnippet = async (cardId: string, snippet: string) => {
     if (typeof window === "undefined") return;
 
@@ -490,12 +564,22 @@ export default function WibuScriptPlayground() {
     }
   };
 
-  // Menempelkan snippet panduan langsung ke editor
   const handleInsertSnippet = (snippet: string) => {
     setCode((prev) => (prev ? `${prev}\n\n${snippet}` : snippet));
   };
 
-  // Eksekusi kode WibuScript di sisi klien (Client-Side Rendering)
+  const handleSwitchDialect = (target: Dialect) => {
+    try {
+      const converted = convertDialect(code, target);
+      setCode(converted);
+      setCurrentDialect(target);
+      setStatusMessage(`Dialek dikonversi ke ${target.toUpperCase()}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setStatusMessage(`Gagal konversi dialek: ${msg}`);
+    }
+  };
+
   const handleRunCode = useCallback(async () => {
     if (isRunning) return;
 
@@ -505,15 +589,24 @@ export default function WibuScriptPlayground() {
     const startTime = performance.now();
 
     try {
-      // 1. Tahap Lexer (Tokenisasi)
+      // 1. Lexer (Tokenisasi)
       const tokens = tokenize(code);
+      setTokensList(tokens);
       setTokenCount(tokens.length);
 
-      // 2. Tahap Parser (Penyusunan AST)
+      // 2. Parser (AST)
       const parser = new Parser();
       const program = parser.produceAST(tokens);
+      setAstJson(JSON.stringify(program, null, 2));
 
-      // 3. Tahap Runtime & Evaluator dengan Real-Time Output Streaming
+      // 3. Transpilasi ke JS
+      try {
+        setTranspiledJs(transpileToJS(code));
+      } catch {
+        setTranspiledJs("// Gagal mengompilasi ke JavaScript");
+      }
+
+      // 4. Runtime & Evaluator
       const env = createGlobalEnvironment({
         outputHandler: (lineMessage: string) => {
           setOutputLog((prev) => [...prev, lineMessage]);
@@ -551,50 +644,62 @@ export default function WibuScriptPlayground() {
     }
   };
 
-  // Handler perubahan teks dari Monaco Editor
   const handleEditorChange = (value: string | undefined) => {
     setCode(value ?? "");
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      {/* Header Utama */}
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-10">
+      {/* Header Aplikasi */}
+      <header className="border-b border-slate-800 bg-slate-900/90 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-md">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded bg-cyan-600 flex items-center justify-center font-mono font-bold text-white text-sm shadow">
-            <Cpu className="w-4 h-4" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-              WibuScript Web Playground
-              <span className="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">
-                {`v${packageJson.version}`}
-              </span>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-sm shadow-cyan-400/50" />
+            <h1 className="text-sm font-bold tracking-wide uppercase text-slate-200">
+              WibuScript Playground
             </h1>
-            <p className="text-xs text-slate-400">
-              Browser Engine untuk Bahasa Pemrograman Esoterik WibuScript
-            </p>
+          </div>
+          <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/80">
+            v{packageJson.version}
+          </span>
+
+          {/* Dialect Switcher Interaktif */}
+          <div className="hidden sm:flex items-center gap-1 bg-slate-950 border border-slate-800 rounded p-0.5 ml-2">
+            <span className="text-[10px] text-slate-400 px-1.5 font-medium uppercase">Dialek:</span>
+            {(["murni", "singkat", "wibu", "rongawi"] as Dialect[]).map((d) => (
+              <button
+                key={d}
+                onClick={() => handleSwitchDialect(d)}
+                className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${
+                  currentDialect === d
+                    ? "bg-cyan-600 text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-850"
+                }`}
+                title={`Konversi seluruh kode editor ke dialek ${d}`}
+              >
+                {d.toUpperCase()}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Toolbar & Kontrol Preset */}
-        <div className="flex items-center gap-3">
-          <label className="text-xs text-slate-400 font-medium">Template:</label>
+        <div className="flex items-center gap-2.5">
           <select
-            aria-label="Pilih Template Kode"
             onChange={(e) => handlePresetChange(e.target.value)}
-            className="bg-slate-800 border border-slate-700 text-xs rounded px-2.5 py-1.5 text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+            defaultValue="default"
+            className="bg-slate-950 border border-slate-700/80 rounded px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-cyan-500 transition-colors"
           >
-            <option value="default">Program Lengkap</option>
-            <option value="aliasDemo">Sistem Alias (Ekstensi vs Shorthand)</option>
-            <option value="asyncLoop">Async Delay (tungguBentar)</option>
-            <option value="objekDanLoop">Objek &amp; Kontrol Loop</option>
+            <option value="default">Preset: RPG Quest Isekai (Array &amp; Template)</option>
+            <option value="dialekDemo">Preset: 4 Dialek Mutlak</option>
+            <option value="tryCatchDemo">Preset: Penanganan Galat (Try-Catch)</option>
+            <option value="arrayDanJson">Preset: Operasi Array &amp; JSON</option>
+            <option value="gameTebakAngka">Preset: Mini RPG Pertarungan Dadu</option>
           </select>
 
           <button
             onClick={() => void handleShareCode()}
-            className="px-3 py-1.5 rounded text-xs font-semibold shadow transition-all bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 active:scale-95 flex items-center gap-1.5"
-            title="Salin tautan berbagi ke clipboard"
+            className="px-3 py-1.5 rounded text-xs border border-slate-700 hover:bg-slate-800 text-slate-300 flex items-center gap-1.5 transition-colors active:scale-95"
+            title="Bagikan tautan kode WibuScript via Base64 URL"
           >
             {isCopied ? (
               <>
@@ -604,7 +709,7 @@ export default function WibuScriptPlayground() {
             ) : (
               <>
                 <Share2 className="w-3.5 h-3.5" />
-                Bagikan Kode
+                Bagikan
               </>
             )}
           </button>
@@ -626,29 +731,27 @@ export default function WibuScriptPlayground() {
             ) : (
               <>
                 <Play className="w-3.5 h-3.5 fill-current" />
-                Jalankan Kode (Ctrl+Enter)
+                Jalankan (Ctrl+Enter)
               </>
             )}
           </button>
         </div>
       </header>
 
-      {/* Konten Utama: 3 Kolom Responsif (Panduan Cepat, Editor, Terminal) */}
+      {/* Konten Utama 3 Kolom: Panduan Cepat, Editor Monaco, dan Panel Tab Multifungsi */}
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 lg:p-6 overflow-hidden">
         {/* Kolom 1: Panel Panduan Cepat (Quick Guide) */}
         <aside className="lg:col-span-3 flex flex-col rounded-lg border border-slate-800 bg-slate-900 shadow-sm overflow-hidden min-h-[420px] max-h-[calc(100vh-140px)]">
-          {/* Header Panduan */}
           <div className="bg-slate-800/80 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-200">
               <BookOpen className="w-4 h-4 text-cyan-400" />
               <span>Panduan Cepat</span>
             </div>
             <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
-              Sintaksis
+              {GUIDE_CARDS.length} Modul
             </span>
           </div>
 
-          {/* Isi Kartu Panduan */}
           <div className="flex-1 p-3 overflow-y-auto space-y-3 text-xs">
             {GUIDE_CARDS.map((card) => {
               const IconComponent = card.icon;
@@ -712,14 +815,13 @@ export default function WibuScriptPlayground() {
             })}
           </div>
 
-          {/* Footer Panduan */}
           <div className="bg-slate-900/90 border-t border-slate-800 px-3 py-2 text-[11px] text-slate-500 flex items-center justify-between">
-            <span>Sistem Alias Ekstensi &amp; Shorthand</span>
-            <span className="font-mono text-slate-400">{GUIDE_CARDS.length} Modul</span>
+            <span>Sistem 4 Dialek Mutlak</span>
+            <span className="font-mono text-slate-400">WibuScript v1.3.0</span>
           </div>
         </aside>
 
-        {/* Kolom 2: Area Editor (Monaco dengan Monarch Tokenizer WibuScript) */}
+        {/* Kolom 2: Area Editor Monaco */}
         <section className="lg:col-span-5 flex flex-col rounded-lg border border-slate-800 bg-slate-900 shadow-sm overflow-hidden min-h-[420px] max-h-[calc(100vh-140px)]">
           <div className="bg-slate-800/60 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
             <div className="flex items-center gap-2 text-slate-300 font-semibold">
@@ -739,7 +841,7 @@ export default function WibuScriptPlayground() {
               beforeMount={handleEditorWillMount}
               options={{
                 fontSize: 14,
-                fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Monaco, 'Courier New', monospace",
+                fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Monaco, monospace",
                 minimap: { enabled: false },
                 scrollBeyondLastLine: false,
                 wordWrap: "on",
@@ -755,88 +857,241 @@ export default function WibuScriptPlayground() {
                 smoothScrolling: true,
                 contextmenu: true,
                 folding: true,
-                lineDecorationsWidth: 8,
               }}
             />
           </div>
 
           <div className="bg-slate-900/90 border-t border-slate-800 px-4 py-2 text-[11px] text-slate-500 flex justify-between items-center">
-            <span>Monaco Editor | Bahasa: WibuScript (Monarch Tokenizer)</span>
+            <span>Bahasa: WibuScript (Monarch Tokenizer)</span>
             <span>Tab = 2 spasi</span>
           </div>
         </section>
 
-        {/* Kolom 3: Area Terminal Virtual */}
+        {/* Kolom 3: Area Panel Tab Multifungsi (Terminal / Tokens / AST / JavaScript) */}
         <section className="lg:col-span-4 flex flex-col rounded-lg border border-slate-800 bg-slate-950 shadow-sm overflow-hidden font-mono min-h-[420px] max-h-[calc(100vh-140px)]">
-          {/* Header Terminal */}
-          <div className="bg-slate-900 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
-            <div className="flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-cyan-400" />
-              <span className="text-slate-300 font-semibold">
-                Terminal Virtual (stdout)
-              </span>
+          {/* Header Panel Tab Navigasi */}
+          <div className="bg-slate-900 px-3 py-2 border-b border-slate-800 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setActiveTab("terminal")}
+                className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                  activeTab === "terminal"
+                    ? "bg-cyan-600 text-white"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                }`}
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                <span>Terminal</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("tokens")}
+                className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                  activeTab === "tokens"
+                    ? "bg-cyan-600 text-white"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Token</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("ast")}
+                className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                  activeTab === "ast"
+                    ? "bg-cyan-600 text-white"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                }`}
+              >
+                <Cpu className="w-3.5 h-3.5" />
+                <span>AST</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("js")}
+                className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                  activeTab === "js"
+                    ? "bg-cyan-600 text-white"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                }`}
+              >
+                <FileCode className="w-3.5 h-3.5" />
+                <span>JS</span>
+              </button>
             </div>
 
             <div className="flex items-center gap-2">
               <span
-                className={`text-[11px] px-2 py-0.5 rounded font-mono ${
+                className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
                   statusMessage === "Menjalankan..."
                     ? "bg-amber-950 text-amber-400 border border-amber-800"
                     : statusMessage === "Selesai"
                     ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
-                    : statusMessage === "Terjadi Kesalahan"
+                    : statusMessage.startsWith("Gagal") || statusMessage === "Terjadi Kesalahan"
                     ? "bg-red-950 text-red-400 border border-red-800"
                     : "bg-slate-800 text-slate-400"
                 }`}
               >
-                Status: {statusMessage}
+                {statusMessage}
               </span>
-              <button
-                onClick={handleClearOutput}
-                className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
-                title="Bersihkan log output terminal"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+              {activeTab === "terminal" && (
+                <button
+                  onClick={handleClearOutput}
+                  className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+                  title="Bersihkan log output terminal"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Body Terminal */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-1.5 text-xs text-slate-300 min-h-[380px]">
-            {outputLog.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-slate-600 select-none py-16">
-                <Terminal className="w-8 h-8 mb-2 stroke-[1.5] text-slate-700" />
-                <p>[Terminal Siap]</p>
-                <p className="text-[11px] mt-1 text-center">
-                  Klik tombol &quot;Jalankan Kode&quot; untuk memulai evaluasi program.
-                </p>
-              </div>
-            ) : (
-              outputLog.map((line, index) => {
-                const isError =
-                  line.startsWith("[Sistem Error]") ||
-                  line.startsWith("[Lexer Error]") ||
-                  line.startsWith("[Parser Error]") ||
-                  line.startsWith("[Runtime Error]");
-
-                return (
-                  <div
-                    key={index}
-                    className={`flex items-start gap-2 leading-relaxed ${
-                      isError
-                        ? "text-red-400 bg-red-950/20 px-1 rounded"
-                        : "text-slate-200"
-                    }`}
-                  >
-                    <span className="text-slate-600 select-none">&gt;</span>
-                    <pre className="whitespace-pre-wrap break-all font-mono">
-                      {line}
-                    </pre>
+          {/* Isi Konten Berdasarkan Tab yang Aktif */}
+          <div className="flex-1 p-3 overflow-y-auto space-y-1.5 text-xs text-slate-300 min-h-[380px]">
+            {/* Tab 1: Terminal Log (stdout) */}
+            {activeTab === "terminal" && (
+              <>
+                {outputLog.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-600 select-none py-16">
+                    <Terminal className="w-8 h-8 mb-2 stroke-[1.5] text-slate-700" />
+                    <p>[Terminal Siap]</p>
+                    <p className="text-[11px] mt-1 text-center">
+                      Klik tombol &quot;Jalankan&quot; untuk mengevaluasi kode program.
+                    </p>
                   </div>
-                );
-              })
+                ) : (
+                  outputLog.map((line, index) => {
+                    const isError =
+                      line.startsWith("[Sistem Error]") ||
+                      line.startsWith("[Lexer Error]") ||
+                      line.startsWith("[Parser Error]") ||
+                      line.startsWith("[Runtime Error]");
+
+                    return (
+                      <div
+                        key={index}
+                        className={`flex items-start gap-2 leading-relaxed ${
+                          isError
+                            ? "text-red-400 bg-red-950/20 px-1 rounded"
+                            : "text-slate-200"
+                        }`}
+                      >
+                        <span className="text-slate-600 select-none">&gt;</span>
+                        <pre className="whitespace-pre-wrap break-all font-mono">
+                          {line}
+                        </pre>
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={terminalEndRef} />
+              </>
             )}
-            <div ref={terminalEndRef} />
+
+            {/* Tab 2: Token Inspector */}
+            {activeTab === "tokens" && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <span className="text-[11px] text-slate-400">Total: {tokensList.length} token</span>
+                  <input
+                    type="text"
+                    placeholder="Saring token..."
+                    value={tokenFilter}
+                    onChange={(e) => setTokenFilter(e.target.value)}
+                    className="bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-[11px] text-slate-200 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+
+                {tokensList.length === 0 ? (
+                  <p className="text-center text-slate-600 py-12">
+                    Jalankan kode untuk melihat daftar token yang dihasilkan Lexer.
+                  </p>
+                ) : (
+                  <div className="space-y-1">
+                    {tokensList
+                      .filter((t) =>
+                        tokenFilter ? t.value.toLowerCase().includes(tokenFilter.toLowerCase()) : true
+                      )
+                      .map((tok, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between bg-slate-900/60 border border-slate-800 px-2 py-1 rounded hover:border-slate-700 text-[11px]"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-slate-500 font-mono w-6 text-right select-none">{idx + 1}</span>
+                            <span className="px-1.5 py-0.2 rounded bg-cyan-950/80 text-cyan-300 font-mono border border-cyan-800/50">
+                              {TokenType[tok.type]}
+                            </span>
+                            <span className="text-slate-200 font-mono font-semibold">
+                              {JSON.stringify(tok.value)}
+                            </span>
+                          </div>
+                          <span className="text-slate-500 text-[10px]">
+                            B:{tok.line} K:{tok.column}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tab 3: AST Syntax Tree */}
+            {activeTab === "ast" && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+                  <span className="text-[11px] text-slate-400">Abstract Syntax Tree (JSON)</span>
+                  {astJson && (
+                    <button
+                      onClick={() => navigator.clipboard.writeText(astJson)}
+                      className="px-2 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>Salin JSON</span>
+                    </button>
+                  )}
+                </div>
+
+                {!astJson ? (
+                  <p className="text-center text-slate-600 py-12">
+                    Jalankan kode untuk melihat representasi AST.
+                  </p>
+                ) : (
+                  <pre className="text-[11px] leading-relaxed text-cyan-300/90 whitespace-pre overflow-x-auto bg-slate-900/40 p-2 rounded">
+                    {astJson}
+                  </pre>
+                )}
+              </div>
+            )}
+
+            {/* Tab 4: JavaScript Transpiled */}
+            {activeTab === "js" && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+                  <span className="text-[11px] text-slate-400">Hasil Transpilasi JavaScript ES2022+</span>
+                  {transpiledJs && (
+                    <button
+                      onClick={() => navigator.clipboard.writeText(transpiledJs)}
+                      className="px-2 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>Salin JS</span>
+                    </button>
+                  )}
+                </div>
+
+                {!transpiledJs ? (
+                  <p className="text-center text-slate-600 py-12">
+                    Jalankan kode untuk mengompilasi WibuScript ke JavaScript.
+                  </p>
+                ) : (
+                  <pre className="text-[11px] leading-relaxed text-emerald-300/90 whitespace-pre overflow-x-auto bg-slate-900/40 p-2 rounded">
+                    {transpiledJs}
+                  </pre>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Footer Terminal (Metrik Eksekusi) */}

@@ -18,16 +18,19 @@ export type NodeType =
   | "ExpressionStatement"
   | "BreakStatement"
   | "ContinueStatement"
+  | "TryCatchStatement"
 
   // Expressions
   | "AssignmentExpression"
   | "BinaryExpression"
+  | "UnaryExpression"
   | "CallExpression"
   | "Identifier"
   | "NumericLiteral"
   | "StringLiteral"
   | "BooleanLiteral"
   | "NullLiteral"
+  | "ArrayLiteral"
   | "ObjectLiteral"
   | "Property"
   | "MemberExpr";
@@ -108,6 +111,16 @@ export interface ContinueStatement extends Statement {
 }
 
 /**
+ * Penanganan galat: kokoromi { ... } yurusu (err) { ... }
+ */
+export interface TryCatchStatement extends Statement {
+  kind: "TryCatchStatement";
+  tryBranch: Statement[];
+  catchVariable?: string | undefined;
+  catchBranch: Statement[];
+}
+
+/**
  * Blok pernyataan dalam kurung kurawal { ... }
  */
 export interface BlockStatement extends Statement {
@@ -133,7 +146,7 @@ export interface Expression extends Statement {}
  */
 export interface AssignmentExpression extends Expression {
   kind: "AssignmentExpression";
-  assignee: string;
+  assignee: Expression;
   value: Expression;
 }
 
@@ -145,6 +158,15 @@ export interface BinaryExpression extends Expression {
   left: Expression;
   operator: string;
   right: Expression;
+}
+
+/**
+ * Operasi uner: !<ekspresi> atau -<angka>
+ */
+export interface UnaryExpression extends Expression {
+  kind: "UnaryExpression";
+  operator: string;
+  operand: Expression;
 }
 
 /**
@@ -197,6 +219,14 @@ export interface NullLiteral extends Expression {
 }
 
 /**
+ * Literal Barisan / Array: [ el1, el2, ... ]
+ */
+export interface ArrayLiteral extends Expression {
+  kind: "ArrayLiteral";
+  elements: Expression[];
+}
+
+/**
  * Properti pasangan kunci-nilai pada objek literal.
  */
 export interface Property extends Statement {
@@ -219,6 +249,6 @@ export interface ObjectLiteral extends Expression {
 export interface MemberExpr extends Expression {
   kind: "MemberExpr";
   object: Expression;
-  property: Identifier;
+  property: Expression;
   computed: boolean;
 }
