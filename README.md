@@ -43,6 +43,8 @@ WibuScript adalah bahasa pemrograman esoterik yang diimplementasikan menggunakan
 
 ## Arsitektur Sistem
 
+<img src="https://media.tenor.com/fA15L6yUks0AAAAi/anime-glasses.gif" width="130" align="right" alt="Anime Glasses Architecture" />
+
 Struktur direktori proyek dirancang secara modular dengan pemisahan tegas antara logika mesin kompilasi, eksekutor baris perintah, dan antarmuka web interaktif:
 
 ```text
@@ -74,6 +76,8 @@ wibuscript/
 - Dibangun di atas Next.js App Router dan Tailwind CSS v4.
 - Evaluasi kode dilakukan secara murni di sisi peramban pengguna.
 - Menyediakan editor kode berbasis teks dengan dukungan indentasi tab, metrik waktu eksekusi, penghitung token, virtual terminal interaktif, dan fitur Shareable URL.
+
+<div style="clear: both;"></div>
 
 ## Spesifikasi Sintaks (Sistem 4 Dialek Mutlak)
 
@@ -112,12 +116,16 @@ WibuScript menerapkan standardisasi kosakata berarsitektur **"Sistem 4 Dialek Mu
 
 ## Pustaka Standar (Standard Library)
 
+<img src="https://media.tenor.com/K_l082wA3m8AAAAi/magic-anime.gif" width="130" align="left" alt="Anime Magic Syntax" style="margin-right: 15px;" />
+
 WibuScript menyediakan Pustaka Standar sebagai kumpulan fungsi bawaan yang dapat digunakan tanpa membuat implementasi fungsi tersebut secara manual.
 
 Pustaka Standar dirancang mengikuti prinsip utama WibuScript:
 > Satu kemampuan runtime, empat bentuk sintaks.
 
 Keempat dialek tidak memiliki implementasi pustaka yang terpisah. Setiap nama fungsi pada masing-masing dialek hanya merupakan nama permukaan yang dipetakan menuju fungsi internal yang sama.
+
+<div style="clear: both;"></div>
 
 Dengan demikian:
 ```text
@@ -195,7 +203,11 @@ zutto (hitung < 5) {
 kuchiMite("Simulasi selesai.");
 ```
 
+<div style="clear: both;"></div>
+
 ## Panduan Penggunaan dan Instalasi
+
+<img src="https://media.tenor.com/-wZAi-4EXugAAAAM/anime-keyboard.gif" width="140" align="right" alt="Anime Hacker Typing" />
 
 > [!TIP]
 > Paket CLI resmi WibuScript dapat dijalankan langsung tanpa instalasi lokal menggunakan npx:
@@ -227,8 +239,17 @@ wibu build contoh.wibu -o hasil.js
 wibu convert contoh.wibu --to rongawi -o rongawi.wibu
 ```
 
+<div style="clear: both;"></div>
+
 ---
 
 ## Log Pembaruan (Changelog)
 
 Catatan rilis lengkap dan riwayat perubahan versi WibuScript dapat dilihat pada berkas [CHANGELOG.md](CHANGELOG.md).
+
+---
+
+<div align="center">
+  <img src="https://media.tenor.com/mN-2yFvFO8UAAAAM/anime-sleep-sleepy.gif" width="200" alt="Anime Sleeping Exhausted" />
+  <p><i>Kompilator selesai dieksekusi... Saatnya istirahat.</i></p>
+</div>
