@@ -105,27 +105,27 @@ export const DIALECT_TABLE: Record<string, [string, string, string, string]> = {
   matte: ["matte", "mat", "sabarBanh", "admindatang"],
   kokoromi: ["kokoromi", "koko", "cobaDuluBanh", "gasTesLur"],
   yurusu: ["yurusu", "yuru", "santaiAja", "amanBos"],
-  subete: ["subete", "sube", "sikatSemua", "gilisemua"],
-  no: ["no", "no", "dari", "soko"],
-  shougo: ["shougo", "sho", "cocokkan", "jodohno"],
-  baai: ["baai", "baa", "kaloPas", "nekPas"],
-  hyoujun: ["hyoujun", "hyo", "sisaan", "sakAnane"],
+  subete: ["subete", "sube", "sikatSemua", "ratakan"],
+  no: ["no", "no", "dari", "didalam"],
+  shougo: ["shougo", "sho", "cocokkan", "cekKhodam"],
+  baai: ["baai", "baa", "kaloPas", "pas"],
+  hyoujun: ["hyoujun", "hyo", "sisaan", "zonk"],
 
   // OOP & Modul
-  sekte: ["sekte", "sek", "paguyuban", "perkumpulan"],
-  tanjou: ["tanjou", "tan", "lahiran", "mbrojol"],
-  atarashii: ["atarashii", "ata", "bikinBaru", "anyaran"],
-  keishou: ["keishou", "kei", "turunanDari", "warisanSoko"],
-  jibun: ["jibun", "ji", "siAing", "awakku"],
-  koukai: ["koukai", "kou", "sebarJutsu", "pamerke"],
-  toriyoseru: ["toriyoseru", "tori", "summonJutsu", "jupukno"],
-  kara: ["kara", "kra", "dari", "soko"],
+  sekte: ["sekte", "sek", "paguyuban", "ormas"],
+  tanjou: ["tanjou", "tan", "lahiran", "spawn"],
+  atarashii: ["atarashii", "ata", "bikinBaru", "rekrut"],
+  keishou: ["keishou", "kei", "turunanDari", "jalurOrdal"],
+  jibun: ["jibun", "ji", "siAing", "siSaya"],
+  koukai: ["koukai", "kou", "sebarJutsu", "spill"],
+  toriyoseru: ["toriyoseru", "tori", "summonJutsu", "culik"],
+  kara: ["kara", "kra", "dari", "lapak"],
 
   // Pustaka Standar
   kuchiMite: ["kuchiMite", "km", "bacotAmba", "cawapresin"],
   shibaraku: ["shibaraku", "siba", "santuyDulu", "nungguinLu"],
   imaJikan: ["imaJikan", "ima", "jamBerapaBanh", "cekJamLur"],
-  nagasa: ["nagasa", "naga", "seginiDoang", "itungPanjangLur"],
+  nagasa: ["nagasa", "naga", "seginiDoang", "cekUkuran"],
   suji: ["suji", "suj", "jadiAngkaBanh", "ubahJadiDuit"],
   shurui: ["shurui", "shu", "iniApaan", "bendaApaanLur"],
   beki: ["beki", "bek", "angkatin", "naikinPangkat"],
@@ -137,7 +137,7 @@ export const DIALECT_TABLE: Record<string, [string, string, string, string]> = {
   chiisaku: ["chiisaku", "chii", "bikinKecil", "kecilinLur"],
   randamu: ["randamu", "ran", "acakBanh", "kocokLur"],
   shikei: ["shikei", "shi", "matiinProgram", "udahKelarinAja"],
-  retsu: ["retsu", "ret", "bikinBarisan", "kumpulinJawa"],
+  retsu: ["retsu", "ret", "bikinBarisan", "kumpulinBocah"],
   yomu: ["yomu", "yo", "bacainBerkas", "bukaBerkasLur"],
   kaku: ["kaku", "ka", "tulisinBerkas", "coretBerkasLur"],
   yobu: ["yobu", "yoB", "panggilBerkas", "sikatBanh"],
@@ -146,19 +146,19 @@ export const DIALECT_TABLE: Record<string, [string, string, string, string]> = {
   kanjiMojiretsu: ["kanjiMojiretsu", "kmj", "jadiTeksBanh", "bungkusJsonLur"],
   utsusu: ["utsusu", "utu", "petainBanh", "petainLur"],
   erabu: ["erabu", "era", "saringBanh", "saringLur"],
-  mitsukeru: ["mitsukeru", "mitu", "cariinBanh", "golekLur"],
+  mitsukeru: ["mitsukeru", "mitu", "cariinBanh", "ciduk"],
   ruuto: ["ruuto", "ru", "akarPangkat", "akarLur"],
   zettaichi: ["zettaichi", "zet", "mutlakBanh", "mutlakLur"],
   kiriSute: ["kiriSute", "ks", "bawahinBanh", "bawahLur"],
   kiriAge: ["kiriAge", "kia", "atasinBanh", "atasLur"],
-  bunri: ["bunri", "bu", "pecahKata", "bedahno"],
-  tsunagu: ["tsunagu", "tsuna", "lemKata", "gandengen"],
-  okikae: ["okikae", "oki", "sulapKata", "gantinen"],
-  kiri: ["kiri", "kri", "pangkas", "potongen"],
-  fukumu: ["fukumu", "fuku", "punyaGak", "onora"],
-  narabikae: ["narabikae", "nara", "rapihin", "urutno"],
-  kirinuki: ["kirinuki", "kinu", "potongSebagian", "cuplikno"],
-  gacha: ["gacha", "gac", "tarikGacha", "mputerNasib"],
+  bunri: ["bunri", "bu", "pecahKata", "pecahin"],
+  tsunagu: ["tsunagu", "tsuna", "lemKata", "lemin"],
+  okikae: ["okikae", "oki", "sulapKata", "tumbalkan"],
+  kiri: ["kiri", "kri", "pangkas", "cukur"],
+  fukumu: ["fukumu", "fuku", "punyaGak", "adaGak"],
+  narabikae: ["narabikae", "nara", "rapihin", "barisin"],
+  kirinuki: ["kirinuki", "kinu", "potongSebagian", "comot"],
+  gacha: ["gacha", "gac", "tarikGacha", "spinZeus"],
 };
 
 // Buat peta terbalik: sembarang token -> grup canonical -> indeks dialek
@@ -166,7 +166,9 @@ const WORD_TO_CANONICAL: Map<string, string> = new Map();
 
 for (const [canonical, variants] of Object.entries(DIALECT_TABLE)) {
   for (const variant of variants) {
-    WORD_TO_CANONICAL.set(variant, canonical);
+    if (!WORD_TO_CANONICAL.has(variant)) {
+      WORD_TO_CANONICAL.set(variant, canonical);
+    }
   }
 }
 

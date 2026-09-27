@@ -4,7 +4,7 @@
 // - Analisis & Perbaikan Bug: % modulo, string .nagasa, new tanpa kurung, semicolon
 // - Destructuring Array & Object (Deklarasi & Penugasan Swapping)
 // - Operator Spread & Rest (...)
-// - Pattern Matching (shougo) di 4 Dialek Mutlak (sho, cocokkan, jodohno)
+// - Pattern Matching (shougo) di 4 Dialek Mutlak (sho, cocokkan, cekKhodam)
 // - Dialect Converter & JS Transpiler
 // ============================================================================
 
@@ -222,24 +222,24 @@ describe("WibuScript v1.8.0 - Pattern Matching (shougo) di 4 Dialek Mutlak", () 
     expect(out).toEqual(["Sisaan Wibu!"]);
   });
 
-  it("Dialek 4 (Meme Rongawi): jodohno, nekPas, sakAnane", async () => {
+  it("Dialek 4 (Meme Rongawi): cekKhodam, pas, zonk", async () => {
     const out: string[] = [];
     const code = `
-      pokmipokmi pangkat = "Lurah";
-      jodohno (pangkat) {
-        nekPas "RT": {
-          salamkenal("Pak RT");
+      pokmipokmi pangkat = "Admin";
+      cekKhodam (pangkat) {
+        pas "Member": {
+          salamkenal("Member Baru");
         }
-        nekPas "Lurah": {
-          salamkenal("Pak Lurah Rongawi!");
+        pas "Admin": {
+          salamkenal("Admin Datang!");
         }
-        sakAnane: {
-          salamkenal("Warga Biasa");
+        zonk: {
+          salamkenal("Silent Reader");
         }
       }
     `;
     await runWibu(code, out);
-    expect(out).toEqual(["Pak Lurah Rongawi!"]);
+    expect(out).toEqual(["Admin Datang!"]);
   });
 
   it("Pencocokan pola sebagai ekspresi yang mengembalikan nilai", async () => {
@@ -277,9 +277,9 @@ describe("WibuScript v1.8.0 - Dialect Converter & Transpiler", () => {
     expect(wibu).toContain("sisaan:");
 
     const rongawi = convertDialect(wibu, "rongawi");
-    expect(rongawi).toContain("jodohno (x)");
-    expect(rongawi).toContain("nekPas 1:");
-    expect(rongawi).toContain("sakAnane:");
+    expect(rongawi).toContain("cekKhodam (x)");
+    expect(rongawi).toContain("pas 1:");
+    expect(rongawi).toContain("zonk:");
   });
 
   it("JS Transpiler: Menghasilkan kode JavaScript ES2022+ yang valid untuk destructuring & shougo", () => {

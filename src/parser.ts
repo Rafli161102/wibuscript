@@ -343,7 +343,7 @@ export class Parser {
    * Perulangan iterasi koleksi: subete (item no koleksi) { ... }
    */
   private parseForEachStatement(): ForEachStatement {
-    this.advance(); // Konsumsi 'subete' / 'sube' / 'sikatSemua' / 'gilisemua'
+    this.advance(); // Konsumsi 'subete' / 'sube' / 'sikatSemua' / 'ratakan'
 
     this.expect(
       TokenType.OpenParen,
@@ -357,7 +357,7 @@ export class Parser {
 
     this.expect(
       TokenType.In,
-      "Diharapkan kata penghubung koleksi ('no', 'dari', atau 'soko') setelah nama variabel."
+      "Diharapkan kata penghubung koleksi ('no', 'dari', atau 'didalam') setelah nama variabel."
     );
 
     const collection = this.parseExpression();
@@ -511,7 +511,7 @@ export class Parser {
 
       // 1. Konstruktor: tanjou(...) { ... }
       if (this.at().type === TokenType.Constructor) {
-        this.advance(); // Konsumsi 'tanjou' / 'tan' / 'lahiran' / 'mbrojol'
+        this.advance(); // Konsumsi 'tanjou' / 'tan' / 'lahiran' / 'spawn'
         this.expect(TokenType.OpenParen, "Diharapkan '(' setelah kata kunci konstruktor.");
         const parameters: string[] = [];
         if (this.at().type !== TokenType.CloseParen) {
@@ -675,12 +675,12 @@ export class Parser {
       this.expect(TokenType.CloseBrace, "Diharapkan '}' setelah daftar pengenal impor.");
     }
 
-    // Partikel asal modul: 'kara' / 'kra' / 'dari' / 'soko'
+    // Partikel asal modul: 'kara' / 'kra' / 'dari' / 'lapak'
     if (this.at().type === TokenType.From || this.at().type === TokenType.In) {
       this.advance();
     } else {
       throw new Error(
-        `[Parser Error] Diharapkan kata kunci asal modul ('kara', 'kra', 'dari', atau 'soko') pada baris ${this.at().line}, kolom ${this.at().column}.`
+        `[Parser Error] Diharapkan kata kunci asal modul ('kara', 'kra', 'dari', atau 'lapak') pada baris ${this.at().line}, kolom ${this.at().column}.`
       );
     }
 
@@ -1336,7 +1336,7 @@ export class Parser {
         } as NewExpression;
       }
 
-      // Referensi diri sendiri: jibun / ji / siAing / awakku
+      // Referensi diri sendiri: jibun / ji / siAing / siSaya
       case TokenType.This: {
         this.advance();
         return {
@@ -1360,7 +1360,7 @@ export class Parser {
    * Pencocokan pola: shougo (diskriminan) { baai nilai: { ... } hyoujun: { ... } }
    */
   private parseMatchStatement(): MatchStatement {
-    this.advance(); // Konsumsi 'shougo' / 'sho' / 'cocokkan' / 'jodohno'
+    this.advance(); // Konsumsi 'shougo' / 'sho' / 'cocokkan' / 'cekKhodam'
 
     let hasParen = false;
     if (this.at().type === TokenType.OpenParen) {
@@ -1391,7 +1391,7 @@ export class Parser {
       }
 
       if (this.at().type === TokenType.Case) {
-        this.advance(); // Konsumsi 'baai' / 'baa' / 'kaloPas' / 'nekPas'
+        this.advance(); // Konsumsi 'baai' / 'baa' / 'kaloPas' / 'pas'
         const caseValue = this.parseExpression();
         this.expect(
           TokenType.Colon,
@@ -1403,7 +1403,7 @@ export class Parser {
           body,
         });
       } else if (this.at().type === TokenType.Default) {
-        this.advance(); // Konsumsi 'hyoujun' / 'hyo' / 'sisaan' / 'sakAnane'
+        this.advance(); // Konsumsi 'hyoujun' / 'hyo' / 'sisaan' / 'zonk'
         this.expect(
           TokenType.Colon,
           "Diharapkan tanda titik dua ':' setelah kata kunci hyoujun/default."

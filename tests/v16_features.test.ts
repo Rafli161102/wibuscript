@@ -69,11 +69,11 @@ describe("WibuScript v1.6.0 Feature Expansion", () => {
       expect((result as StringValue).value).toBe("Aqua;Megumin;Darkness;");
     });
 
-    it("harus mengiterasi array menggunakan dialek Meme Rongawi (gilisemua ... soko)", async () => {
+    it("harus mengiterasi array menggunakan dialek Meme Rongawi (ratakan ... didalam)", async () => {
       const code = `
         pokmipokmi jml = 0
         pokmipokmi list = [5, 15, 25]
-        gilisemua (v soko list) {
+        ratakan (v didalam list) {
           jml = jml + v
         }
         kandabahlil jml
@@ -208,7 +208,7 @@ describe("WibuScript v1.6.0 Feature Expansion", () => {
   });
 
   describe("Pustaka Standar Baru (Standard Library v1.6.0)", () => {
-    it("harus memecah string menjadi array dengan bunri / bu / pecahKata / bedahno", async () => {
+    it("harus memecah string menjadi array dengan bunri / bu / pecahKata / pecahin", async () => {
       const code1 = `kaesu bunri("apel,jeruk,mangga", ",")[1]`;
       const { result: res1 } = await runCode(code1);
       expect((res1 as StringValue).value).toBe("jeruk");
@@ -222,7 +222,7 @@ describe("WibuScript v1.6.0 Feature Expansion", () => {
       expect((res3 as StringValue).value).toBe("script");
     });
 
-    it("harus menggabungkan array menjadi string dengan tsunagu / tsuna / lemKata / gandengen", async () => {
+    it("harus menggabungkan array menjadi string dengan tsunagu / tsuna / lemKata / lemin", async () => {
       const code1 = `kaesu tsunagu(["Konosuba", "ReZero", "Overlord"], " | ")`;
       const { result: res1 } = await runCode(code1);
       expect((res1 as StringValue).value).toBe("Konosuba | ReZero | Overlord");
@@ -236,7 +236,7 @@ describe("WibuScript v1.6.0 Feature Expansion", () => {
       expect((res3 as StringValue).value).toBe("1-2");
     });
 
-    it("harus mengganti substring dengan okikae / oki / sulapKata / gantinen", async () => {
+    it("harus mengganti substring dengan okikae / oki / sulapKata / tumbalkan", async () => {
       const code1 = `kaesu okikae("baka anime baka", "baka", "sugoi")`;
       const { result: res1 } = await runCode(code1);
       expect((res1 as StringValue).value).toBe("sugoi anime sugoi");
@@ -246,7 +246,7 @@ describe("WibuScript v1.6.0 Feature Expansion", () => {
       expect((res2 as StringValue).value).toBe("halo isekai");
     });
 
-    it("harus memangkas spasi dengan kiri / kri / pangkas / potongen", async () => {
+    it("harus memangkas spasi dengan kiri / kri / pangkas / cukur", async () => {
       const code1 = `kaesu kiri("   halo wibu   ")`;
       const { result: res1 } = await runCode(code1);
       expect((res1 as StringValue).value).toBe("halo wibu");
@@ -256,7 +256,7 @@ describe("WibuScript v1.6.0 Feature Expansion", () => {
       expect((res2 as StringValue).value).toBe("senpai");
     });
 
-    it("harus memeriksa keberadaan elemen dengan fukumu / fuku / punyaGak / onora", async () => {
+    it("harus memeriksa keberadaan elemen dengan fukumu / fuku / punyaGak / adaGak", async () => {
       const codeArr = `kaesu fukumu(["Naruto", "Sasuke"], "Sasuke")`;
       const { result: resArr } = await runCode(codeArr);
       expect((resArr as BooleanValue).value).toBe(true);
@@ -270,7 +270,7 @@ describe("WibuScript v1.6.0 Feature Expansion", () => {
       expect((resFalse as BooleanValue).value).toBe(false);
     });
 
-    it("harus mengurutkan array dengan narabikae / nara / rapihin / urutno", async () => {
+    it("harus mengurutkan array dengan narabikae / nara / rapihin / barisin", async () => {
       const codeAsc = `
         kore angka = [40, 10, 30, 20]
         kore rapi = narabikae(angka)
@@ -289,7 +289,7 @@ describe("WibuScript v1.6.0 Feature Expansion", () => {
       expect((resDesc as NumberValue).value).toBe(20);
     });
 
-    it("harus memotong sebagian array/string dengan kirinuki / kinu / potongSebagian / cuplikno", async () => {
+    it("harus memotong sebagian array/string dengan kirinuki / kinu / potongSebagian / comot", async () => {
       const codeArr = `
         kore item = ["A", "B", "C", "D"]
         kore irisan = kirinuki(item, 1, 3)
@@ -329,10 +329,10 @@ describe("WibuScript v1.6.0 Feature Expansion", () => {
       expect(wibuCode).toContain("pangkas");
 
       const rongawiCode = convertDialect(wibuCode, "rongawi");
-      expect(rongawiCode).toContain("gilisemua");
-      expect(rongawiCode).toContain("soko");
-      expect(rongawiCode).toContain("bedahno");
-      expect(rongawiCode).toContain("potongen");
+      expect(rongawiCode).toContain("ratakan");
+      expect(rongawiCode).toContain("didalam");
+      expect(rongawiCode).toContain("pecahin");
+      expect(rongawiCode).toContain("cukur");
     });
 
     it("harus mentranspilasi subete, lambda arrow, dan stdlib baru ke JavaScript", () => {

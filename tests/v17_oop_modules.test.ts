@@ -143,25 +143,25 @@ describe("WibuScript v1.7.0 - Phase 2: OOP & Module System", () => {
       expect(result.outputLog).toEqual(["Keren nih: Megumin"]);
     });
 
-    it("dapat mengeksekusi perkumpulan, mbrojol, anyaran, awakku, warisanSoko (Meme Rongawi)", async () => {
+    it("dapat mengeksekusi ormas, spawn, rekrut, siSaya, jalurOrdal (Meme Rongawi)", async () => {
       const code = `
-        perkumpulan WongJowo {
-          mbrojol(asal) {
-            awakku.asal = asal
+        ormas WargaMeme {
+          spawn(asal) {
+            siSaya.asal = asal
           }
-          sopo() {
-            salamkenal("Asal: " + awakku.asal)
+          sapa() {
+            salamkenal("Asal: " + siSaya.asal)
           }
         }
 
-        perkumpulan Pendekar warisanSoko WongJowo {
+        ormas Pendekar jalurOrdal WargaMeme {
           jurus() {
-            salamkenal("Gebugan maut soko " + awakku.asal)
+            salamkenal("Gebugan maut dari " + siSaya.asal)
           }
         }
 
-        pokmipokmi p = anyaran Pendekar("Solo")
-        p.sopo()
+        pokmipokmi p = rekrut Pendekar("Solo")
+        p.sapa()
         p.jurus()
       `;
 
@@ -169,7 +169,7 @@ describe("WibuScript v1.7.0 - Phase 2: OOP & Module System", () => {
       expect(result.error).toBeUndefined();
       expect(result.outputLog).toEqual([
         "Asal: Solo",
-        "Gebugan maut soko Solo",
+        "Gebugan maut dari Solo",
       ]);
     });
   });
@@ -248,18 +248,18 @@ describe("WibuScript v1.7.0 - Phase 2: OOP & Module System", () => {
       expect(result.outputLog).toEqual(["Halo Otaku!"]);
     });
 
-    it("dapat mengekspor dan mengimpor dengan dialek Rongawi (pamerke, jupukno, soko)", async () => {
+    it("dapat mengekspor dan mengimpor dengan dialek Rongawi (spill, culik, lapak)", async () => {
       registerVirtualModule(
         "./rongawi_mod.wibu",
         `
-          pamerke fufufafa tambah(a, b) {
+          spill fufufafa tambah(a, b) {
             kandabahlil a + b
           }
         `
       );
 
       const mainCode = `
-        jupukno { tambah } soko "./rongawi_mod.wibu"
+        culik { tambah } lapak "./rongawi_mod.wibu"
         salamkenal(tambah(10, 20))
       `;
 
@@ -329,11 +329,11 @@ describe("WibuScript v1.7.0 - Phase 2: OOP & Module System", () => {
       expect(wibu).toContain('summonJutsu { Katana } dari "./senjata.wibu"');
 
       const rongawi = convertDialect(source, "rongawi");
-      expect(rongawi).toContain("perkumpulan Ninja");
-      expect(rongawi).toContain("mbrojol(n)");
-      expect(rongawi).toContain("awakku.n = n");
-      expect(rongawi).toContain("pamerke { Ninja }");
-      expect(rongawi).toContain('jupukno { Katana } soko "./senjata.wibu"');
+      expect(rongawi).toContain("ormas Ninja");
+      expect(rongawi).toContain("spawn(n)");
+      expect(rongawi).toContain("siSaya.n = n");
+      expect(rongawi).toContain("spill { Ninja }");
+      expect(rongawi).toContain('culik { Katana } lapak "./senjata.wibu"');
     });
   });
 

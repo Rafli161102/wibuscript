@@ -207,76 +207,77 @@ export const KEYWORDS: Record<string, TokenType> = {
     "subete": TokenType.ForEach,
     "sube": TokenType.ForEach,
     "sikatSemua": TokenType.ForEach,
-    "gilisemua": TokenType.ForEach,
+    "ratakan": TokenType.ForEach,
 
-    // Partikel Koleksi (IN / FROM)
+    // Partikel Koleksi (IN)
     "no": TokenType.In,
     "dari": TokenType.In,
-    "soko": TokenType.In,
+    "didalam": TokenType.In,
 
     // Kelas / Sekte (CLASS)
     "sekte": TokenType.Class,
     "sek": TokenType.Class,
     "paguyuban": TokenType.Class,
-    "perkumpulan": TokenType.Class,
+    "ormas": TokenType.Class,
 
     // Konstruktor (CONSTRUCTOR)
     "tanjou": TokenType.Constructor,
     "tan": TokenType.Constructor,
     "lahiran": TokenType.Constructor,
-    "mbrojol": TokenType.Constructor,
+    "spawn": TokenType.Constructor,
 
     // Instansiasi Baru (NEW)
     "atarashii": TokenType.New,
     "ata": TokenType.New,
     "bikinBaru": TokenType.New,
-    "anyaran": TokenType.New,
+    "rekrut": TokenType.New,
 
     // Pewarisan (EXTENDS)
     "keishou": TokenType.Extends,
     "kei": TokenType.Extends,
     "turunanDari": TokenType.Extends,
-    "warisanSoko": TokenType.Extends,
+    "jalurOrdal": TokenType.Extends,
 
     // Diri Sendiri (THIS / SELF)
     "jibun": TokenType.This,
     "ji": TokenType.This,
     "siAing": TokenType.This,
-    "awakku": TokenType.This,
+    "siSaya": TokenType.This,
 
     // Ekspor Modul (EXPORT)
     "koukai": TokenType.Export,
     "kou": TokenType.Export,
     "sebarJutsu": TokenType.Export,
-    "pamerke": TokenType.Export,
+    "spill": TokenType.Export,
 
     // Impor Modul (IMPORT)
     "toriyoseru": TokenType.Import,
     "tori": TokenType.Import,
     "summonJutsu": TokenType.Import,
-    "jupukno": TokenType.Import,
+    "culik": TokenType.Import,
 
     // Asal Modul (FROM)
     "kara": TokenType.From,
     "kra": TokenType.From,
+    "lapak": TokenType.From,
 
     // Pencocokan Pola / Switch (MATCH)
     "shougo": TokenType.Match,
     "sho": TokenType.Match,
     "cocokkan": TokenType.Match,
-    "jodohno": TokenType.Match,
+    "cekKhodam": TokenType.Match,
 
     // Kasus Pola (CASE)
     "baai": TokenType.Case,
     "baa": TokenType.Case,
     "kaloPas": TokenType.Case,
-    "nekPas": TokenType.Case,
+    "pas": TokenType.Case,
 
     // Kasus Standar (DEFAULT)
     "hyoujun": TokenType.Default,
     "hyo": TokenType.Default,
     "sisaan": TokenType.Default,
-    "sakAnane": TokenType.Default,
+    "zonk": TokenType.Default,
 };
 
 /**
