@@ -180,6 +180,7 @@ export const KEYWORDS: Record<string, TokenType> = {
     // Fungsi (FUNCTION)
     "jutsu": TokenType.Function,
     "ju": TokenType.Function,
+    "watashiJutsu": TokenType.Function,
     "mybini": TokenType.Function,
     "fufufafa": TokenType.Function,
 
@@ -228,6 +229,7 @@ export const KEYWORDS: Record<string, TokenType> = {
 
     // Partikel Koleksi (IN)
     "no": TokenType.In,
+    "karaNe": TokenType.In,
     "dari": TokenType.In,
     "alasdaun": TokenType.In,
 
