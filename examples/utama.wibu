@@ -1,0 +1,51 @@
+// File: examples/utama.wibu
+// ============================================================================
+// PROGRAM UTAMA WIBUSCRIPT (SHOWCASE MODUL & FILE I/O)
+// Mendemonstrasikan integrasi sistem impor modul antaraberkas (yobu),
+// kalkulasi matematika, serta penulisan (kaku) dan pembacaan (yomu) file sistem.
+// ============================================================================
+
+mite("--- Memulai Eksekusi Program Utama WibuScript ---")
+
+// 1. Mengimpor modul kalkulator dari berkas lokal
+mite("Mengimpor modul kalkulator...")
+yobu("./kalkulator.wibu")
+
+// Menampilkan informasi konfigurasi dari modul yang diimpor
+mite("Modul aktif: " + konfigurasi.namaMesin + " (v" + konfigurasi.versi + ")")
+
+// 2. Melakukan kalkulasi menggunakan fungsi-fungsi dari modul kalkulator
+kore angkaA = 20
+kore angkaB = 5
+
+kore hasilTambah = tambah(angkaA, angkaB)
+kore hasilKurang = kurang(angkaA, angkaB)
+kore hasilKali = kali(angkaA, angkaB)
+kore hasilBagi = bagi(angkaA, angkaB)
+
+// Membuat objek catatan riwayat untuk operasi perkalian
+kore riwayat = catatHasil("Perkalian", angkaA, angkaB, hasilKali)
+mite("Riwayat objek dibuat: " + riwayat.namaOperasi + " (" + riwayat.angkaPertama + " * " + riwayat.angkaKedua + " = " + riwayat.total + ")")
+
+// 3. Menyusun teks laporan kalkulasi
+kore teksLaporan = "=== LAPORAN HASIL KALKULASI WIBUSCRIPT ===\n" +
+  "Mesin: " + konfigurasi.namaMesin + "\n" +
+  "Waktu: " + ima() + "\n" +
+  "Penjumlahan (" + angkaA + " + " + angkaB + "): " + hasilTambah + "\n" +
+  "Pengurangan (" + angkaA + " - " + angkaB + "): " + hasilKurang + "\n" +
+  "Perkalian   (" + angkaA + " * " + angkaB + "): " + hasilKali + "\n" +
+  "Pembagian   (" + angkaA + " / " + angkaB + "): " + hasilBagi + "\n" +
+  "Status: Selesai dengan sukses."
+
+// 4. Menyimpan hasil kalkulasi ke dalam berkas teks menggunakan kaku
+mite("Menulis hasil kalkulasi ke dalam berkas ./hasil.txt...")
+kaku("./hasil.txt", teksLaporan)
+
+// 5. Membaca kembali isi berkas menggunakan yomu
+mite("Membaca kembali isi berkas ./hasil.txt...")
+kore isiBerkas = yomu("./hasil.txt")
+
+// 6. Mencetak hasil pembacaan berkas ke terminal
+mite("--- Isi Berkas yang Berhasil Dibaca ---")
+mite(isiBerkas)
+mite("--- Program Selesai Dieksekusi ---")

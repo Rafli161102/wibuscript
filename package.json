@@ -9,12 +9,20 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run core:build && next build",
+    "prepack": "npm run core:build",
     "start": "next start",
     "lint": "next lint",
+    "test": "vitest run",
     "core:test": "tsx src/cli.ts contoh.wibu",
     "core:build": "tsc -p tsconfig.build.json && node scripts/fix-esm-imports.cjs"
   },
+  "files": [
+    "dist",
+    "examples",
+    "contoh.wibu",
+    "README.md"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Rafli161102/wibuscript.git"
@@ -50,6 +58,7 @@
     "tailwindcss": "^4.3.3",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^1.0.0"
   }
 }

@@ -8,6 +8,9 @@
 // Akses Properti Titik (obj.prop), dan Kontrol Perulangan (Break/Continue).
 // ============================================================================
 
+import fs from "fs";
+import path from "path";
+
 import type {
   Statement,
   Program,
@@ -235,6 +238,19 @@ export class Environment {
       return this.parent.resolve(name);
     }
     throw new Error(`[Runtime Error] Variabel '${name}' belum dideklarasikan.`);
+  }
+}
+
+function checkNodeEnvironment(): void {
+  const isNode =
+    typeof process !== "undefined" &&
+    process.versions != null &&
+    process.versions.node != null &&
+    typeof fs !== "undefined" &&
+    typeof fs.readFileSync === "function";
+
+  if (!isNode) {
+    throw new Error("Fitur I/O hanya tersedia di lingkungan Node.js/CLI");
   }
 }
 
@@ -526,6 +542,127 @@ export function createGlobalEnvironment(
   env.declareVar("usoBanget", MK_BOOL(false));
   env.declareVar("kara", MK_NULL());
   env.declareVar("kosongZannen", MK_NULL());
+
+  // 18. Baca Berkas: tolongBacaBerkas(path) vs yomu(path)
+  const bacaBerkasFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    checkNodeEnvironment();
+
+    const pathArg = args[0];
+    if (!pathArg) {
+      throw new Error("[Runtime Error] Argumen path berkas diperlukan.");
+    }
+
+    const rawPath =
+      pathArg.type === "string"
+        ? (pathArg as StringValue).value
+        : formatRuntimeValue(pathArg);
+
+    const resolvedPath = path.resolve(/*turbopackIgnore: true*/ process.cwd(), rawPath);
+
+    if (!fs.existsSync(resolvedPath)) {
+      throw new Error(
+        `[Runtime Error] Berkas tidak ditemukan pada path: ${resolvedPath}`
+      );
+    }
+
+    const content = fs.readFileSync(resolvedPath, "utf-8");
+    return MK_STRING(content);
+  });
+
+  env.declareVar("tolongBacaBerkas", bacaBerkasFn);
+  env.declareVar("yomu", bacaBerkasFn);
+  env.declareVar("bacaBerkas", bacaBerkasFn);
+
+  // 19. Tulis Berkas: tolongTulisBerkas(path, isi) vs kaku(path, isi)
+  const tulisBerkasFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    checkNodeEnvironment();
+
+    const pathArg = args[0];
+    const contentArg = args[1];
+
+    if (!pathArg) {
+      throw new Error("[Runtime Error] Argumen path berkas diperlukan.");
+    }
+
+    const rawPath =
+      pathArg.type === "string"
+        ? (pathArg as StringValue).value
+        : formatRuntimeValue(pathArg);
+
+    const content =
+      contentArg !== undefined
+        ? contentArg.type === "string"
+          ? (contentArg as StringValue).value
+          : formatRuntimeValue(contentArg)
+        : "";
+
+    const resolvedPath = path.resolve(/*turbopackIgnore: true*/ process.cwd(), rawPath);
+    const parentDir = path.dirname(resolvedPath);
+
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true });
+    }
+
+    fs.writeFileSync(resolvedPath, content, "utf-8");
+    return MK_NULL();
+  });
+
+  env.declareVar("tolongTulisBerkas", tulisBerkasFn);
+  env.declareVar("kaku", tulisBerkasFn);
+  env.declareVar("tulisBerkas", tulisBerkasFn);
+
+  // 20. Impor Modul: tolongPanggilModul(path) vs yobu(path)
+  const imporModulFn = MK_NATIVE_FN(
+    async (args: RuntimeValue[]): Promise<RuntimeValue> => {
+      checkNodeEnvironment();
+
+      const pathArg = args[0];
+      if (!pathArg) {
+        throw new Error("[Runtime Error] Argumen path modul diperlukan.");
+      }
+
+      let rawPath =
+        pathArg.type === "string"
+          ? (pathArg as StringValue).value
+          : formatRuntimeValue(pathArg);
+
+      let resolvedPath = path.resolve(/*turbopackIgnore: true*/ process.cwd(), rawPath);
+
+      if (!fs.existsSync(resolvedPath)) {
+        const inExamples = path.resolve(/*turbopackIgnore: true*/ process.cwd(), "examples", rawPath);
+        if (fs.existsSync(inExamples)) {
+          resolvedPath = inExamples;
+        } else if (!rawPath.endsWith(".wibu")) {
+          const withExt = path.resolve(/*turbopackIgnore: true*/ process.cwd(), rawPath + ".wibu");
+          const withExtInExamples = path.resolve(/*turbopackIgnore: true*/ process.cwd(), "examples", rawPath + ".wibu");
+          if (fs.existsSync(withExt)) {
+            resolvedPath = withExt;
+          } else if (fs.existsSync(withExtInExamples)) {
+            resolvedPath = withExtInExamples;
+          } else {
+            throw new Error(
+              `[Runtime Error] Modul '${rawPath}' tidak ditemukan pada path: ${resolvedPath}`
+            );
+          }
+        } else {
+          throw new Error(
+            `[Runtime Error] Modul '${rawPath}' tidak ditemukan pada path: ${resolvedPath}`
+          );
+        }
+      }
+
+      const fileContent = fs.readFileSync(resolvedPath, "utf-8");
+      const tokens = tokenize(fileContent);
+      const parser = new Parser();
+      const program = parser.produceAST(tokens);
+      const result = await evaluate(program, env);
+      return unwrapSignal(result);
+    }
+  );
+
+  env.declareVar("tolongPanggilModul", imporModulFn);
+  env.declareVar("yobu", imporModulFn);
+  env.declareVar("panggilModul", imporModulFn);
 
   return env;
 }

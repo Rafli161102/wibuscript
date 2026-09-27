@@ -88,6 +88,9 @@ WibuScript menyediakan arsitektur Sistem Alias ganda pada seluruh lapisan sintak
 | Generator Acak / RNG | `gachaPull(min, max)` | `gacha(min, max)` | `Number` | Menghasilkan bilangan bulat acak di antara min dan max. |
 | Force Panic / Throw | `yameteKudasai(pesan)` | `yamete(pesan)` | `Never` | Melempar eksepsi runtime fatal untuk menghentikan program. |
 | Inisialisasi Array | `bikinRetsu(...)` | `retsu(...)` | `Array` | Membuat barisan/array baru dari argumen yang diberikan. |
+| Baca Berkas | `tolongBacaBerkas(path)` | `yomu(path)` | `String` | Membaca isi berkas teks dari file system (Node.js/CLI). |
+| Tulis Berkas | `tolongTulisBerkas(path, isi)` | `kaku(path, isi)` | `Null` | Menulis teks ke dalam berkas pada file system (Node.js/CLI). |
+| Impor Modul | `tolongPanggilModul(path)` | `yobu(path)` | `RuntimeValue` | Membaca dan mengeksekusi berkas `.wibu` lain ke lingkup global (Node.js/CLI). |
 
 ## Contoh Program WibuScript
 
@@ -179,6 +182,7 @@ npx tsx src/cli.ts contoh.wibu
 - Penambahan fitur Shareable URL berbasis kompresi Base64 pada Web Playground.
 
 ### v1.1.0
+- Dukungan File System I/O dan Sistem Impor Modul untuk pengembangan multi-file.
 - Ekspansi Pustaka Standar (*Standard Library*): Menambahkan fungsi bawaan `gacha(min, max)`, `waktuSekarang()`, `panjangTeks(teks)`, `ubahAngka(teks)`, operasi matematika, manipulasi string, dan operasi array.
 - Restrukturisasi Core Engine: Pemisahan tegas antara modul universal (`src/index.ts`) dan CLI runner (`src/cli.ts`) untuk menjamin kompatibilitas total dengan Turbopack dan browser runtime.
 - Penambahan Root Layout (`app/layout.tsx`) dan konfigurasi styling Tailwind CSS v4 (`app/globals.css`).

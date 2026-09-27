@@ -1,0 +1,48 @@
+// File: examples/kalkulator.wibu
+// ============================================================================
+// MODUL KALKULATOR WIBUSCRIPT
+// Modul matematika terstruktur yang mengimplementasikan operasi aritmatika dasar,
+// validasi masukan, dan pembuatan objek untuk melacak riwayat kalkulasi.
+// Menggunakan variasi sintaks Sistem Alias (Ekstensi dan Shorthand).
+// ============================================================================
+
+// Objek konfigurasi modul kalkulator
+koreWa konfigurasi = {
+  namaMesin: "WibuScript Math Engine",
+  versi: "1.0"
+}
+
+// Fungsi penjumlahan menggunakan sintaks Ekstensi (bikinJutsu & balikinDesu)
+bikinJutsu tambah(a, b) {
+  balikinDesu a + b
+}
+
+// Fungsi pengurangan menggunakan sintaks Shorthand (jutsu & kaesu)
+jutsu kurang(a, b) {
+  kaesu a - b
+}
+
+// Fungsi perkalian menggunakan sintaks Ekstensi
+bikinJutsu kali(a, b) {
+  balikinDesu a * b
+}
+
+// Fungsi pembagian dengan pengujian percabangan kondisi (moshi & chigau)
+jutsu bagi(a, b) {
+  moshi (b == 0) {
+    kasihMite("[Peringatan] Pembagian dengan nol tidak diizinkan.")
+    kaesu 0
+  } chigau {
+    kaesu a / b
+  }
+}
+
+// Fungsi pembuat objek catatan riwayat kalkulasi
+bikinJutsu catatHasil(operasi, a, b, hasil) {
+  balikinDesu {
+    namaOperasi: operasi,
+    angkaPertama: a,
+    angkaKedua: b,
+    total: hasil
+  }
+}
