@@ -1,13 +1,19 @@
 <div align="center">
 
-# 🌸 WibuScript Language Support
+# WibuScript Language Support
 ### *Official Visual Studio Code Extension for WibuScript (.wibu)*
 
-[![Version](https://img.shields.io/badge/version-1.9.1-blue?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://github.com/Rafli161102/wibuscript)
-[![NPM Version](https://img.shields.io/npm/v/wibuscript.svg?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/wibuscript)
+<a href="https://github.com/Rafli161102/wibuscript">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=18&duration=3000&pause=1000&color=007ACC&center=true&vCenter=true&width=550&lines=Visual+Studio+Code+Language+Support;Syntax+Highlighting+for+WibuScript;Full+Support+for+4+Absolute+Dialects" alt="VS Code Extension Typing Animation" />
+</a>
+
+<br/>
+
+[![Version](https://img.shields.io/badge/version-1.9.1-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://github.com/Rafli161102/wibuscript)
+[![NPM Version](https://img.shields.io/npm/v/wibuscript.svg?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/wibuscript)
 [![VS Code Engine](https://img.shields.io/badge/VS%20Code-%3E%3D%201.80.0-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white)](https://code.visualstudio.com/)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge&logo=github)](https://github.com/Rafli161102/wibuscript/pulls)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Rafli161102/wibuscript/pulls)
 
 <p align="center">
   <b>Ekstensi resmi Visual Studio Code untuk bahasa pemrograman WibuScript (<code>.wibu</code>)</b><br>
@@ -15,11 +21,11 @@
 </p>
 
 <p align="center">
-  <a href="#-fitur-unggulan">✨ Fitur</a> •
-  <a href="#-dukungan-sistem-4-dialek-mutlak">🎭 4 Dialek</a> •
-  <a href="#-panduan-instalasi">📦 Panduan Instalasi</a> •
-  <a href="#-contoh-kode">💻 Contoh Kode</a> •
-  <a href="#-tautan-resmi">🔗 Tautan Resmi</a>
+  <a href="#fitur-unggulan">Fitur</a> •
+  <a href="#dukungan-sistem-4-dialek-mutlak">4 Dialek Mutlak</a> •
+  <a href="#panduan-instalasi">Instalasi</a> •
+  <a href="#contoh-kode">Contoh Kode</a> •
+  <a href="#tautan-resmi">Tautan Resmi</a>
 </p>
 
 ---
@@ -27,41 +33,41 @@
 </div>
 
 > [!TIP]
-> **Otomatis Aktif**: Begitu berkas dengan ekstensi `.wibu` dibuka di VS Code, ekstensi ini langsung mendeteksi bahasa dan menerapkan pewarnaan sintaksis tanpa konfigurasi tambahan!
+> **Otomatis Aktif**: Begitu berkas dengan ekstensi `.wibu` dibuka di VS Code, ekstensi ini langsung mendeteksi bahasa dan menerapkan pewarnaan sintaksis tanpa konfigurasi tambahan.
 
 ---
 
-## ✨ Fitur Unggulan
+## Fitur Unggulan
 
-- 🎨 **Pewarnaan Sintaksis Menyeluruh (*Full Syntax Highlighting*)**:
-  - 🔑 Kata kunci alur kendali (`moshi`, `zutto`, `shougo`, dll.)
-  - 📦 Deklarasi variabel & tetapan (`kore`, `zettai`, `iniDesu`, `pokmipokmi`, dll.)
-  - 🏛️ Pemrograman Berorientasi Objek / OOP (`sekte`, `tanjou`, `keishou`, `jibun`, dll.)
-  - 📜 Modul & Ekspor Impor (`koukai`, `toriyoseru`, `kara`, dll.)
-  - 🔍 Pattern Matching & Destructuring (`shougo`, `baai`, `hyoujun`, `...`)
-  - 📚 Pustaka Standar Bawaan (*Standard Library*) di seluruh 4 dialek
-  - 💬 Literal string, template string interpolasi (<code>\`...\${...}\`</code>), angka, dan komentar baris ganda (`//`).
-- ⚡ **Ringan & Cepat**: Dibangun dengan TextMate Grammar JSON murni tanpa proses background yang memberatkan editor.
-- 🌐 **Dukungan Bersilang**: Menghighlight kode yang mencampurkan keempat dialek dalam satu berkas secara mulus tanpa konflik.
+- **Pewarnaan Sintaksis Menyeluruh (*Full Syntax Highlighting*)**:
+  - Kata kunci alur kendali (`moshi`, `zutto`, `shougo`, dll.)
+  - Deklarasi variabel & tetapan (`kore`, `zettai`, `iniDesu`, `pokmipokmi`, dll.)
+  - Pemrograman Berorientasi Objek / OOP (`sekte`, `tanjou`, `keishou`, `jibun`, dll.)
+  - Modul & Ekspor Impor (`koukai`, `toriyoseru`, `kara`, dll.)
+  - Pattern Matching & Destructuring (`shougo`, `baai`, `hyoujun`, `...`)
+  - Pustaka Standar Bawaan (*Standard Library*) di seluruh 4 dialek
+  - Literal string, template string interpolasi (<code>\`...\${...}\`</code>), angka, dan komentar baris ganda (`//`).
+- **Ringan & Cepat**: Dibangun dengan TextMate Grammar JSON murni tanpa proses background yang memberatkan editor.
+- **Dukungan Bersilang**: Menghighlight kode yang mencampurkan keempat dialek dalam satu berkas secara mulus tanpa konflik.
 
 ---
 
-## 🎭 Dukungan Sistem 4 Dialek Mutlak
+## Dukungan Sistem 4 Dialek Mutlak
 
 Ekstensi ini mendukung penyorotan sintaksis untuk **Sistem 4 Dialek Mutlak**:
 
 | Dialek | Badge | Karakteristik | Contoh Kata Kunci |
 | :--- | :---: | :--- | :--- |
-| **Jepang Murni** | ![Murni](https://img.shields.io/badge/Dialek-Jepang%20Murni-blue?style=flat-square) | Romaji standar, elegan, dan ekspresif | `kore`, `zettai`, `moshi`, `zutto`, `sekte`, `shougo` |
-| **Jepang Singkat** | ![Singkat](https://img.shields.io/badge/Dialek-Jepang%20Singkat-orange?style=flat-square) | Shorthand suku kata minimalis untuk efisiensi | `ko`, `ze`, `mo`, `zu`, `sek`, `sho` |
-| **Wibu Absurd** | ![Wibu](https://img.shields.io/badge/Dialek-Wibu%20Absurd-pink?style=flat-square) | Slang wibu cringe khas internet Indo-Jepang | `iniDesu`, `zettaiDa`, `moShiKalo`, `zuttoLoop`, `nakama` |
-| **Meme Rongawi** | ![Rongawi](https://img.shields.io/badge/Dialek-Meme%20Rongawi-purple?style=flat-square) | Slang otentik kultur Ngawiverse & Thugposting | `pokmipokmi`, `bundarahma`, `nyawit`, `sektejomok` |
+| **Jepang Murni** | ![Murni](https://img.shields.io/badge/Dialek-Jepang%20Murni-007ACC?style=flat-square) | Romaji standar, elegan, dan ekspresif | `kore`, `zettai`, `moshi`, `zutto`, `sekte`, `shougo` |
+| **Jepang Singkat** | ![Singkat](https://img.shields.io/badge/Dialek-Jepang%20Singkat-FF6B6B?style=flat-square) | Shorthand suku kata minimalis untuk efisiensi | `ko`, `ze`, `mo`, `zu`, `sek`, `sho` |
+| **Wibu Absurd** | ![Wibu](https://img.shields.io/badge/Dialek-Wibu%20Absurd-FF69B4?style=flat-square) | Slang wibu cringe khas internet Indo-Jepang | `iniDesu`, `zettaiDa`, `moShiKalo`, `zuttoLoop`, `nakama` |
+| **Meme Rongawi** | ![Rongawi](https://img.shields.io/badge/Dialek-Meme%20Rongawi-8A2BE2?style=flat-square) | Slang otentik kultur Ngawiverse & Thugposting | `pokmipokmi`, `bundarahma`, `nyawit`, `sektejomok` |
 
 ---
 
-## 📦 Panduan Instalasi
+## Panduan Instalasi
 
-### 🛠️ Opsi 1: Pasang via Berkas VSIX *(Paling Cepat)*
+### Opsi 1: Pasang via Berkas VSIX
 
 1. Unduh berkas `wibuscript-lang-1.0.0.vsix` dari folder `vscode-extension/`.
 2. Buka Visual Studio Code.
@@ -72,7 +78,7 @@ Ekstensi ini mendukung penyorotan sintaksis untuk **Sistem 4 Dialek Mutlak**:
 5. Pilih berkas `.vsix` yang telah diunduh.
 6. Selesai! VS Code akan langsung memuat penyorotan sintaksis WibuScript.
 
-### 💻 Opsi 2: Instalasi Manual *(Development Mode)*
+### Opsi 2: Instalasi Manual *(Development Mode)*
 
 Tautkan atau salin direktori `vscode-extension` ke direktori ekstensi pengguna VS Code:
 
@@ -87,7 +93,7 @@ Tautkan atau salin direktori `vscode-extension` ke direktori ekstensi pengguna V
 
 ---
 
-## 💻 Contoh Kode
+## Contoh Kode
 
 Buat berkas dengan nama `halo.wibu` dan masukkan kode berikut:
 
@@ -115,13 +121,13 @@ kuchiMite("Pahlawan: " + hero.nama);
 
 ---
 
-## 🔗 Tautan Resmi
+## Tautan Resmi
 
-- 🌐 **NPM Package**: [https://www.npmjs.com/package/wibuscript](https://www.npmjs.com/package/wibuscript)
-- 🐙 **GitHub Repository**: [https://github.com/Rafli161102/wibuscript](https://github.com/Rafli161102/wibuscript)
-- 🎮 **Web Playground**: Jalankan kode langsung via peramban web
-- 📄 **Lisensi**: [MIT License](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
+- **NPM Package**: [https://www.npmjs.com/package/wibuscript](https://www.npmjs.com/package/wibuscript)
+- **GitHub Repository**: [https://github.com/Rafli161102/wibuscript](https://github.com/Rafli161102/wibuscript)
+- **Web Playground**: Jalankan kode langsung via peramban web
+- **Lisensi**: [MIT License](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <div align="center">
-  <sub>Dibuat dengan ❤️ untuk komunitas WibuScript oleh para kontributor.</sub>
+  <sub>Dibuat untuk komunitas pengembang WibuScript oleh para kontributor.</sub>
 </div>
