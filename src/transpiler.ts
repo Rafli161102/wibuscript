@@ -35,6 +35,13 @@ import type {
   ImportStatement,
   NewExpression,
   ThisExpression,
+  MatchStatement,
+  MatchCase,
+  DestructuringPattern,
+  ArrayPattern,
+  ObjectPattern,
+  SpreadElement,
+  RestElement,
 } from "./ast";
 import { tokenize } from "./lexer";
 import { Parser } from "./parser";
@@ -181,6 +188,9 @@ export class Transpiler {
       case "ImportStatement":
         return this.transpileImportStatement(stmt as ImportStatement);
 
+      case "MatchStatement":
+        return this.transpileMatchStatement(stmt as MatchStatement);
+
       case "ExpressionStatement":
         return `${this.indent()}${this.transpileExpression((stmt as ExpressionStatement).expression)};`;
 
@@ -191,6 +201,22 @@ export class Transpiler {
 
   private transpileVariableDeclaration(node: VariableDeclaration): string {
     const value = this.transpileExpression(node.value);
+    if (node.pattern) {
+      if (node.pattern.kind === "ArrayPattern") {
+        const elements = node.pattern.elements.map((el) => {
+          if (el === null) return "";
+          if (typeof el === "string") return el;
+          return `...${el.argument}`;
+        });
+        return `${this.indent()}let [${elements.join(", ")}] = ${value};`;
+      } else if (node.pattern.kind === "ObjectPattern") {
+        const props = node.pattern.properties.map((p) => {
+          if (p.target) return `${p.key}: ${p.target}`;
+          return p.key;
+        });
+        return `${this.indent()}let { ${props.join(", ")} } = ${value};`;
+      }
+    }
     return `${this.indent()}let ${node.identifier} = ${value};`;
   }
 
@@ -346,6 +372,30 @@ export class Transpiler {
     return out;
   }
 
+  private transpileMatchStatement(node: MatchStatement): string {
+    const disc = this.transpileExpression(node.discriminant);
+    let out = `${this.indent()}switch (${disc}) {\n`;
+    this.indentLevel++;
+    for (const c of node.cases) {
+      if (c.value) {
+        const val = this.transpileExpression(c.value);
+        out += `${this.indent()}case ${val}: {\n`;
+      } else {
+        out += `${this.indent()}default: {\n`;
+      }
+      this.indentLevel++;
+      for (const s of c.body) {
+        out += this.transpileStatement(s) + "\n";
+      }
+      out += `${this.indent()}break;\n`;
+      this.indentLevel--;
+      out += `${this.indent()}}\n`;
+    }
+    this.indentLevel--;
+    out += `${this.indent()}}`;
+    return out;
+  }
+
   private transpileExpression(expr: Expression): string {
     switch (expr.kind) {
       case "NumericLiteral":
@@ -374,9 +424,12 @@ export class Transpiler {
       }
 
       case "ArrayLiteral": {
-        const elements = (expr as ArrayLiteral).elements.map((e) =>
-          this.transpileExpression(e)
-        );
+        const elements = (expr as ArrayLiteral).elements.map((e) => {
+          if (e.kind === "SpreadElement") {
+            return `...${this.transpileExpression((e as SpreadElement).argument)}`;
+          }
+          return this.transpileExpression(e as Expression);
+        });
         return `[${elements.join(", ")}]`;
       }
 
@@ -399,7 +452,10 @@ export class Transpiler {
 
       case "MemberExpr": {
         const member = expr as MemberExpr;
-        const obj = this.transpileExpression(member.object);
+        let obj = this.transpileExpression(member.object);
+        if (member.object.kind === "NewExpression") {
+          obj = `(${obj})`;
+        }
         if (member.computed) {
           const prop = this.transpileExpression(member.property);
           return `${obj}[${prop}]`;
@@ -410,12 +466,65 @@ export class Transpiler {
 
       case "AssignmentExpression": {
         const assign = expr as AssignmentExpression;
-        const assignee =
-          assign.assignee.kind === "Identifier"
-            ? (assign.assignee as Identifier).symbol
-            : this.transpileExpression(assign.assignee);
+        if (assign.assignee.kind === "Identifier") {
+          const assignee = (assign.assignee as Identifier).symbol;
+          const val = this.transpileExpression(assign.value);
+          return `${assignee} = ${val}`;
+        }
+        if (assign.assignee.kind === "ArrayPattern") {
+          const pat = assign.assignee as ArrayPattern;
+          const elements = pat.elements.map((el) => {
+            if (el === null) return "";
+            if (typeof el === "string") return el;
+            return `...${el.argument}`;
+          });
+          const val = this.transpileExpression(assign.value);
+          return `[${elements.join(", ")}] = ${val}`;
+        }
+        if (assign.assignee.kind === "ObjectPattern") {
+          const pat = assign.assignee as ObjectPattern;
+          const props = pat.properties.map((p) => {
+            if (p.target) return `${p.key}: ${p.target}`;
+            return p.key;
+          });
+          const val = this.transpileExpression(assign.value);
+          return `({ ${props.join(", ")} } = ${val})`;
+        }
+        const assignee = this.transpileExpression(assign.assignee as Expression);
         const val = this.transpileExpression(assign.value);
         return `${assignee} = ${val}`;
+      }
+
+      case "MatchStatement": {
+        const matchStmt = expr as MatchStatement;
+        const disc = this.transpileExpression(matchStmt.discriminant);
+        let out = `(() => {\n`;
+        this.indentLevel++;
+        out += `${this.indent()}switch (${disc}) {\n`;
+        this.indentLevel++;
+        for (const c of matchStmt.cases) {
+          if (c.value) {
+            out += `${this.indent()}case ${this.transpileExpression(c.value)}: {\n`;
+          } else {
+            out += `${this.indent()}default: {\n`;
+          }
+          this.indentLevel++;
+          for (let i = 0; i < c.body.length; i++) {
+            const s = c.body[i]!;
+            if (i === c.body.length - 1 && s.kind === "ExpressionStatement") {
+              out += `${this.indent()}return ${this.transpileExpression((s as ExpressionStatement).expression)};\n`;
+            } else {
+              out += this.transpileStatement(s) + "\n";
+            }
+          }
+          this.indentLevel--;
+          out += `${this.indent()}}\n`;
+        }
+        this.indentLevel--;
+        out += `${this.indent()}}\n`;
+        this.indentLevel--;
+        out += `${this.indent()}})()`;
+        return out;
       }
 
       case "BinaryExpression": {

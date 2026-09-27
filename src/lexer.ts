@@ -68,6 +68,13 @@ export enum TokenType {
     Minus,          // -
     Multiply,       // *
     Divide,         // /
+    Modulo,         // %
+
+    // Pattern Matching & Destructuring (Phase 3)
+    Match,
+    Case,
+    Default,
+    Spread,         // ...
 
     // Simbol & Delimiter
     OpenParen,      // (
@@ -252,6 +259,24 @@ export const KEYWORDS: Record<string, TokenType> = {
     // Asal Modul (FROM)
     "kara": TokenType.From,
     "kra": TokenType.From,
+
+    // Pencocokan Pola / Switch (MATCH)
+    "shougo": TokenType.Match,
+    "sho": TokenType.Match,
+    "cocokkan": TokenType.Match,
+    "jodohno": TokenType.Match,
+
+    // Kasus Pola (CASE)
+    "baai": TokenType.Case,
+    "baa": TokenType.Case,
+    "kaloPas": TokenType.Case,
+    "nekPas": TokenType.Case,
+
+    // Kasus Standar (DEFAULT)
+    "hyoujun": TokenType.Default,
+    "hyo": TokenType.Default,
+    "sisaan": TokenType.Default,
+    "sakAnane": TokenType.Default,
 };
 
 /**
@@ -426,6 +451,12 @@ export function tokenize(sourceCode: string): Token[] {
             continue;
         }
 
+        if (current === "%") {
+            tokens.push({ type: TokenType.Modulo, value: src.shift() as string, line: currentLine, column: currentCol });
+            column++;
+            continue;
+        }
+
         // 5. Simbol dan Delimiter
         if (current === "(") {
             tokens.push({ type: TokenType.OpenParen, value: src.shift() as string, line: currentLine, column: currentCol });
@@ -476,6 +507,14 @@ export function tokenize(sourceCode: string): Token[] {
         }
 
         if (current === ".") {
+            if (src.length > 2 && src[1] === "." && src[2] === ".") {
+                src.shift();
+                src.shift();
+                src.shift();
+                tokens.push({ type: TokenType.Spread, value: "...", line: currentLine, column: currentCol });
+                column += 3;
+                continue;
+            }
             tokens.push({ type: TokenType.Dot, value: src.shift() as string, line: currentLine, column: currentCol });
             column++;
             continue;

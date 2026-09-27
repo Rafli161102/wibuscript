@@ -23,6 +23,7 @@ export type NodeType =
   | "ClassDeclaration"
   | "ExportStatement"
   | "ImportStatement"
+  | "MatchStatement"
 
   // Expressions
   | "AssignmentExpression"
@@ -40,7 +41,10 @@ export type NodeType =
   | "ArrayLiteral"
   | "ObjectLiteral"
   | "Property"
-  | "MemberExpr";
+  | "MemberExpr"
+  | "SpreadElement"
+  | "ArrayPattern"
+  | "ObjectPattern";
 
 /**
  * Antarmuka dasar untuk semua simpul Statement.
@@ -58,11 +62,32 @@ export interface Program extends Statement {
 }
 
 /**
- * Deklarasi variabel: kore <nama> = <nilai> / koreWa <nama> = <nilai>
+ * Pola pembongkaran data (Destructuring Pattern)
+ */
+export type DestructuringPattern = ArrayPattern | ObjectPattern;
+
+export interface RestElement {
+  kind: "RestElement";
+  argument: string;
+}
+
+export interface ArrayPattern {
+  kind: "ArrayPattern";
+  elements: (string | RestElement | null)[];
+}
+
+export interface ObjectPattern {
+  kind: "ObjectPattern";
+  properties: { key: string; target?: string }[];
+}
+
+/**
+ * Deklarasi variabel: kore <nama> = <nilai> atau kore [a, b] = <nilai> atau kore { x, y } = <nilai>
  */
 export interface VariableDeclaration extends Statement {
   kind: "VariableDeclaration";
   identifier: string;
+  pattern?: DestructuringPattern | undefined;
   value: Expression;
 }
 
@@ -167,6 +192,23 @@ export interface ImportStatement extends Statement {
 }
 
 /**
+ * Kasus cabang dalam pencocokan pola: baai <nilai>: { ... } atau hyoujun: { ... }
+ */
+export interface MatchCase {
+  value?: Expression | undefined; // undefined = kasus default (hyoujun / sisaan)
+  body: Statement[];
+}
+
+/**
+ * Pencocokan pola / percabangan banyak: shougo (<diskriminan>) { baai ...: ... hyoujun: ... }
+ */
+export interface MatchStatement extends Statement {
+  kind: "MatchStatement";
+  discriminant: Expression;
+  cases: MatchCase[];
+}
+
+/**
  * Blok pernyataan dalam kurung kurawal { ... }
  */
 export interface BlockStatement extends Statement {
@@ -198,11 +240,11 @@ export interface ArrowFunctionExpression extends Expression {
 }
 
 /**
- * Penugasan nilai ke variabel yang sudah ada: <nama> = <nilai>
+ * Penugasan nilai ke variabel yang sudah ada: <nama> = <nilai> atau [a, b] = <nilai>
  */
 export interface AssignmentExpression extends Expression {
   kind: "AssignmentExpression";
-  assignee: Expression;
+  assignee: Expression | DestructuringPattern;
   value: Expression;
 }
 
@@ -291,11 +333,19 @@ export interface NullLiteral extends Expression {
 }
 
 /**
+ * Elemen sebar (Spread / Rest): ...argument
+ */
+export interface SpreadElement {
+  kind: "SpreadElement";
+  argument: Expression;
+}
+
+/**
  * Literal Barisan / Array: [ el1, el2, ... ]
  */
 export interface ArrayLiteral extends Expression {
   kind: "ArrayLiteral";
-  elements: Expression[];
+  elements: (Expression | SpreadElement)[];
 }
 
 /**

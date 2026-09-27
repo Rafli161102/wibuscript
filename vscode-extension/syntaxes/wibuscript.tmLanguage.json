@@ -106,7 +106,7 @@
       "patterns": [
         {
           "name": "keyword.control",
-          "match": "\\b(moshi|mo|whenYh|izintampil|soretomo|sore|kaloGakGitu|wowok|hoka|ho|yaudahlahYa|woijawa|zutto|zu|gasSampePagi|nyawit|yame|ya|ampunSepuh|bijisatu|tsugi|tsu|lanjutPart2|ambatukam|matte|mat|sabarBanh|admindatang|kokoromi|koko|cobaDuluBanh|gasTesLur|yurusu|yuru|santaiAja|amanBos|subete|sube|sikatSemua|gilisemua|no|dari|soko|toriyoseru|tori|summonJutsu|jupukno|kara|kra|koukai|kou|sebarJutsu|pamerke)\\b"
+          "match": "\\b(moshi|mo|whenYh|izintampil|soretomo|sore|kaloGakGitu|wowok|hoka|ho|yaudahlahYa|woijawa|zutto|zu|gasSampePagi|nyawit|yame|ya|ampunSepuh|bijisatu|tsugi|tsu|lanjutPart2|ambatukam|matte|mat|sabarBanh|admindatang|kokoromi|koko|cobaDuluBanh|gasTesLur|yurusu|yuru|santaiAja|amanBos|subete|sube|sikatSemua|gilisemua|no|dari|soko|toriyoseru|tori|summonJutsu|jupukno|kara|kra|koukai|kou|sebarJutsu|pamerke|shougo|sho|cocokkan|jodohno|baai|baa|kaloPas|nekPas|hyoujun|hyo|sisaan|sakAnane)\\b"
         }
       ]
     },
@@ -130,7 +130,7 @@
       "patterns": [
         {
           "name": "keyword.operator",
-          "match": "(==|!=|<=|>=|=>|<|>|&&|\\|\\||!|\\+|-|\\*|/|=)"
+          "match": "(==|!=|<=|>=|=>|<|>|&&|\\|\\||!|\\.\\.\\.|\\+|-|\\*|/|%|=)"
         }
       ]
     }

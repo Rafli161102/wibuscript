@@ -42,6 +42,13 @@ import type {
   ImportStatement,
   NewExpression,
   ThisExpression,
+  MatchStatement,
+  MatchCase,
+  DestructuringPattern,
+  ArrayPattern,
+  ObjectPattern,
+  SpreadElement,
+  RestElement,
 } from "./ast";
 import { tokenize } from "./lexer";
 import { Parser } from "./parser";
@@ -1356,6 +1363,9 @@ export async function evaluate(
     case "IfStatement":
       return await evalIfStatement(astNode as IfStatement, env);
 
+    case "MatchStatement":
+      return await evalMatchStatement(astNode as MatchStatement, env);
+
     case "LoopStatement":
       return await evalLoopStatement(astNode as LoopStatement, env);
 
@@ -1504,6 +1514,10 @@ async function evalVariableDeclaration(
   env: Environment
 ): Promise<RuntimeValue> {
   const value = unwrapSignal(await evaluate(declaration.value, env));
+  if (declaration.pattern) {
+    applyDestructuringPattern(declaration.pattern, value, env, true);
+    return value;
+  }
   return env.declareVar(declaration.identifier, value);
 }
 
@@ -1702,6 +1716,19 @@ async function evalAssignment(
     return env.assignVar((node.assignee as Identifier).symbol, value);
   }
 
+  if (
+    node.assignee.kind === "ArrayPattern" ||
+    node.assignee.kind === "ObjectPattern"
+  ) {
+    applyDestructuringPattern(
+      node.assignee as DestructuringPattern,
+      value,
+      env,
+      false
+    );
+    return value;
+  }
+
   if (node.assignee.kind === "MemberExpr") {
     const member = node.assignee as MemberExpr;
     const target = unwrapSignal(await evaluate(member.object, env));
@@ -1808,6 +1835,11 @@ async function evalBinaryExpression(
           throw new Error("[Runtime Error] Pembagian dengan angka nol.");
         }
         return MK_NUMBER(l / r);
+      case "%":
+        if (r === 0) {
+          throw new Error("[Runtime Error] Operasi modulo dengan angka nol.");
+        }
+        return MK_NUMBER(l % r);
       case "<":
         return MK_BOOL(l < r);
       case "<=":
@@ -1820,51 +1852,11 @@ async function evalBinaryExpression(
   }
 
   if (binop.operator === "==") {
-    if (left.type !== right.type) {
-      return MK_BOOL(false);
-    }
-    switch (left.type) {
-      case "number":
-        return MK_BOOL(
-          (left as NumberValue).value === (right as NumberValue).value
-        );
-      case "string":
-        return MK_BOOL(
-          (left as StringValue).value === (right as StringValue).value
-        );
-      case "boolean":
-        return MK_BOOL(
-          (left as BooleanValue).value === (right as BooleanValue).value
-        );
-      case "null":
-        return MK_BOOL(true);
-      default:
-        return MK_BOOL(left === right);
-    }
+    return MK_BOOL(checkValuesEqual(left, right));
   }
 
   if (binop.operator === "!=") {
-    if (left.type !== right.type) {
-      return MK_BOOL(true);
-    }
-    switch (left.type) {
-      case "number":
-        return MK_BOOL(
-          (left as NumberValue).value !== (right as NumberValue).value
-        );
-      case "string":
-        return MK_BOOL(
-          (left as StringValue).value !== (right as StringValue).value
-        );
-      case "boolean":
-        return MK_BOOL(
-          (left as BooleanValue).value !== (right as BooleanValue).value
-        );
-      case "null":
-        return MK_BOOL(false);
-      default:
-        return MK_BOOL(left !== right);
-    }
+    return MK_BOOL(!checkValuesEqual(left, right));
   }
 
   throw new Error(
@@ -1930,7 +1922,23 @@ async function evalArrayLiteral(
 ): Promise<RuntimeValue> {
   const elements: RuntimeValue[] = [];
   for (const el of node.elements) {
-    elements.push(unwrapSignal(await evaluate(el, env)));
+    if (el.kind === "SpreadElement") {
+      const spread = el as SpreadElement;
+      const spreadVal = unwrapSignal(await evaluate(spread.argument, env));
+      if (spreadVal.type === "array") {
+        elements.push(...(spreadVal as ArrayValue).elements);
+      } else if (spreadVal.type === "string") {
+        for (const char of (spreadVal as StringValue).value) {
+          elements.push(MK_STRING(char));
+        }
+      } else {
+        throw new Error(
+          `[Runtime Error] Operator spread '...' hanya dapat diterapkan pada barisan (array) atau string, bukan '${spreadVal.type}'.`
+        );
+      }
+    } else {
+      elements.push(unwrapSignal(await evaluate(el, env)));
+    }
   }
   return MK_ARRAY(elements);
 }
@@ -2031,7 +2039,15 @@ async function evalMemberExpr(
     const arr = objectVal as ArrayValue;
     if (!node.computed) {
       const prop = (node.property as Identifier).symbol;
-      if (prop === "length" || prop === "nagasa" || prop === "naga") {
+      if (
+        prop === "length" ||
+        prop === "nagasa" ||
+        prop === "naga" ||
+        prop === "seginiDoang" ||
+        prop === "itungPanjangLur" ||
+        prop === "panjang" ||
+        prop === "dawa"
+      ) {
         return MK_NUMBER(arr.elements.length);
       }
       throw new Error(
@@ -2049,8 +2065,25 @@ async function evalMemberExpr(
     return arr.elements[idx] as RuntimeValue;
   }
 
-  if (objectVal.type === "string" && node.computed) {
+  if (objectVal.type === "string") {
     const str = (objectVal as StringValue).value;
+    if (!node.computed) {
+      const prop = (node.property as Identifier).symbol;
+      if (
+        prop === "length" ||
+        prop === "nagasa" ||
+        prop === "naga" ||
+        prop === "seginiDoang" ||
+        prop === "itungPanjangLur" ||
+        prop === "panjang" ||
+        prop === "dawa"
+      ) {
+        return MK_NUMBER(str.length);
+      }
+      throw new Error(
+        `[Runtime Error] Properti '${prop}' tidak ditemukan pada string. Gunakan .nagasa atau [indeks].`
+      );
+    }
     const idxVal = unwrapSignal(await evaluate(node.property, env));
     if (idxVal.type === "number") {
       const idx = (idxVal as NumberValue).value;
@@ -2059,11 +2092,136 @@ async function evalMemberExpr(
       }
       return MK_NULL();
     }
+    throw new Error("[Runtime Error] Indeks string harus berupa angka.");
   }
 
   throw new Error(
     `[Runtime Error] Tidak dapat mengakses properti dari tipe '${objectVal.type}'.`
   );
+}
+
+function checkValuesEqual(left: RuntimeValue, right: RuntimeValue): boolean {
+  if (left.type !== right.type) {
+    return false;
+  }
+  switch (left.type) {
+    case "number":
+      return (left as NumberValue).value === (right as NumberValue).value;
+    case "string":
+      return (left as StringValue).value === (right as StringValue).value;
+    case "boolean":
+      return (left as BooleanValue).value === (right as BooleanValue).value;
+    case "null":
+      return true;
+    default:
+      return left === right;
+  }
+}
+
+function applyDestructuringPattern(
+  pattern: DestructuringPattern,
+  value: RuntimeValue,
+  env: Environment,
+  isDeclaration: boolean
+): void {
+  if (pattern.kind === "ArrayPattern") {
+    let sourceElements: RuntimeValue[] = [];
+    if (value.type === "array") {
+      sourceElements = (value as ArrayValue).elements;
+    } else if (value.type === "string") {
+      sourceElements = (value as StringValue).value.split("").map((c) => MK_STRING(c));
+    } else {
+      throw new Error(
+        `[Runtime Error] Pola destructuring barisan memerlukan array atau string, bukan '${value.type}'.`
+      );
+    }
+
+    for (let i = 0; i < pattern.elements.length; i++) {
+      const item = pattern.elements[i];
+      if (item === null || item === undefined) continue;
+
+      if (typeof item === "string") {
+        const val = sourceElements[i] ?? MK_NULL();
+        if (isDeclaration) {
+          env.declareVar(item, val);
+        } else {
+          env.assignVar(item, val);
+        }
+      } else if (item.kind === "RestElement") {
+        const restVals = sourceElements.slice(i);
+        const restArr = MK_ARRAY(restVals);
+        if (isDeclaration) {
+          env.declareVar(item.argument, restArr);
+        } else {
+          env.assignVar(item.argument, restArr);
+        }
+        break;
+      }
+    }
+  } else if (pattern.kind === "ObjectPattern") {
+    for (const prop of pattern.properties) {
+      const varName = prop.target ?? prop.key;
+      let val: RuntimeValue = MK_NULL();
+
+      if (value.type === "object") {
+        val = (value as ObjectValue).properties.get(prop.key) ?? MK_NULL();
+      } else if (value.type === "instance") {
+        const inst = value as InstanceValue;
+        if (inst.fields.has(prop.key)) {
+          val = inst.fields.get(prop.key)!;
+        }
+      }
+
+      if (isDeclaration) {
+        env.declareVar(varName, val);
+      } else {
+        env.assignVar(varName, val);
+      }
+    }
+  }
+}
+
+async function evalMatchStatement(
+  stmt: MatchStatement,
+  env: Environment
+): Promise<RuntimeValue | ControlSignal> {
+  const discriminant = unwrapSignal(await evaluate(stmt.discriminant, env));
+
+  let matchedCase: MatchCase | undefined = undefined;
+  let defaultCase: MatchCase | undefined = undefined;
+
+  for (const c of stmt.cases) {
+    if (c.value === undefined) {
+      defaultCase = c;
+    } else if (!matchedCase) {
+      const caseVal = unwrapSignal(await evaluate(c.value, env));
+      if (checkValuesEqual(discriminant, caseVal)) {
+        matchedCase = c;
+      }
+    }
+  }
+
+  const targetCase = matchedCase ?? defaultCase;
+  if (!targetCase) {
+    return MK_NULL();
+  }
+
+  const caseScope = new Environment(env);
+  let lastVal: RuntimeValue = MK_NULL();
+
+  for (const s of targetCase.body) {
+    const res = await evaluate(s, caseScope);
+    if (
+      isReturnSignal(res) ||
+      isBreakSignal(res) ||
+      isContinueSignal(res)
+    ) {
+      return res;
+    }
+    lastVal = res;
+  }
+
+  return lastVal;
 }
 
 async function evalTryCatchStatement(

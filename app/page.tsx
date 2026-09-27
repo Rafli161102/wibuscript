@@ -57,6 +57,51 @@ koukai sekte Senjata {
 
 // Kumpulan template kode WibuScript bawaan
 const CODE_PRESETS: Record<string, string> = {
+  patternMatchingDemo: `// Demonstrasi Pattern Matching (shougo) & Destructuring (v1.8.0)
+mite("=== 1. ARRAY & OBJECT DESTRUCTURING ===")
+// Array destructuring dengan rest operator (...)
+kore [ketua, wakil, ...anggota] = ["Naruto", "Sasuke", "Sakura", "Kakashi", "Sai"]
+mite(\`Ketua: \${ketua}, Wakil: \${wakil}\`)
+mite(\`Anggota Lainnya: \${tsunagu(anggota, ", ")}\`)
+
+// Object destructuring
+kore { nama, klan: marga } = { nama: "Itachi", klan: "Uchiha" }
+mite(\`Nama: \${nama}, Marga: \${marga}\`)
+
+// Pertukaran nilai variabel (Swapping)
+kore [a, b] = [100, 200]
+mite(\`Sebelum tukar: a=\${a}, b=\${b}\`)
+[a, b] = [b, a]
+mite(\`Sesudah tukar: a=\${a}, b=\${b}\`)
+
+// Spread operator (...) pada barisan
+kore ganjil = [1, 3, 5]
+kore gabungan = [0, ...ganjil, 7, 9]
+mite(\`Gabungan array spread: \${tsunagu(gabungan, "-")}\`)
+
+mite("\\n=== 2. PATTERN MATCHING (SHOUGO) ===")
+// 4 Dialek Pattern Matching:
+// Jepang Murni: shougo (nilai) { baai ...: { ... } hyoujun: { ... } }
+// Jepang Singkat: sho (nilai) { baa ...: { ... } hyo: { ... } }
+// Wibu Absurd: cocokkan (nilai) { kaloPas ...: { ... } sisaan: { ... } }
+// Meme Rongawi: jodohno (nilai) { nekPas ...: { ... } sakAnane: { ... } }
+
+kore role = "Hokage"
+shougo (role) {
+  baai "Genin": {
+    mite("Tugas: Misi D-Rank")
+  }
+  baai "Chunin": {
+    mite("Tugas: Misi C/B-Rank")
+  }
+  baai "Hokage": {
+    mite("Tugas: Memimpin Desa Konoha")
+  }
+  hyoujun: {
+    mite("Tugas: Warga Sipil")
+  }
+}`,
+
   oopModulDemo: `// Demonstrasi OOP (Sekte), Konstruktor, & Sistem Modul (v1.7.0)
 // Impor fungsi dan sekte dari modul virtual:
 toriyoseru { jurusBayangan, Senjata } kara "./ninja.wibu"
@@ -254,6 +299,27 @@ interface GuideCard {
 }
 
 const GUIDE_CARDS: GuideCard[] = [
+  {
+    id: "match-destructuring",
+    title: "Pattern Matching & Destructuring (v1.8.0)",
+    category: "MATCH / DESTRUCT",
+    icon: Sparkles,
+    description: "Pencocokan pola (shougo) dan pemecahan struktur array/object (destructuring) serta spread operator (...).",
+    codeSnippet: `// 1. Destructuring & Rest (...):
+kore [a, b, ...sisa] = [10, 20, 30, 40]
+kore { nama, klan: marga } = { nama: "Itachi", klan: "Uchiha" }
+[a, b] = [b, a] // Tukar nilai variabel
+
+// 2. Pattern Matching (4 Dialek Mutlak):
+// Murni:   shougo (x) { baai 1: { ... } hyoujun: { ... } }
+// Singkat: sho (x) { baa 1: { ... } hyo: { ... } }
+// Wibu:    cocokkan (x) { kaloPas 1: { ... } sisaan: { ... } }
+// Rongawi: jodohno (x) { nekPas 1: { ... } sakAnane: { ... } }
+shougo (a) {
+  baai 20: { mite("Dua puluh!") }
+  hyoujun: { mite("Lainnya") }
+}`,
+  },
   {
     id: "oop",
     title: "OOP & Sekte (Class)",
@@ -500,6 +566,9 @@ function handleEditorWillMount(monaco: Monaco): void {
       "yurusu", "yuru", "santaiAja", "amanBos",
       "toriyoseru", "tori", "summonJutsu", "jupukno",
       "kara", "kra", "koukai", "kou", "sebarJutsu", "pamerke",
+      "shougo", "sho", "cocokkan", "jodohno",
+      "baai", "baa", "kaloPas", "nekPas",
+      "hyoujun", "hyo", "sisaan", "sakAnane",
     ],
 
     // Kata kunci deklarasi & subrutin (4 Dialek Mutlak)
@@ -850,6 +919,7 @@ export default function WibuScriptPlayground() {
             className="bg-slate-950 border border-slate-700/80 rounded px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-cyan-500 transition-colors"
           >
             <option value="default">Preset: RPG Quest Isekai (Array &amp; Template)</option>
+            <option value="patternMatchingDemo">Preset: Pattern Matching &amp; Destructuring (v1.8.0)</option>
             <option value="oopModulDemo">Preset: OOP (Sekte) &amp; Modul (v1.7.0)</option>
             <option value="dialekDemo">Preset: 4 Dialek Mutlak</option>
             <option value="tryCatchDemo">Preset: Penanganan Galat (Try-Catch)</option>

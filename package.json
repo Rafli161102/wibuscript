@@ -1,6 +1,6 @@
 {
   "name": "wibuscript",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Bahasa Pemrograman Esoterik WibuScript dengan Web Playground",
   "main": "./dist/index.js",
   "type": "module",

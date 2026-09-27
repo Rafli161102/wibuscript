@@ -24,6 +24,13 @@ import type {
   ClassDeclaration,
   ExportStatement,
   ImportStatement,
+  MatchStatement,
+  MatchCase,
+  DestructuringPattern,
+  ArrayPattern,
+  ObjectPattern,
+  RestElement,
+  SpreadElement,
   AssignmentExpression,
   BinaryExpression,
   UnaryExpression,
@@ -152,6 +159,13 @@ export class Parser {
       case TokenType.OpenBrace:
         return this.parseBlockStatement();
 
+      case TokenType.Match:
+        return this.parseMatchStatement();
+
+      case TokenType.Semicolon:
+        this.advance();
+        return { kind: "BlockStatement", body: [] } as BlockStatement;
+
       default:
         return this.parseExpressionStatement();
     }
@@ -162,6 +176,98 @@ export class Parser {
    */
   private parseVariableDeclaration(): VariableDeclaration {
     this.advance(); // Konsumsi 'kore' atau 'koreWa'
+
+    // 1. Pola Array Destructuring: kore [a, b, ...sisa] = nilai
+    if (this.at().type === TokenType.OpenBracket) {
+      this.advance(); // Konsumsi '['
+      const elements: (string | RestElement | null)[] = [];
+
+      while (this.at().type !== TokenType.CloseBracket && !this.isAtEnd()) {
+        if (this.at().type === TokenType.Comma) {
+          elements.push(null);
+          this.advance();
+          continue;
+        }
+
+        if (this.at().type === TokenType.Spread) {
+          this.advance(); // Konsumsi '...'
+          const restIdent = this.expect(
+            TokenType.Identifier,
+            "Diharapkan nama pengenal setelah operator spread '...' dalam destructuring."
+          );
+          elements.push({ kind: "RestElement", argument: restIdent.value });
+          break;
+        }
+
+        const identToken = this.expect(
+          TokenType.Identifier,
+          "Diharapkan nama pengenal dalam array destructuring."
+        );
+        elements.push(identToken.value);
+
+        if (this.at().type === TokenType.Comma) {
+          this.advance();
+        }
+      }
+
+      this.expect(TokenType.CloseBracket, "Diharapkan ']' pada akhir array destructuring.");
+      this.expect(TokenType.Equals, "Diharapkan tanda '=' setelah pola destructuring.");
+      const value = this.parseExpression();
+      if (this.at().type === TokenType.Semicolon) this.advance();
+
+      return {
+        kind: "VariableDeclaration",
+        identifier: "",
+        pattern: {
+          kind: "ArrayPattern",
+          elements,
+        },
+        value,
+      };
+    }
+
+    // 2. Pola Object Destructuring: kore { nama, klan: klanBaru } = nilai
+    if (this.at().type === TokenType.OpenBrace) {
+      this.advance(); // Konsumsi '{'
+      const properties: { key: string; target?: string }[] = [];
+
+      while (this.at().type !== TokenType.CloseBrace && !this.isAtEnd()) {
+        const keyToken = this.expect(
+          TokenType.Identifier,
+          "Diharapkan nama properti dalam object destructuring."
+        );
+        let target: string | undefined = undefined;
+
+        if (this.at().type === TokenType.Colon) {
+          this.advance(); // Konsumsi ':'
+          target = this.expect(
+            TokenType.Identifier,
+            "Diharapkan nama variabel target setelah ':' dalam object destructuring."
+          ).value;
+        }
+
+        properties.push({ key: keyToken.value, target });
+
+        if (this.at().type === TokenType.Comma) {
+          this.advance();
+        }
+      }
+
+      this.expect(TokenType.CloseBrace, "Diharapkan '}' pada akhir object destructuring.");
+      this.expect(TokenType.Equals, "Diharapkan tanda '=' setelah pola destructuring.");
+      const value = this.parseExpression();
+      if (this.at().type === TokenType.Semicolon) this.advance();
+
+      return {
+        kind: "VariableDeclaration",
+        identifier: "",
+        pattern: {
+          kind: "ObjectPattern",
+          properties,
+        },
+        value,
+      };
+    }
 
     const identToken = this.expect(
       TokenType.Identifier,
@@ -398,6 +504,11 @@ export class Parser {
     const methods: FunctionDeclaration[] = [];
 
     while (this.at().type !== TokenType.CloseBrace && !this.isAtEnd()) {
+      if (this.at().type === TokenType.Semicolon) {
+        this.advance();
+        continue;
+      }
+
       // 1. Konstruktor: tanjou(...) { ... }
       if (this.at().type === TokenType.Constructor) {
         this.advance(); // Konsumsi 'tanjou' / 'tan' / 'lahiran' / 'mbrojol'
@@ -646,17 +757,65 @@ export class Parser {
       this.advance(); // Konsumsi '='
       const value = this.parseAssignmentExpression();
 
-      if (left.kind !== "Identifier" && left.kind !== "MemberExpr") {
-        throw new Error(
-          "[Parser Error] Sisi kiri dari tanda penugasan '=' harus berupa identifier variabel atau akses anggota objek/barisan."
-        );
+      if (left.kind === "Identifier" || left.kind === "MemberExpr") {
+        return {
+          kind: "AssignmentExpression",
+          assignee: left,
+          value,
+        } as AssignmentExpression;
       }
 
-      return {
-        kind: "AssignmentExpression",
-        assignee: left,
-        value,
-      } as AssignmentExpression;
+      // Dukungan Assignment Destructuring untuk Array: [a, b, ...sisa] = nilai
+      if (left.kind === "ArrayLiteral") {
+        const arr = left as ArrayLiteral;
+        const elements: (string | RestElement | null)[] = [];
+        for (const el of arr.elements) {
+          if ((el as any).kind === "Identifier") {
+            elements.push(((el as any) as Identifier).symbol);
+          } else if ((el as any).kind === "SpreadElement") {
+            const spread = (el as any) as SpreadElement;
+            if (spread.argument.kind !== "Identifier") {
+              throw new Error("[Parser Error] Target spread '...' dalam assignment destructuring harus berupa identifier.");
+            }
+            elements.push({ kind: "RestElement", argument: (spread.argument as Identifier).symbol });
+          } else {
+            throw new Error("[Parser Error] Elemen dalam array assignment destructuring harus berupa identifier.");
+          }
+        }
+        return {
+          kind: "AssignmentExpression",
+          assignee: {
+            kind: "ArrayPattern",
+            elements,
+          },
+          value,
+        } as AssignmentExpression;
+      }
+
+      // Dukungan Assignment Destructuring untuk Object: ({ a, b } = nilai)
+      if (left.kind === "ObjectLiteral") {
+        const obj = left as ObjectLiteral;
+        const properties: { key: string; target?: string }[] = [];
+        for (const prop of obj.properties) {
+          let target: string | undefined = undefined;
+          if (prop.value && prop.value.kind === "Identifier") {
+            target = (prop.value as Identifier).symbol;
+          }
+          properties.push({ key: prop.key, target });
+        }
+        return {
+          kind: "AssignmentExpression",
+          assignee: {
+            kind: "ObjectPattern",
+            properties,
+          },
+          value,
+        } as AssignmentExpression;
+      }
+
+      throw new Error(
+        "[Parser Error] Sisi kiri dari tanda penugasan '=' harus berupa identifier variabel, akses anggota, atau pola destructuring."
+      );
     }
 
     return left;
@@ -755,7 +914,11 @@ export class Parser {
   private parseMultiplicativeExpression(): Expression {
     let left = this.parseUnaryExpression();
 
-    while (this.at().type === TokenType.Multiply || this.at().type === TokenType.Divide) {
+    while (
+      this.at().type === TokenType.Multiply ||
+      this.at().type === TokenType.Divide ||
+      this.at().type === TokenType.Modulo
+    ) {
       const operator = this.advance().value;
       const right = this.parseUnaryExpression();
       left = {
@@ -988,7 +1151,17 @@ export class Parser {
         const elements: Expression[] = [];
 
         while (this.at().type !== TokenType.CloseBracket && !this.isAtEnd()) {
-          elements.push(this.parseExpression());
+          if (this.at().type === TokenType.Spread) {
+            this.advance(); // Konsumsi '...'
+            const argument = this.parseExpression();
+            elements.push({
+              kind: "SpreadElement",
+              argument,
+            } as any);
+          } else {
+            elements.push(this.parseExpression());
+          }
+
           if (this.at().type === TokenType.Comma) {
             this.advance();
           } else if (this.at().type !== TokenType.CloseBracket) {
@@ -1152,7 +1325,10 @@ export class Parser {
           TokenType.Identifier,
           "Diharapkan nama kelas setelah kata kunci instansiasi baru."
         );
-        const args = this.parseArgs();
+        let args: Expression[] = [];
+        if (this.at().type === TokenType.OpenParen) {
+          args = this.parseArgs();
+        }
         return {
           kind: "NewExpression",
           className: classToken.value,
@@ -1168,10 +1344,92 @@ export class Parser {
         } as ThisExpression;
       }
 
+      // Pencocokan pola sebagai ekspresi: shougo (...) { ... }
+      case TokenType.Match: {
+        return this.parseMatchStatement() as any;
+      }
+
       default:
         throw new Error(
           `[Parser Error] Simbol tidak terduga: '${token.value}' pada baris ${token.line}, kolom ${token.column}.`
         );
     }
   }
+
+  /**
+   * Pencocokan pola: shougo (diskriminan) { baai nilai: { ... } hyoujun: { ... } }
+   */
+  private parseMatchStatement(): MatchStatement {
+    this.advance(); // Konsumsi 'shougo' / 'sho' / 'cocokkan' / 'jodohno'
+
+    let hasParen = false;
+    if (this.at().type === TokenType.OpenParen) {
+      this.advance();
+      hasParen = true;
+    }
+
+    const discriminant = this.parseExpression();
+
+    if (hasParen) {
+      this.expect(
+        TokenType.CloseParen,
+        "Diharapkan tanda kurung tutup ')' setelah ekspresi diskriminan shougo."
+      );
+    }
+
+    this.expect(
+      TokenType.OpenBrace,
+      "Diharapkan kurung kurawal buka '{' pada blok tubuh shougo."
+    );
+
+    const cases: MatchCase[] = [];
+
+    while (this.at().type !== TokenType.CloseBrace && !this.isAtEnd()) {
+      if (this.at().type === TokenType.Semicolon) {
+        this.advance();
+        continue;
+      }
+
+      if (this.at().type === TokenType.Case) {
+        this.advance(); // Konsumsi 'baai' / 'baa' / 'kaloPas' / 'nekPas'
+        const caseValue = this.parseExpression();
+        this.expect(
+          TokenType.Colon,
+          "Diharapkan tanda titik dua ':' setelah nilai kasus baai."
+        );
+        const body = this.parseBlockOrSingleStatement();
+        cases.push({
+          value: caseValue,
+          body,
+        });
+      } else if (this.at().type === TokenType.Default) {
+        this.advance(); // Konsumsi 'hyoujun' / 'hyo' / 'sisaan' / 'sakAnane'
+        this.expect(
+          TokenType.Colon,
+          "Diharapkan tanda titik dua ':' setelah kata kunci hyoujun/default."
+        );
+        const body = this.parseBlockOrSingleStatement();
+        cases.push({
+          value: undefined,
+          body,
+        });
+      } else {
+        throw new Error(
+          `[Parser Error] Diharapkan kata kunci 'baai' atau 'hyoujun' di dalam blok 'shougo', tetapi ditemukan '${this.at().value}'.`
+        );
+      }
+    }
+
+    this.expect(
+      TokenType.CloseBrace,
+      "Diharapkan kurung kurawal tutup '}' pada akhir blok shougo."
+    );
+
+    return {
+      kind: "MatchStatement",
+      discriminant,
+      cases,
+    };
+  }
 }
+

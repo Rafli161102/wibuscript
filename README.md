@@ -83,6 +83,9 @@ Seluruh kata kunci bahasa Inggris konvensional (`let`, `const`, `if`, `while`, d
 | **Ekspor (EXPORT)** | `koukai` | `kou` | `sebarJutsu` | `pamerke` | `TokenType.Export` | Mengekspor simbol dan fungsi ke luar berkas modul. |
 | **Impor (IMPORT)** | `toriyoseru` | `tori` | `summonJutsu` | `jupukno` | `TokenType.Import` | Mengimpor simbol atau pustaka dari berkas/modul lain. |
 | **Asal Modul (FROM)** | `kara` | `kra` | `dari` | `soko` | `TokenType.From` | Menentukan lokasi berkas/sumber modul yang diimpor. |
+| **Pola Cocok (MATCH)** | `shougo` | `sho` | `cocokkan` | `jodohno` | `TokenType.Match` | Percabangan pencocokan pola nilai jamak (Switch/Match). |
+| **Kasus (CASE)** | `baai` | `baa` | `kaloPas` | `nekPas` | `TokenType.Case` | Cabang pencocokan kasus nilai spesifik. |
+| **Bawaan (DEFAULT)** | `hyoujun` | `hyo` | `sisaan` | `sakAnane` | `TokenType.Default` | Cabang fallback jika tidak ada kasus yang cocok. |
 
 ## Pustaka Standar (Standard Library)
 
@@ -330,6 +333,29 @@ npx wibu convert contoh.wibu --to rongawi -o rongawi.wibu
 ```
 
 ## Log Pembaruan (Changelog)
+
+### v1.8.0 (Upgrade Phase 3: Pattern Matching, Destructuring & Bug Fixes)
+- **Analisis & Perbaikan Bug Sistem**:
+  - **Operator Modulo (`%`)**: Diintegrasikan secara penuh pada Lexer, Parser, dan Evaluator runtime termasuk penanganan pembagian modulo nol.
+  - **Akses Properti Panjang String**: Perbaikan akses properti `.nagasa`, `.naga`, `.length`, `.panjang`, dan `.dawa` pada tipe data string tanpa menimbulkan galat runtime.
+  - **Instansiasi Objek Tanpa Kurung**: Mengizinkan instansiasi kelas `atarashii NamaKelas` tanpa keharusan menyertakan tanda kurung `()`.
+  - **Ketahanan Semicolon Stray (`;`)**: Mengatasi galat parser pada titik koma kosong di antara pernyataan program maupun di dalam badan definisi sekte/kelas.
+  - **Transpilasi Aman Member Access**: Memastikan penambahan tanda kurung aman `(new Kelas()).metode()` pada hasil kompilasi JavaScript.
+- **Pencocokan Pola / Pattern Matching (`shougo`) 4 Dialek Mutlak**:
+  - Jepang Murni: `shougo (diskriminan) { baai nilai: { ... } hyoujun: { ... } }`.
+  - Jepang Singkat (Singkatan Otentik): `sho (diskriminan) { baa nilai: { ... } hyo: { ... } }` (`shougo` -> `sho`, `baai` -> `baa`, `hyoujun` -> `hyo`).
+  - Wibu Absurd: `cocokkan (diskriminan) { kaloPas nilai: { ... } sisaan: { ... } }`.
+  - Meme Rongawi: `jodohno (diskriminan) { nekPas nilai: { ... } sakAnane: { ... } }`.
+  - Fleksibilitas Eksekusi: Berfungsi sebagai pernyataan blok maupun sebagai ekspresi pencocokan pola (*match expression*).
+- **Destructuring & Spread Operator (`...`)**:
+  - Array Destructuring: Deklarasi variabel `kore [a, b, ...sisa] = [...]` dan penugasan pertukaran nilai (*variable swapping*) `[a, b] = [b, a]`.
+  - Object Destructuring: Deklarasi variabel `kore { nama, klan: marga } = {...}` dengan dukungan alias target variabel.
+  - Operator Spread (`...`): Menggabungkan barisan literal `[1, ...arr, 2]` dan dekonstruksi karakter teks string `[... "Hai"]`.
+- **Sinkronisasi Ekosistem & Web Playground**:
+  - Pembaruan Dialect Auto-Converter untuk kata kunci `shougo`, `baai`, dan `hyoujun`.
+  - JavaScript Transpiler diperbarui mendukung ES6 Destructuring dan percabangan `switch`.
+  - TextMate Grammar VS Code dan Monaco Editor Tokenizer disinkronkan.
+  - Penambahan kartu panduan cepat serta preset demonstrasi v1.8.0 pada antarmuka Web Playground.
 
 ### v1.7.0 (Upgrade Phase 2: OOP & Module System)
 - **Pemrograman Berorientasi Objek (OOP)**:

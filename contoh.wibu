@@ -32,4 +32,22 @@ kokoromi {
     mite(`Peringatan galat: ${err}`)
 }
 
+// Demonstrasi Phase 3: Destructuring & Shougo Pattern Matching
+kore [senjataSatu, ...cadangan] = inventaris;
+mite(`Senjata utama hasil destructuring: ${senjataSatu}`);
+mite(`Jumlah item cadangan: ${cadangan.nagasa}`);
+
+kore role = "Ksatria";
+shougo (role) {
+    baai "Penyihir": {
+        mite("Role: Menguasai sihir tingkat tinggi.");
+    }
+    baai "Ksatria": {
+        mite("Role: Pelindung garis depan kerajaan!");
+    }
+    hyoujun: {
+        mite("Role: Petualang pemula.");
+    }
+}
+
 mite("Petualangan WibuScript berhasil dijalankan!")

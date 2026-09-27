@@ -31,6 +31,9 @@ export interface DialectMapping {
   yurusu: [string, string, string, string];
   subete: [string, string, string, string];
   no: [string, string, string, string];
+  shougo: [string, string, string, string];
+  baai: [string, string, string, string];
+  hyoujun: [string, string, string, string];
 
   // OOP & Modul
   sekte: [string, string, string, string];
@@ -104,6 +107,9 @@ export const DIALECT_TABLE: Record<string, [string, string, string, string]> = {
   yurusu: ["yurusu", "yuru", "santaiAja", "amanBos"],
   subete: ["subete", "sube", "sikatSemua", "gilisemua"],
   no: ["no", "no", "dari", "soko"],
+  shougo: ["shougo", "sho", "cocokkan", "jodohno"],
+  baai: ["baai", "baa", "kaloPas", "nekPas"],
+  hyoujun: ["hyoujun", "hyo", "sisaan", "sakAnane"],
 
   // OOP & Modul
   sekte: ["sekte", "sek", "paguyuban", "perkumpulan"],
