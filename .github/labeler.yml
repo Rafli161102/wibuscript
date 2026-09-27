@@ -1,0 +1,34 @@
+# File: .github/labeler.yml
+core-engine:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/**/*'
+
+web-playground:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/**/*'
+          - 'tailwind.config.ts'
+          - 'postcss.config.mjs'
+          - 'next.config.mjs'
+
+testing:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'tests/**/*'
+          - '**/*.test.ts'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+
+infrastructure:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**/*'
+          - '.husky/**/*'
+          - 'scripts/**/*'
+          - 'package.json'
+          - 'package-lock.json'
+          - 'tsconfig*.json'

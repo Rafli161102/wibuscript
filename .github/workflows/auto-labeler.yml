@@ -1,0 +1,18 @@
+# File: .github/workflows/auto-labeler.yml
+name: Auto Labeler
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  labeler:
+    name: Auto Label PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply PR Labels
+        uses: actions/labeler@v5
