@@ -1,16 +1,36 @@
 <!-- File: README.md -->
-# WibuScript
+<div align="center">
+
+# 🌸 WibuScript
+### *Bahasa Pemrograman Esoterik Modern Berbasis Sistem 4 Dialek Mutlak*
 
 [![npm version](https://img.shields.io/npm/v/wibuscript.svg?style=for-the-badge&logo=npm&color=CB3837)](https://www.npmjs.com/package/wibuscript)
 [![npm downloads](https://img.shields.io/npm/dm/wibuscript.svg?style=for-the-badge&logo=npm&color=blue)](https://www.npmjs.com/package/wibuscript)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
-![Status](https://img.shields.io/badge/Status-Stable%20v1.9.1-brightgreen?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![Status](https://img.shields.io/badge/Status-Stable%20v1.9.1-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
+
+<p align="center">
+  <b>Jepang Murni 🇯🇵 • Jepang Singkat ⚡ • Wibu Absurd Cringe 🌸 • Meme Rongawi Otentik 🗿</b>
+</p>
+
+<p align="center">
+  <a href="#-arsitektur-sistem">🏛️ Arsitektur</a> •
+  <a href="#-spesifikasi-sintaks-sistem-4-dialek-mutlak">📜 4 Dialek Mutlak</a> •
+  <a href="#-pustaka-standar-standard-library">📚 Pustaka Standar</a> •
+  <a href="#-contoh-program-wibuscript">💻 Contoh Kode</a> •
+  <a href="#-panduan-penggunaan-dan-instalasi">🚀 Instalasi</a> •
+  <a href="#-log-pembaruan-changelog">📋 Changelog</a>
+</p>
+
+---
+
+</div>
 
 WibuScript adalah bahasa pemrograman esoterik (*esoteric programming language*) yang diimplementasikan menggunakan TypeScript dan berjalan di atas arsitektur *Tree-Walking Interpreter*. Bahasa ini mengabstraksi konstruksi sintaks pemrograman melalui arsitektur Sistem 4 Dialek Mutlak (Jepang Murni, Jepang Singkat, Wibu Absurd Cringe Indo-Jepang, dan Meme Rongawi Otentik Ngawiverse). Proyek ini tersedia secara publik di npm (`npm install -g wibuscript`) dan GitHub Packages, dilengkapi modul inti (*Core Engine*) yang sepenuhnya universal dan aman untuk peramban, serta antarmuka Web Playground interaktif berbasis Next.js App Router untuk eksekusi kode secara *client-side*.
 
-## Arsitektur Sistem
+## 🏛️ Arsitektur Sistem
 
 Struktur direktori proyek dirancang secara modular dengan pemisahan tegas antara logika mesin kompilasi, eksekutor baris perintah (*CLI*), dan antarmuka web interaktif:
 
@@ -33,18 +53,18 @@ wibuscript/
 └── README.md           # Dokumentasi teknis proyek
 ```
 
-### 1. Core Engine
+### ⚡ 1. Core Engine
 - **Lexer (`src/lexer.ts`)**: Mengurai kode sumber mentah menjadi rangkaian token secara deterministik. Mendukung literal string, numerik (bilangan bulat dan desimal), operator aritmatika, operator relasional ganda (`==`, `!=`, `<=`, `>=`), pasangan kunci objek (`:`), akses titik (`.`), pelacakan posisi baris/kolom, serta resolusi 4 Dialek Mutlak kata kunci.
 - **Parser (`src/parser.ts`)**: Menerapkan metode *Recursive Descent Parsing* berbasis prioritas operator (*precedence*) untuk menghasilkan pohon sintaksis abstrak (*AST*) bertipe kuat (*strongly typed*). Mendukung deklarasi variabel, percabangan, fungsi, perulangan, `BreakStatement`, `ContinueStatement`, `ObjectLiteral`, dan `MemberExpr`.
 - **Runtime & Evaluator (`src/runtime.ts`)**: Mengeksekusi simpul AST secara asinkronus menggunakan arsitektur *Environment* bertingkat (*lexical scoping*). Dilengkapi *hook* penangkap output (*output streaming*), penanganan sinyal loop (`Break`/`Continue`), evaluasi objek kamus, manipulasi string, dan manajemen *Return Signal*.
 - **Browser-Safe Core (`src/index.ts`)**: Menyediakan ekspor API mesin kompilasi yang sepenuhnya steril dari modul internal sistem operasi (`node:fs`, `node:path`), memungkinkan eksekusi langsung di lingkungan *browser* tanpa konflik *bundling*.
 
-### 2. Frontend Web Playground
+### 🌐 2. Frontend Web Playground
 - Dibangun di atas Next.js App Router dan Tailwind CSS v4.
 - Evaluasi kode dilakukan secara murni di sisi peramban pengguna (*Client-Side Execution*).
 - Menyediakan editor kode berbasis teks dengan dukungan indentasi tab, pintasan keyboard (`Ctrl+Enter`), metrik waktu eksekusi (milidetik), penghitung token, virtual terminal interaktif, dan fitur *Shareable URL* berbasis kompresi Base64.
 
-## Spesifikasi Sintaks (Sistem 4 Dialek Mutlak)
+## 📜 Spesifikasi Sintaks (Sistem 4 Dialek Mutlak)
 
 WibuScript menerapkan standardisasi kosakata berarsitektur **"Sistem 4 Dialek Mutlak"** secara eksklusif pada seluruh lapisan mesin kompilator. Setiap instruksi inti bahasa diakomodasi oleh 4 dialek yang saling kompatibel dan dapat digunakan secara bersilangan:
 1. **Jepang Murni**: Terminologi Romaji standar yang elegan dan ekspresif.
@@ -54,7 +74,7 @@ WibuScript menerapkan standardisasi kosakata berarsitektur **"Sistem 4 Dialek Mu
 
 Seluruh kata kunci bahasa Inggris konvensional (`let`, `const`, `if`, `while`, dsb.) dan alias lama telah dihapus sepenuhnya demi menjaga integritas esoterik WibuScript.
 
-### Tabel Pemetaan 4 Dialek Mutlak
+### 🗺️ Tabel Pemetaan 4 Dialek Mutlak
 
 | Kategori Token | Jepang Murni | Jepang Singkat | Wibu Absurd | Meme Rongawi | TokenType | Deskripsi |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -89,7 +109,7 @@ Seluruh kata kunci bahasa Inggris konvensional (`let`, `const`, `if`, `while`, d
 | **Kasus (CASE)** | `baai` | `baa` | `kaloPas` | `kenaben` | `TokenType.Case` | Cabang pencocokan kasus nilai spesifik. |
 | **Bawaan (DEFAULT)** | `hyoujun` | `hyo` | `sisaan` | `yappingtolol` | `TokenType.Default` | Cabang fallback jika tidak ada kasus yang cocok. |
 
-## Pustaka Standar (Standard Library)
+## 📚 Pustaka Standar (Standard Library)
 
 WibuScript menyediakan Pustaka Standar sebagai kumpulan fungsi bawaan yang dapat digunakan tanpa membuat implementasi fungsi tersebut secara manual.
 
@@ -108,7 +128,7 @@ Meme Rongawi ─────┘
 
 Perbedaan dialek hanya berada pada cara programmer memanggil fungsi, bukan pada perilaku fungsi tersebut.
 
-### Prinsip Pustaka
+### 🎯 Prinsip Pustaka
 
 Pustaka Standar mengikuti beberapa aturan:
 1. Setiap fungsi memiliki satu fungsi internal.
@@ -120,7 +140,7 @@ Pustaka Standar mengikuti beberapa aturan:
 7. Fungsi yang aman untuk browser dapat digunakan pada Web Playground.
 8. Penamaan pustaka tidak mengubah struktur AST maupun evaluator.
 
-### Daftar Fungsi Pustaka
+### 📖 Daftar Fungsi Pustaka
 
 | Kemampuan | Jepang Murni | Jepang Singkat | Wibu Absurd | Meme Rongawi | Balikan | Keterangan |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -164,7 +184,7 @@ Pustaka Standar mengikuti beberapa aturan:
 
 > **Catatan:** Nama-nama di atas merupakan nama permukaan masing-masing dialek. Implementasi runtime tetap menggunakan satu fungsi internal untuk setiap kemampuan.
 
-### Contoh Penggunaan Pustaka
+### 💡 Contoh Penggunaan Pustaka
 
 #### Jepang Murni
 ```javascript
@@ -200,7 +220,7 @@ cawapresin("Panjang nama: " + panjang);
 
 Keempat contoh tersebut memiliki semantik yang sama. Perbedaannya hanya terletak pada kosakata dialek yang digunakan.
 
-### Pembagian Lingkungan Pustaka
+### 🌍 Pembagian Lingkungan Pustaka
 
 Tidak seluruh fungsi dapat dijalankan pada setiap lingkungan.
 
@@ -214,7 +234,7 @@ Fungsi yang membutuhkan akses sistem operasi dibatasi hanya pada CLI:
 
 Fungsi jaringan seperti pengambilan data juga mengikuti kemampuan lingkungan eksekusi yang digunakan.
 
-### Arsitektur Internal
+### ⚙️ Arsitektur Internal
 
 Pemetaan pustaka tidak dilakukan dengan membuat empat implementasi berbeda. Secara konseptual:
 
@@ -244,7 +264,7 @@ Meme Rongawi    → panjangberurat()
 
 Hal ini menjaga konsistensi antara empat dialek sekaligus mencegah terjadinya perbedaan perilaku antarversi sintaks.
 
-## Contoh Program WibuScript
+## 💻 Contoh Program WibuScript
 
 Berikut adalah contoh program lengkap yang mendemonstrasikan integrasi Sistem 4 Dialek Mutlak dengan manipulasi teks, array, objek kamus, dan kontrol loop:
 
@@ -285,7 +305,7 @@ zutto (hitung < 5) {
 kuchiMite("Simulasi selesai.");
 ```
 
-## Panduan Penggunaan dan Instalasi
+## 🚀 Panduan Penggunaan dan Instalasi
 
 ### 1. Kebutuhan Sistem
 - **Node.js**: Versi 18.0.0 atau lebih baru.
@@ -319,6 +339,11 @@ npm run start
 WibuScript CLI menyediakan fungsionalitas menyeluruh untuk pengembangan lokal:
 
 ```bash
+# 0. Instalasi Global via NPM
+npm install -g wibuscript
+# atau langsung coba instan tanpa instalasi via npx:
+npx wibuscript --help
+
 # 1. Memulai REPL Interaktif (Read-Eval-Print Loop)
 npm run repl
 # atau jika diinstal secara global:
@@ -334,7 +359,7 @@ npx wibu build contoh.wibu -o hasil.js
 npx wibu convert contoh.wibu --to rongawi -o rongawi.wibu
 ```
 
-## Log Pembaruan (Changelog)
+## 📋 Log Pembaruan (Changelog)
 
 ### v1.9.1 (Official NPM & GitHub Packages Release)
 - **Publikasi Resmi ke NPM Global**: Paket `wibuscript` secara resmi dirilis dan dipublikasikan secara publik ke registry npm global ([https://www.npmjs.com/package/wibuscript](https://www.npmjs.com/package/wibuscript)).
