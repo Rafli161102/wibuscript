@@ -1,6 +1,7 @@
 // File: app/page.tsx
 "use client";
 
+import packageJson from "../package.json";
 import React, { useState, useRef, useEffect } from "react";
 import {
   tokenize,
@@ -259,7 +260,7 @@ export default function WibuScriptPlayground() {
             <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
               WibuScript Web Playground
               <span className="text-xs font-mono font-normal px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">
-                v1.0.0-MVP
+                {`v${packageJson.version}`}
               </span>
             </h1>
             <p className="text-xs text-slate-400">
