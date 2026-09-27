@@ -106,7 +106,7 @@
       "patterns": [
         {
           "name": "keyword.control",
-          "match": "\\b(moshi|mo|whenYh|izintampil|soretomo|sore|kaloGakGitu|wowok|hoka|ho|yaudahlahYa|woijawa|zutto|zu|gasSampePagi|nyawit|yame|ya|ampunSepuh|bijisatu|tsugi|tsu|lanjutPart2|ambatukam|matte|mat|sabarBanh|admindatang|kokoromi|koko|cobaDuluBanh|gasTesLur|yurusu|yuru|santaiAja|amanBos|subete|sube|sikatSemua|gilisemua|no|dari|soko)\\b"
+          "match": "\\b(moshi|mo|whenYh|izintampil|soretomo|sore|kaloGakGitu|wowok|hoka|ho|yaudahlahYa|woijawa|zutto|zu|gasSampePagi|nyawit|yame|ya|ampunSepuh|bijisatu|tsugi|tsu|lanjutPart2|ambatukam|matte|mat|sabarBanh|admindatang|kokoromi|koko|cobaDuluBanh|gasTesLur|yurusu|yuru|santaiAja|amanBos|subete|sube|sikatSemua|gilisemua|no|dari|soko|toriyoseru|tori|summonJutsu|jupukno|kara|kra|koukai|kou|sebarJutsu|pamerke)\\b"
         }
       ]
     },
@@ -114,7 +114,7 @@
       "patterns": [
         {
           "name": "keyword.declaration",
-          "match": "\\b(kore|ko|siImut|pokmipokmi|zettai|ze|hargaMati|bundarahma|jutsu|ju|mybini|fufufafa|kaesu|kae|kasihPaham|kandabahlil)\\b"
+          "match": "\\b(kore|ko|siImut|pokmipokmi|zettai|ze|hargaMati|bundarahma|jutsu|ju|mybini|fufufafa|kaesu|kae|kasihPaham|kandabahlil|sekte|sek|paguyuban|perkumpulan|tanjou|tan|lahiran|mbrojol|atarashii|ata|bikinBaru|anyaran|keishou|kei|turunanDari|warisanSoko|jibun|ji|siAing|awakku)\\b"
         }
       ]
     },

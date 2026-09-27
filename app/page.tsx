@@ -34,10 +34,68 @@ import {
   convertDialect,
   type Dialect,
   transpileToJS,
+  registerVirtualModule,
 } from "../src/index";
+
+// Inisialisasi Modul Virtual bawaan untuk Web Playground
+registerVirtualModule(
+  "./ninja.wibu",
+  `// Modul Virtual Ninja (Playground Demo)
+koukai jutsu jurusBayangan(jumlah) {
+  kaesu \`Muncul \${jumlah} kage bunshin!\`
+}
+
+koukai sekte Senjata {
+  tanjou(nama) {
+    jibun.nama = nama
+  }
+  lempar() {
+    kaesu \`Melempar \${jibun.nama} kena sasaran!\`
+  }
+}`
+);
 
 // Kumpulan template kode WibuScript bawaan
 const CODE_PRESETS: Record<string, string> = {
+  oopModulDemo: `// Demonstrasi OOP (Sekte), Konstruktor, & Sistem Modul (v1.7.0)
+// Impor fungsi dan sekte dari modul virtual:
+toriyoseru { jurusBayangan, Senjata } kara "./ninja.wibu"
+
+mite("=== PEMANGGILAN DARI MODUL ===")
+mite(jurusBayangan(5))
+kore shuriken = atarashii Senjata("Shuriken Bayangan")
+mite(shuriken.lempar())
+
+mite("\\n=== PENDEFINISIAN SEKTE & PEWARISAN ===")
+// Deklarasi Sekte/Kelas: sekte (Murni) / sek (Singkat) / paguyuban (Wibu) / perkumpulan (Rongawi)
+sekte Pendekar {
+  // Konstruktor: tanjou / tan / lahiran / mbrojol
+  tanjou(nama, klan) {
+    // Referensi Diri: jibun / ji / siAing / awakku
+    jibun.nama = nama
+    jibun.klan = klan
+    jibun.tenaga = 100
+  }
+
+  status() {
+    kaesu \`[Pendekar: \${jibun.nama} | Klan: \${jibun.klan} | Tenaga: \${jibun.tenaga}]\`
+  }
+}
+
+// Pewarisan: keishou / kei / turunanDari / warisanSoko
+sekte PendekarApi keishou Pendekar {
+  jurusApi() {
+    jibun.tenaga = jibun.tenaga - 20
+    mite(\`\${jibun.nama} menyemburkan Naga Api! Sisa tenaga: \${jibun.tenaga}\`)
+  }
+}
+
+// Instansiasi Baru: atarashii / ata / bikinBaru / anyaran
+kore sasuke = atarashii PendekarApi("Sasuke", "Uchiha")
+mite(sasuke.status())
+sasuke.jurusApi()
+mite(sasuke.status())`,
+
   default: `// Program Demonstrasi WibuScript (Tema RPG / Isekai - 4 Dialek Mutlak)
 kore namaKsatria = "Ren"
 zettai level = 99
@@ -196,6 +254,47 @@ interface GuideCard {
 }
 
 const GUIDE_CARDS: GuideCard[] = [
+  {
+    id: "oop",
+    title: "OOP & Sekte (Class)",
+    category: "OOP / CLASS",
+    icon: Layers,
+    description: "Deklarasi kelas (sekte), konstruktor (tanjou), instansiasi (atarashii), dan pewarisan (keishou).",
+    codeSnippet: `// 1. Murni: sekte, tanjou, atarashii, keishou, jibun
+sekte Ninja {
+  tanjou(nama) {
+    jibun.nama = nama
+  }
+  salam() {
+    mite("Shinobi: " + jibun.nama)
+  }
+}
+kore n = atarashii Ninja("Naruto")
+n.salam()
+
+// 2. Singkat: sek, tan, ata, kei, ji
+// 3. Wibu: paguyuban, lahiran, bikinBaru, turunanDari, siAing
+// 4. Rongawi: perkumpulan, mbrojol, anyaran, warisanSoko, awakku`,
+  },
+  {
+    id: "modules",
+    title: "Sistem Modul",
+    category: "EXPORT / IMPORT",
+    icon: FileCode,
+    description: "Ekspor (koukai) dan Impor (toriyoseru ... kara) kode antar modul.",
+    codeSnippet: `// 1. Ekspor simbol (4 Dialek):
+// koukai | kou | sebarJutsu | pamerke
+koukai jutsu tambah(a, b) { kaesu a + b; }
+koukai { item1, SekteBaru }
+
+// 2. Impor modul (4 Dialek):
+// toriyoseru { ... } kara "..."
+// tori { ... } kra "..."
+// summonJutsu { ... } dari "..."
+// jupukno { ... } soko "..."
+toriyoseru { jurusBayangan } kara "./ninja.wibu"
+mite(jurusBayangan(3))`,
+  },
   {
     id: "variable",
     title: "Variabel & Tetapan",
@@ -399,6 +498,8 @@ function handleEditorWillMount(monaco: Monaco): void {
       "matte", "mat", "sabarBanh", "admindatang",
       "kokoromi", "koko", "cobaDuluBanh", "gasTesLur",
       "yurusu", "yuru", "santaiAja", "amanBos",
+      "toriyoseru", "tori", "summonJutsu", "jupukno",
+      "kara", "kra", "koukai", "kou", "sebarJutsu", "pamerke",
     ],
 
     // Kata kunci deklarasi & subrutin (4 Dialek Mutlak)
@@ -407,6 +508,11 @@ function handleEditorWillMount(monaco: Monaco): void {
       "zettai", "ze", "hargaMati", "bundarahma",
       "jutsu", "ju", "mybini", "fufufafa",
       "kaesu", "kae", "kasihPaham", "kandabahlil",
+      "sekte", "sek", "paguyuban", "perkumpulan",
+      "tanjou", "tan", "lahiran", "mbrojol",
+      "atarashii", "ata", "bikinBaru", "anyaran",
+      "keishou", "kei", "turunanDari", "warisanSoko",
+      "jibun", "ji", "siAing", "awakku",
     ],
 
     // Fungsi pendukung dan pustaka standar
@@ -744,9 +850,10 @@ export default function WibuScriptPlayground() {
             className="bg-slate-950 border border-slate-700/80 rounded px-2.5 py-1 text-xs text-slate-300 focus:outline-none focus:border-cyan-500 transition-colors"
           >
             <option value="default">Preset: RPG Quest Isekai (Array &amp; Template)</option>
+            <option value="oopModulDemo">Preset: OOP (Sekte) &amp; Modul (v1.7.0)</option>
             <option value="dialekDemo">Preset: 4 Dialek Mutlak</option>
             <option value="tryCatchDemo">Preset: Penanganan Galat (Try-Catch)</option>
-            <option value="iterasiDanGacha">Preset: Iterasi Koleksi, Lambda &amp; Gacha (v1.6.0)</option>
+            <option value="iterasiDanGacha">Preset: Iterasi Koleksi, Lambda &amp; Gacha</option>
             <option value="arrayDanJson">Preset: Operasi Array &amp; JSON</option>
             <option value="gameTebakAngka">Preset: Mini RPG Pertarungan Dadu</option>
           </select>

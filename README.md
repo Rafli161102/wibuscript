@@ -75,6 +75,14 @@ Seluruh kata kunci bahasa Inggris konvensional (`let`, `const`, `if`, `while`, d
 | **Tangani (CATCH)** | `yurusu` | `yuru` | `santaiAja` | `amanBos` | `TokenType.Catch` | Blok tangkapan dan pemulihan galat runtime. |
 | **Iterasi (FOR-IN)** | `subete` | `sube` | `sikatSemua` | `gilisemua` | `TokenType.ForEach` | Perulangan melintasi seluruh elemen koleksi barisan atau teks. |
 | **Penghubung (IN)** | `no` | `no` | `dari` | `soko` | `TokenType.In` | Partikel penghubung variabel elemen dan koleksi. |
+| **Kelas (CLASS)** | `sekte` | `sek` | `paguyuban` | `perkumpulan` | `TokenType.Class` | Deklarasi cetak biru objek / kelas sekte. |
+| **Konstruktor (CONSTRUCTOR)** | `tanjou` | `tan` | `lahiran` | `mbrojol` | `TokenType.Constructor` | Metode inisialisasi instansi objek sekte. |
+| **Objek Baru (NEW)** | `atarashii` | `ata` | `bikinBaru` | `anyaran` | `TokenType.New` | Membuat instansi objek baru dari sekte/kelas. |
+| **Pewarisan (EXTENDS)** | `keishou` | `kei` | `turunanDari` | `warisanSoko` | `TokenType.Extends` | Menurunkan properti dan metode dari sekte induk. |
+| **Diri Sendiri (THIS)** | `jibun` | `ji` | `siAing` | `awakku` | `TokenType.This` | Mengakses dan memodifikasi anggota instansi objek aktif. |
+| **Ekspor (EXPORT)** | `koukai` | `kou` | `sebarJutsu` | `pamerke` | `TokenType.Export` | Mengekspor simbol dan fungsi ke luar berkas modul. |
+| **Impor (IMPORT)** | `toriyoseru` | `tori` | `summonJutsu` | `jupukno` | `TokenType.Import` | Mengimpor simbol atau pustaka dari berkas/modul lain. |
+| **Asal Modul (FROM)** | `kara` | `kra` | `dari` | `soko` | `TokenType.From` | Menentukan lokasi berkas/sumber modul yang diimpor. |
 
 ## Pustaka Standar (Standard Library)
 
@@ -322,6 +330,24 @@ npx wibu convert contoh.wibu --to rongawi -o rongawi.wibu
 ```
 
 ## Log Pembaruan (Changelog)
+
+### v1.7.0 (Upgrade Phase 2: OOP & Module System)
+- **Pemrograman Berorientasi Objek (OOP)**:
+  - Deklarasi Kelas/Sekte: `sekte` (Murni) / `sek` (Singkat) / `paguyuban` (Wibu) / `perkumpulan` (Rongawi).
+  - Metode Konstruktor: `tanjou` (Murni) / `tan` (Singkat) / `lahiran` (Wibu) / `mbrojol` (Rongawi).
+  - Instansiasi Objek: `atarashii` (Murni) / `ata` (Singkat) / `bikinBaru` (Wibu) / `anyaran` (Rongawi).
+  - Pewarisan Kelas: `keishou` (Murni) / `kei` (Singkat) / `turunanDari` (Wibu) / `warisanSoko` (Rongawi).
+  - Referensi Diri (This): `jibun` (Murni) / `ji` (Singkat) / `siAing` (Wibu) / `awakku` (Rongawi) untuk pembacaan dan penugasan properti instansi.
+- **Sistem Modul Asli (Export & Import)**:
+  - Ekspor Simbol: `koukai` (Murni) / `kou` (Singkat) / `sebarJutsu` (Wibu) / `pamerke` (Rongawi).
+  - Impor Modul: `toriyoseru` (Murni) / `tori` (Singkat) / `summonJutsu` (Wibu) / `jupukno` (Rongawi).
+  - Partikel Asal Modul: `kara` (Murni) / `kra` (Singkat) / `dari` (Wibu) / `soko` (Rongawi).
+  - Registry Virtual Modul untuk keamanan eksekusi di lingkungan Web Browser dan Playground.
+- **Shorthand Jepang Otentik**: Menegakkan singkatan suku kata bahasa Jepang otentik untuk seluruh kata kunci singkatan baru (`sek`, `tan`, `ata`, `kei`, `ji`, `kou`, `tori`, `kra`).
+- **Tooling & Transpiler ES2022**:
+  - Dukungan transpilasi ES6 `class`, `constructor`, `extends`, `this`, `export`, dan `import`.
+  - Ekstensi VS Code TextMate grammar disinkronkan.
+  - Kartu panduan cepat dan preset baru pada Web Playground.
 
 ### v1.6.0
 - **Perulangan Iterasi Koleksi (For-In / For-Each)**: Dukungan perulangan langsung melintasi elemen array, karakter string, dan kunci objek menggunakan 4 dialek: `subete (item no koleksi)` (Murni), `sube (item no koleksi)` (Singkat), `sikatSemua (item dari koleksi)` (Wibu), dan `gilisemua (item soko koleksi)` (Rongawi). Dilengkapi dukungan penuh `yame` (break) dan `tsugi` (continue).

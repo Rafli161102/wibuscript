@@ -32,6 +32,16 @@ export interface DialectMapping {
   subete: [string, string, string, string];
   no: [string, string, string, string];
 
+  // OOP & Modul
+  sekte: [string, string, string, string];
+  tanjou: [string, string, string, string];
+  atarashii: [string, string, string, string];
+  keishou: [string, string, string, string];
+  jibun: [string, string, string, string];
+  koukai: [string, string, string, string];
+  toriyoseru: [string, string, string, string];
+  kara: [string, string, string, string];
+
   // Pustaka Standar
   kuchiMite: [string, string, string, string];
   shibaraku: [string, string, string, string];
@@ -94,6 +104,16 @@ export const DIALECT_TABLE: Record<string, [string, string, string, string]> = {
   yurusu: ["yurusu", "yuru", "santaiAja", "amanBos"],
   subete: ["subete", "sube", "sikatSemua", "gilisemua"],
   no: ["no", "no", "dari", "soko"],
+
+  // OOP & Modul
+  sekte: ["sekte", "sek", "paguyuban", "perkumpulan"],
+  tanjou: ["tanjou", "tan", "lahiran", "mbrojol"],
+  atarashii: ["atarashii", "ata", "bikinBaru", "anyaran"],
+  keishou: ["keishou", "kei", "turunanDari", "warisanSoko"],
+  jibun: ["jibun", "ji", "siAing", "awakku"],
+  koukai: ["koukai", "kou", "sebarJutsu", "pamerke"],
+  toriyoseru: ["toriyoseru", "tori", "summonJutsu", "jupukno"],
+  kara: ["kara", "kra", "dari", "soko"],
 
   // Pustaka Standar
   kuchiMite: ["kuchiMite", "km", "bacotAmba", "cawapresin"],
@@ -162,7 +182,8 @@ export function convertDialect(sourceCode: string, targetDialect: Dialect): stri
   }
 
   // Gunakan regex token matching yang melindungi string, komentar, dan angka dari penghilangan
-  const tokenRegex = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|`(?:\\[\s\S]|[^`])*`|"(?:\\[\s\S]|[^"])*"|'(?:\\[\s\S]|[^'])*'|\b\d+(?:\.\d+)?\b|[a-zA-Z_]\w*|[^\s\w]+|\s+)/g;
+  const tokenRegex =
+    /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|`(?:\\[\s\S]|[^`])*`|"(?:\\.|[^"\r\n])*"|'(?:\\.|[^'\r\n])*'|\b\d+(?:\.\d+)?\b|[a-zA-Z_]\w*|[^\s\w"'`]+|\s+|["'`])/g;
 
   let converted = "";
   let match: RegExpExecArray | null;

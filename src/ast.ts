@@ -20,6 +20,9 @@ export type NodeType =
   | "ContinueStatement"
   | "TryCatchStatement"
   | "ForEachStatement"
+  | "ClassDeclaration"
+  | "ExportStatement"
+  | "ImportStatement"
 
   // Expressions
   | "AssignmentExpression"
@@ -27,6 +30,8 @@ export type NodeType =
   | "UnaryExpression"
   | "ArrowFunctionExpression"
   | "CallExpression"
+  | "NewExpression"
+  | "ThisExpression"
   | "Identifier"
   | "NumericLiteral"
   | "StringLiteral"
@@ -133,6 +138,35 @@ export interface ForEachStatement extends Statement {
 }
 
 /**
+ * Deklarasi kelas / sekte: sekte Nama [keishou Induk] { ... }
+ */
+export interface ClassDeclaration extends Statement {
+  kind: "ClassDeclaration";
+  name: string;
+  parentClass?: string | undefined;
+  constructorMethod?: FunctionDeclaration | undefined;
+  methods: FunctionDeclaration[];
+}
+
+/**
+ * Ekspor modul: koukai { nama1, nama2 } atau koukai jutsu foo() { ... }
+ */
+export interface ExportStatement extends Statement {
+  kind: "ExportStatement";
+  exportedNames: string[];
+  declaration?: Statement | undefined;
+}
+
+/**
+ * Impor modul: toriyoseru { nama1, nama2 } kara "./modul.wibu"
+ */
+export interface ImportStatement extends Statement {
+  kind: "ImportStatement";
+  importedNames: string[];
+  source: string;
+}
+
+/**
  * Blok pernyataan dalam kurung kurawal { ... }
  */
 export interface BlockStatement extends Statement {
@@ -198,6 +232,22 @@ export interface CallExpression extends Expression {
   kind: "CallExpression";
   callee: string | Expression;
   args: Expression[];
+}
+
+/**
+ * Instansiasi objek baru: atarashii / ata / bikinBaru / anyaran NamaKelas(arg1, arg2)
+ */
+export interface NewExpression extends Expression {
+  kind: "NewExpression";
+  className: string;
+  args: Expression[];
+}
+
+/**
+ * Referensi instans objek saat ini: jibun / ji / siAing / awakku
+ */
+export interface ThisExpression extends Expression {
+  kind: "ThisExpression";
 }
 
 /**

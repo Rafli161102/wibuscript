@@ -33,6 +33,16 @@ export enum TokenType {
     ForEach,
     In,
 
+    // OOP & Modul Sistem (Phase 2)
+    Class,
+    Constructor,
+    New,
+    Extends,
+    This,
+    Export,
+    Import,
+    From,
+
     // Tipe Data & Identifier
     Identifier,
     Number,
@@ -196,6 +206,52 @@ export const KEYWORDS: Record<string, TokenType> = {
     "no": TokenType.In,
     "dari": TokenType.In,
     "soko": TokenType.In,
+
+    // Kelas / Sekte (CLASS)
+    "sekte": TokenType.Class,
+    "sek": TokenType.Class,
+    "paguyuban": TokenType.Class,
+    "perkumpulan": TokenType.Class,
+
+    // Konstruktor (CONSTRUCTOR)
+    "tanjou": TokenType.Constructor,
+    "tan": TokenType.Constructor,
+    "lahiran": TokenType.Constructor,
+    "mbrojol": TokenType.Constructor,
+
+    // Instansiasi Baru (NEW)
+    "atarashii": TokenType.New,
+    "ata": TokenType.New,
+    "bikinBaru": TokenType.New,
+    "anyaran": TokenType.New,
+
+    // Pewarisan (EXTENDS)
+    "keishou": TokenType.Extends,
+    "kei": TokenType.Extends,
+    "turunanDari": TokenType.Extends,
+    "warisanSoko": TokenType.Extends,
+
+    // Diri Sendiri (THIS / SELF)
+    "jibun": TokenType.This,
+    "ji": TokenType.This,
+    "siAing": TokenType.This,
+    "awakku": TokenType.This,
+
+    // Ekspor Modul (EXPORT)
+    "koukai": TokenType.Export,
+    "kou": TokenType.Export,
+    "sebarJutsu": TokenType.Export,
+    "pamerke": TokenType.Export,
+
+    // Impor Modul (IMPORT)
+    "toriyoseru": TokenType.Import,
+    "tori": TokenType.Import,
+    "summonJutsu": TokenType.Import,
+    "jupukno": TokenType.Import,
+
+    // Asal Modul (FROM)
+    "kara": TokenType.From,
+    "kra": TokenType.From,
 };
 
 /**

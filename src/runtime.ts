@@ -37,6 +37,11 @@ import type {
   ArrayLiteral,
   ObjectLiteral,
   MemberExpr,
+  ClassDeclaration,
+  ExportStatement,
+  ImportStatement,
+  NewExpression,
+  ThisExpression,
 } from "./ast";
 import { tokenize } from "./lexer";
 import { Parser } from "./parser";
@@ -53,7 +58,9 @@ export type ValueType =
   | "array"
   | "object"
   | "native-fn"
-  | "function";
+  | "function"
+  | "class"
+  | "instance";
 
 export interface RuntimeValue {
   type: ValueType;
@@ -105,6 +112,22 @@ export interface FunctionValue extends RuntimeValue {
   parameters: string[];
   declarationEnv: Environment;
   body: Statement[];
+}
+
+export interface ClassValue extends RuntimeValue {
+  type: "class";
+  name: string;
+  parentClass?: ClassValue | undefined;
+  constructorMethod?: FunctionDeclaration | undefined;
+  methods: Map<string, FunctionDeclaration>;
+  declarationEnv: Environment;
+}
+
+export interface InstanceValue extends RuntimeValue {
+  type: "instance";
+  className: string;
+  classVal: ClassValue;
+  fields: Map<string, RuntimeValue>;
 }
 
 // ----------------------------------------------------------------------------
@@ -160,6 +183,32 @@ export function MK_NATIVE_FN(call: NativeFnCall): NativeFnValue {
   return { type: "native-fn", call };
 }
 
+export function MK_CLASS(
+  name: string,
+  declarationEnv: Environment,
+  methods = new Map<string, FunctionDeclaration>(),
+  parentClass?: ClassValue,
+  constructorMethod?: FunctionDeclaration
+): ClassValue {
+  return {
+    type: "class",
+    name,
+    declarationEnv,
+    methods,
+    parentClass,
+    constructorMethod,
+  };
+}
+
+export function MK_INSTANCE(classVal: ClassValue): InstanceValue {
+  return {
+    type: "instance",
+    className: classVal.name,
+    classVal,
+    fields: new Map(),
+  };
+}
+
 export function formatRuntimeValue(val: RuntimeValue): string {
   switch (val.type) {
     case "string":
@@ -187,6 +236,18 @@ export function formatRuntimeValue(val: RuntimeValue): string {
       return "[NativeFunction]";
     case "function":
       return `[Function: ${(val as FunctionValue).name}]`;
+    case "class":
+      return `[Sekte: ${(val as ClassValue).name}]`;
+    case "instance": {
+      const inst = val as InstanceValue;
+      const entries: string[] = [];
+      inst.fields.forEach((v, k) => {
+        entries.push(`${k}: ${formatRuntimeValue(v)}`);
+      });
+      return entries.length === 0
+        ? `<${inst.className}>`
+        : `<${inst.className} { ${entries.join(", ")} }>`;
+    }
     default:
       return "undefined";
   }
@@ -282,13 +343,26 @@ export interface EnvironmentOptions {
   outputLog?: string[];
 }
 
+// Virtual Modules Registry (berguna untuk lingkungan Web Playground & Browser)
+export const VIRTUAL_MODULES = new Map<string, string>();
+
+export function registerVirtualModule(modulePath: string, code: string): void {
+  VIRTUAL_MODULES.set(modulePath, code);
+}
+
+export function clearVirtualModules(): void {
+  VIRTUAL_MODULES.clear();
+}
+
 export class Environment {
   private parent?: Environment | undefined;
   private variables: Map<string, RuntimeValue>;
+  public exports: Map<string, RuntimeValue>;
 
   constructor(parentEnv?: Environment | undefined) {
     this.parent = parentEnv;
     this.variables = new Map();
+    this.exports = new Map();
   }
 
   public declareVar(name: string, value: RuntimeValue): RuntimeValue {
@@ -377,6 +451,9 @@ export function createGlobalEnvironment(
 
   env.declareVar("kasihMite", printFn);
   env.declareVar("mite", printFn);
+  env.declareVar("mi", printFn);
+  env.declareVar("teriakAmba", printFn);
+  env.declareVar("salamkenal", printFn);
   env.declareVar("print", printFn);
   env.declareVar("kuchiMite", printFn);
   env.declareVar("km", printFn);
@@ -1261,6 +1338,21 @@ export async function evaluate(
     case "FunctionDeclaration":
       return evalFunctionDeclaration(astNode as FunctionDeclaration, env);
 
+    case "ClassDeclaration":
+      return await evalClassDeclaration(astNode as ClassDeclaration, env);
+
+    case "ExportStatement":
+      return await evalExportStatement(astNode as ExportStatement, env);
+
+    case "ImportStatement":
+      return await evalImportStatement(astNode as ImportStatement, env);
+
+    case "NewExpression":
+      return await evalNewExpression(astNode as NewExpression, env);
+
+    case "ThisExpression":
+      return evalThisExpression(astNode as ThisExpression, env);
+
     case "IfStatement":
       return await evalIfStatement(astNode as IfStatement, env);
 
@@ -1627,6 +1719,19 @@ async function evalAssignment(
       return value;
     }
 
+    if (target.type === "instance") {
+      const inst = target as InstanceValue;
+      let propKey: string;
+      if (member.computed) {
+        const evaluatedKey = unwrapSignal(await evaluate(member.property, env));
+        propKey = formatRuntimeValue(evaluatedKey);
+      } else {
+        propKey = (member.property as Identifier).symbol;
+      }
+      inst.fields.set(propKey, value);
+      return value;
+    }
+
     if (target.type === "array") {
       const arr = target as ArrayValue;
       const evaluatedIdx = unwrapSignal(await evaluate(member.property, env));
@@ -1869,6 +1974,59 @@ async function evalMemberExpr(
     return obj.properties.get(propKey) as RuntimeValue;
   }
 
+  if (objectVal.type === "instance") {
+    const inst = objectVal as InstanceValue;
+    let propKey: string;
+    if (node.computed) {
+      const evaluatedKey = unwrapSignal(await evaluate(node.property, env));
+      propKey = formatRuntimeValue(evaluatedKey);
+    } else {
+      propKey = (node.property as Identifier).symbol;
+    }
+
+    // 1. Cek apakah ada di fields
+    if (inst.fields.has(propKey)) {
+      return inst.fields.get(propKey)!;
+    }
+
+    // 2. Cek apakah merupakan metode kelas (dengan pencarian hierarki ke atas)
+    let currentClass: ClassValue | undefined = inst.classVal;
+    while (currentClass) {
+      if (currentClass.methods.has(propKey)) {
+        const methodDecl = currentClass.methods.get(propKey)!;
+        return MK_NATIVE_FN(
+          async (args: RuntimeValue[]): Promise<RuntimeValue> => {
+            const methodScope = new Environment(currentClass!.declarationEnv);
+            // Ikat kata kunci diri sendiri di semua dialek
+            methodScope.declareVar("jibun", inst);
+            methodScope.declareVar("ji", inst);
+            methodScope.declareVar("siAing", inst);
+            methodScope.declareVar("awakku", inst);
+            methodScope.declareVar("this", inst);
+
+            for (let i = 0; i < methodDecl.parameters.length; i++) {
+              const pName = methodDecl.parameters[i];
+              if (pName !== undefined) {
+                methodScope.declareVar(pName, args[i] ?? MK_NULL());
+              }
+            }
+
+            for (const s of methodDecl.body) {
+              const res = await evaluate(s, methodScope);
+              if (isReturnSignal(res)) {
+                return res.value;
+              }
+            }
+            return MK_NULL();
+          }
+        );
+      }
+      currentClass = currentClass.parentClass;
+    }
+
+    return MK_NULL();
+  }
+
   if (objectVal.type === "array") {
     const arr = objectVal as ArrayValue;
     if (!node.computed) {
@@ -1947,6 +2105,217 @@ async function evalTryCatchStatement(
     }
     return lastVal;
   }
+}
+
+// ----------------------------------------------------------------------------
+// EVALUATOR: OOP & SISTEM MODUL
+// ----------------------------------------------------------------------------
+
+async function evalClassDeclaration(
+  stmt: ClassDeclaration,
+  env: Environment
+): Promise<RuntimeValue> {
+  let parentClassVal: ClassValue | undefined = undefined;
+  if (stmt.parentClass) {
+    const parentVal = env.lookupVar(stmt.parentClass);
+    if (parentVal.type !== "class") {
+      throw new Error(
+        `[Runtime Error] Kelas induk '${stmt.parentClass}' bukan merupakan sekte/kelas yang valid.`
+      );
+    }
+    parentClassVal = parentVal as ClassValue;
+  }
+
+  const methods = new Map<string, FunctionDeclaration>();
+  for (const m of stmt.methods) {
+    methods.set(m.name, m);
+  }
+
+  const classVal = MK_CLASS(
+    stmt.name,
+    env,
+    methods,
+    parentClassVal,
+    stmt.constructorMethod
+  );
+
+  return env.declareVar(stmt.name, classVal);
+}
+
+async function evalNewExpression(
+  node: NewExpression,
+  env: Environment
+): Promise<RuntimeValue> {
+  const classVal = env.lookupVar(node.className);
+  if (classVal.type !== "class") {
+    throw new Error(
+      `[Runtime Error] '${node.className}' bukan merupakan sekte/kelas yang dapat diinstansiasi.`
+    );
+  }
+  const cls = classVal as ClassValue;
+  const instance = MK_INSTANCE(cls);
+
+  // Cari konstruktor di kelas ini atau rantai warisan
+  let ctor: FunctionDeclaration | undefined = cls.constructorMethod;
+  let curr: ClassValue | undefined = cls;
+  while (!ctor && curr?.parentClass) {
+    curr = curr.parentClass;
+    ctor = curr?.constructorMethod;
+  }
+
+  if (ctor) {
+    const evaluatedArgs: RuntimeValue[] = [];
+    for (const arg of node.args) {
+      evaluatedArgs.push(unwrapSignal(await evaluate(arg, env)));
+    }
+
+    const ctorScope = new Environment(cls.declarationEnv);
+    ctorScope.declareVar("jibun", instance);
+    ctorScope.declareVar("ji", instance);
+    ctorScope.declareVar("siAing", instance);
+    ctorScope.declareVar("awakku", instance);
+    ctorScope.declareVar("this", instance);
+
+    for (let i = 0; i < ctor.parameters.length; i++) {
+      const pName = ctor.parameters[i];
+      if (pName !== undefined) {
+        ctorScope.declareVar(pName, evaluatedArgs[i] ?? MK_NULL());
+      }
+    }
+
+    for (const s of ctor.body) {
+      const res = await evaluate(s, ctorScope);
+      if (isReturnSignal(res)) {
+        if (res.value.type === "instance" || res.value.type === "object") {
+          return res.value;
+        }
+        break;
+      }
+    }
+  }
+
+  return instance;
+}
+
+function evalThisExpression(
+  _node: ThisExpression,
+  env: Environment
+): RuntimeValue {
+  try {
+    return env.lookupVar("jibun");
+  } catch {
+    try {
+      return env.lookupVar("this");
+    } catch {
+      throw new Error(
+        "[Runtime Error] Kata kunci 'jibun' ('this') hanya dapat digunakan di dalam badan sekte/kelas."
+      );
+    }
+  }
+}
+
+async function evalExportStatement(
+  stmt: ExportStatement,
+  env: Environment
+): Promise<RuntimeValue> {
+  if (stmt.declaration) {
+    const val = unwrapSignal(await evaluate(stmt.declaration, env));
+    for (const name of stmt.exportedNames) {
+      env.exports.set(name, val);
+    }
+    return val;
+  }
+
+  for (const name of stmt.exportedNames) {
+    const val = env.lookupVar(name);
+    env.exports.set(name, val);
+  }
+
+  return MK_NULL();
+}
+
+async function evalImportStatement(
+  stmt: ImportStatement,
+  env: Environment
+): Promise<RuntimeValue> {
+  const source = stmt.source;
+  let moduleCode: string | undefined = undefined;
+
+  // 1. Cek Virtual Modules Registry (Kompatibel Playground Browser & Testing)
+  if (VIRTUAL_MODULES.has(source)) {
+    moduleCode = VIRTUAL_MODULES.get(source)!;
+  } else if (
+    typeof process !== "undefined" &&
+    process.versions != null &&
+    process.versions.node != null
+  ) {
+    try {
+      const resolvedPath = path.isAbsolute(source)
+        ? source
+        : path.resolve(/*turbopackIgnore: true*/ process.cwd(), source);
+      if (fs.existsSync(resolvedPath)) {
+        moduleCode = fs.readFileSync(resolvedPath, "utf-8");
+      }
+    } catch {
+      // Abaikan error fs
+    }
+  }
+
+  if (moduleCode === undefined) {
+    throw new Error(
+      `[Runtime Error] Modul '${source}' tidak dapat ditemukan atau dimuat.`
+    );
+  }
+
+  // Parse dan eksekusi modul dalam lingkungan baru
+  const moduleTokens = tokenize(moduleCode);
+  const moduleParser = new Parser();
+  const moduleAst = moduleParser.produceAST(moduleTokens);
+
+  // Buat scope modul dari root environment agar pustaka standar global tetap tersedia
+  let rootEnv: Environment = env;
+  while ((rootEnv as any).parent) {
+    rootEnv = (rootEnv as any).parent;
+  }
+  const moduleEnv = new Environment(rootEnv);
+  await evaluate(moduleAst, moduleEnv);
+
+  // Impor simbol ke dalam lingkungan pemanggil
+  if (stmt.importedNames.includes("*")) {
+    if (moduleEnv.exports.size > 0) {
+      for (const [key, val] of moduleEnv.exports.entries()) {
+        try {
+          env.declareVar(key, val);
+        } catch {
+          env.assignVar(key, val);
+        }
+      }
+    } else {
+      for (const [key, val] of (moduleEnv as any).variables.entries()) {
+        try {
+          env.declareVar(key, val);
+        } catch {
+          env.assignVar(key, val);
+        }
+      }
+    }
+  } else {
+    for (const name of stmt.importedNames) {
+      let val: RuntimeValue;
+      if (moduleEnv.exports.has(name)) {
+        val = moduleEnv.exports.get(name)!;
+      } else {
+        val = moduleEnv.lookupVar(name);
+      }
+      try {
+        env.declareVar(name, val);
+      } catch {
+        env.assignVar(name, val);
+      }
+    }
+  }
+
+  return MK_NULL();
 }
 
 // ----------------------------------------------------------------------------

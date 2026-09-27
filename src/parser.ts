@@ -21,11 +21,16 @@ import type {
   ContinueStatement,
   TryCatchStatement,
   ForEachStatement,
+  ClassDeclaration,
+  ExportStatement,
+  ImportStatement,
   AssignmentExpression,
   BinaryExpression,
   UnaryExpression,
   ArrowFunctionExpression,
   CallExpression,
+  NewExpression,
+  ThisExpression,
   Identifier,
   NumericLiteral,
   StringLiteral,
@@ -134,6 +139,15 @@ export class Parser {
 
       case TokenType.Try:
         return this.parseTryCatchStatement();
+
+      case TokenType.Class:
+        return this.parseClassDeclaration();
+
+      case TokenType.Export:
+        return this.parseExportStatement();
+
+      case TokenType.Import:
+        return this.parseImportStatement();
 
       case TokenType.OpenBrace:
         return this.parseBlockStatement();
@@ -348,6 +362,227 @@ export class Parser {
       tryBranch,
       catchVariable,
       catchBranch,
+    };
+  }
+
+  /**
+   * Deklarasi kelas / sekte:
+   * sekte NamaKelas [keishou IndukKelas] {
+   *   tanjou(nama, level) { ... }
+   *   jutsu serang(musuh) { ... }
+   * }
+   */
+  private parseClassDeclaration(): ClassDeclaration {
+    this.advance(); // Konsumsi 'sekte' / 'sek' / 'paguyuban' / 'perkumpulan'
+
+    const nameToken = this.expect(
+      TokenType.Identifier,
+      "Diharapkan nama kelas setelah kata kunci kelas / sekte."
+    );
+
+    let parentClass: string | undefined = undefined;
+    if (this.at().type === TokenType.Extends) {
+      this.advance(); // Konsumsi 'keishou' / 'kei' / 'turunanDari' / 'warisanSoko'
+      parentClass = this.expect(
+        TokenType.Identifier,
+        "Diharapkan nama kelas induk setelah kata kunci pewarisan."
+      ).value;
+    }
+
+    this.expect(
+      TokenType.OpenBrace,
+      "Diharapkan '{' pada awal definisi badan kelas."
+    );
+
+    let constructorMethod: FunctionDeclaration | undefined = undefined;
+    const methods: FunctionDeclaration[] = [];
+
+    while (this.at().type !== TokenType.CloseBrace && !this.isAtEnd()) {
+      // 1. Konstruktor: tanjou(...) { ... }
+      if (this.at().type === TokenType.Constructor) {
+        this.advance(); // Konsumsi 'tanjou' / 'tan' / 'lahiran' / 'mbrojol'
+        this.expect(TokenType.OpenParen, "Diharapkan '(' setelah kata kunci konstruktor.");
+        const parameters: string[] = [];
+        if (this.at().type !== TokenType.CloseParen) {
+          parameters.push(
+            this.expect(TokenType.Identifier, "Diharapkan nama parameter konstruktor.").value
+          );
+          while (this.at().type === TokenType.Comma) {
+            this.advance();
+            parameters.push(
+              this.expect(TokenType.Identifier, "Diharapkan nama parameter setelah koma.").value
+            );
+          }
+        }
+        this.expect(TokenType.CloseParen, "Diharapkan ')' setelah parameter konstruktor.");
+        const body = this.parseBlockOrSingleStatement();
+        constructorMethod = {
+          kind: "FunctionDeclaration",
+          name: "constructor",
+          parameters,
+          body,
+        };
+        continue;
+      }
+
+      // 2. Metode fungsi dengan kata kunci jutsu: jutsu nama(...) { ... }
+      if (this.at().type === TokenType.Function) {
+        methods.push(this.parseFunctionDeclaration());
+        continue;
+      }
+
+      // 3. Metode fungsi langsung: nama(...) { ... }
+      if (
+        this.at().type === TokenType.Identifier &&
+        this.tokens[this.cursor + 1]?.type === TokenType.OpenParen
+      ) {
+        const methodName = this.advance().value;
+        this.expect(TokenType.OpenParen, "Diharapkan '(' setelah nama metode.");
+        const parameters: string[] = [];
+        if (this.at().type !== TokenType.CloseParen) {
+          parameters.push(
+            this.expect(TokenType.Identifier, "Diharapkan nama parameter metode.").value
+          );
+          while (this.at().type === TokenType.Comma) {
+            this.advance();
+            parameters.push(
+              this.expect(TokenType.Identifier, "Diharapkan nama parameter setelah koma.").value
+            );
+          }
+        }
+        this.expect(TokenType.CloseParen, "Diharapkan ')' setelah parameter metode.");
+        const body = this.parseBlockOrSingleStatement();
+        methods.push({
+          kind: "FunctionDeclaration",
+          name: methodName,
+          parameters,
+          body,
+        });
+        continue;
+      }
+
+      throw new Error(
+        `[Parser Error] Simbol tidak dikenal dalam definisi kelas '${nameToken.value}': '${this.at().value}'.`
+      );
+    }
+
+    this.expect(TokenType.CloseBrace, "Diharapkan '}' pada akhir definisi kelas.");
+
+    return {
+      kind: "ClassDeclaration",
+      name: nameToken.value,
+      parentClass,
+      constructorMethod,
+      methods,
+    };
+  }
+
+  /**
+   * Ekspor modul:
+   * 1. koukai { a, b, c }
+   * 2. koukai <deklarasi>
+   */
+  private parseExportStatement(): ExportStatement {
+    this.advance(); // Konsumsi 'koukai' / 'kou' / 'sebarJutsu' / 'pamerke'
+
+    if (this.at().type === TokenType.OpenBrace) {
+      this.advance(); // Konsumsi '{'
+      const exportedNames: string[] = [];
+      if (this.at().type !== TokenType.CloseBrace) {
+        exportedNames.push(
+          this.expect(TokenType.Identifier, "Diharapkan nama variabel / fungsi untuk diekspor.").value
+        );
+        while (this.at().type === TokenType.Comma) {
+          this.advance();
+          exportedNames.push(
+            this.expect(TokenType.Identifier, "Diharapkan nama pengenal setelah tanda koma.").value
+          );
+        }
+      }
+      this.expect(TokenType.CloseBrace, "Diharapkan '}' setelah daftar ekspor.");
+      if (this.at().type === TokenType.Semicolon) this.advance();
+      return {
+        kind: "ExportStatement",
+        exportedNames,
+      };
+    }
+
+    const decl = this.parseStatement();
+    let name = "";
+    if (decl.kind === "FunctionDeclaration") name = (decl as FunctionDeclaration).name;
+    else if (decl.kind === "VariableDeclaration") name = (decl as VariableDeclaration).identifier;
+    else if (decl.kind === "ClassDeclaration") name = (decl as ClassDeclaration).name;
+
+    return {
+      kind: "ExportStatement",
+      exportedNames: name ? [name] : [],
+      declaration: decl,
+    };
+  }
+
+  /**
+   * Impor modul:
+   * 1. toriyoseru { a, b } kara "./modul.wibu"
+   * 2. toriyoseru * kara "./modul.wibu"
+   * 3. toriyoseru "./modul.wibu"
+   */
+  private parseImportStatement(): ImportStatement {
+    this.advance(); // Konsumsi 'toriyoseru' / 'tori' / 'summonJutsu' / 'jupukno'
+
+    // Bentuk impor langsung nama berkas: toriyoseru "./modul.wibu"
+    if (this.at().type === TokenType.String) {
+      const source = this.advance().value;
+      if (this.at().type === TokenType.Semicolon) this.advance();
+      return {
+        kind: "ImportStatement",
+        importedNames: ["*"],
+        source,
+      };
+    }
+
+    const importedNames: string[] = [];
+
+    if (this.at().type === TokenType.Multiply) {
+      this.advance(); // Konsumsi '*'
+      importedNames.push("*");
+    } else {
+      this.expect(
+        TokenType.OpenBrace,
+        "Diharapkan '{', '*', atau path berkas string setelah kata kunci impor."
+      );
+      if (this.at().type !== TokenType.CloseBrace) {
+        importedNames.push(
+          this.expect(TokenType.Identifier, "Diharapkan nama pengenal impor.").value
+        );
+        while (this.at().type === TokenType.Comma) {
+          this.advance();
+          importedNames.push(
+            this.expect(TokenType.Identifier, "Diharapkan nama pengenal setelah koma.").value
+          );
+        }
+      }
+      this.expect(TokenType.CloseBrace, "Diharapkan '}' setelah daftar pengenal impor.");
+    }
+
+    // Partikel asal modul: 'kara' / 'kra' / 'dari' / 'soko'
+    if (this.at().type === TokenType.From || this.at().type === TokenType.In) {
+      this.advance();
+    } else {
+      throw new Error(
+        `[Parser Error] Diharapkan kata kunci asal modul ('kara', 'kra', 'dari', atau 'soko') pada baris ${this.at().line}, kolom ${this.at().column}.`
+      );
+    }
+
+    const sourceToken = this.expect(
+      TokenType.String,
+      "Diharapkan path berkas string setelah kata kunci asal modul."
+    );
+    if (this.at().type === TokenType.Semicolon) this.advance();
+
+    return {
+      kind: "ImportStatement",
+      importedNames,
+      source: sourceToken.value,
     };
   }
 
@@ -908,6 +1143,29 @@ export class Parser {
           "Diharapkan tanda kurung tutup ')' setelah ekspresi."
         );
         return value;
+      }
+
+      // Instansiasi Objek Baru: atarashii / ata / bikinBaru / anyaran NamaKelas(...)
+      case TokenType.New: {
+        this.advance(); // Konsumsi 'atarashii' / 'ata' / 'bikinBaru' / 'anyaran'
+        const classToken = this.expect(
+          TokenType.Identifier,
+          "Diharapkan nama kelas setelah kata kunci instansiasi baru."
+        );
+        const args = this.parseArgs();
+        return {
+          kind: "NewExpression",
+          className: classToken.value,
+          args,
+        } as NewExpression;
+      }
+
+      // Referensi diri sendiri: jibun / ji / siAing / awakku
+      case TokenType.This: {
+        this.advance();
+        return {
+          kind: "ThisExpression",
+        } as ThisExpression;
       }
 
       default:

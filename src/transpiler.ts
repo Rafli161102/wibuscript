@@ -30,6 +30,11 @@ import type {
   ArrayLiteral,
   ObjectLiteral,
   MemberExpr,
+  ClassDeclaration,
+  ExportStatement,
+  ImportStatement,
+  NewExpression,
+  ThisExpression,
 } from "./ast";
 import { tokenize } from "./lexer";
 import { Parser } from "./parser";
@@ -167,6 +172,15 @@ export class Transpiler {
       case "BlockStatement":
         return this.transpileBlockStatement(stmt as BlockStatement);
 
+      case "ClassDeclaration":
+        return this.transpileClassDeclaration(stmt as ClassDeclaration);
+
+      case "ExportStatement":
+        return this.transpileExportStatement(stmt as ExportStatement);
+
+      case "ImportStatement":
+        return this.transpileImportStatement(stmt as ImportStatement);
+
       case "ExpressionStatement":
         return `${this.indent()}${this.transpileExpression((stmt as ExpressionStatement).expression)};`;
 
@@ -243,6 +257,53 @@ export class Transpiler {
 
     out += `${this.indent()}}`;
     return out;
+  }
+
+  private transpileClassDeclaration(node: ClassDeclaration): string {
+    const extendsClause = node.parentClass ? ` extends ${node.parentClass}` : "";
+    let out = `${this.indent()}class ${node.name}${extendsClause} {\n`;
+    this.indentLevel++;
+
+    if (node.constructorMethod) {
+      const params = node.constructorMethod.parameters.join(", ");
+      out += `${this.indent()}constructor(${params}) {\n`;
+      this.indentLevel++;
+      for (const s of node.constructorMethod.body) {
+        out += this.transpileStatement(s) + "\n";
+      }
+      this.indentLevel--;
+      out += `${this.indent()}}\n`;
+    }
+
+    for (const m of node.methods) {
+      const params = m.parameters.join(", ");
+      out += `${this.indent()}${m.name}(${params}) {\n`;
+      this.indentLevel++;
+      for (const s of m.body) {
+        out += this.transpileStatement(s) + "\n";
+      }
+      this.indentLevel--;
+      out += `${this.indent()}}\n`;
+    }
+
+    this.indentLevel--;
+    out += `${this.indent()}}`;
+    return out;
+  }
+
+  private transpileExportStatement(node: ExportStatement): string {
+    if (node.declaration) {
+      const declStr = this.transpileStatement(node.declaration).trimStart();
+      return `${this.indent()}export ${declStr}`;
+    }
+    return `${this.indent()}export { ${node.exportedNames.join(", ")} };`;
+  }
+
+  private transpileImportStatement(node: ImportStatement): string {
+    if (node.importedNames.length === 1 && node.importedNames[0] === "*") {
+      return `${this.indent()}import "${node.source}";`;
+    }
+    return `${this.indent()}import { ${node.importedNames.join(", ")} } from "${node.source}";`;
   }
 
   private transpileReturnStatement(node: ReturnStatement): string {
@@ -326,6 +387,15 @@ export class Transpiler {
         });
         return `{ ${props.join(", ")} }`;
       }
+
+      case "NewExpression": {
+        const newExpr = expr as NewExpression;
+        const args = newExpr.args.map((a) => this.transpileExpression(a)).join(", ");
+        return `new ${newExpr.className}(${args})`;
+      }
+
+      case "ThisExpression":
+        return "this";
 
       case "MemberExpr": {
         const member = expr as MemberExpr;
@@ -461,10 +531,14 @@ export class Transpiler {
           return `__nagasa(${arg})`;
         }
 
-        const mappedCallee =
-          typeof callee === "string"
-            ? (STDLIB_MAP[callee] ?? callee)
-            : `(${this.transpileExpression(callee)})`;
+        let mappedCallee: string;
+        if (typeof callee === "string") {
+          mappedCallee = STDLIB_MAP[callee] ?? callee;
+        } else if (callee.kind === "MemberExpr") {
+          mappedCallee = this.transpileExpression(callee);
+        } else {
+          mappedCallee = `(${this.transpileExpression(callee)})`;
+        }
         const args = call.args.map((a) => this.transpileExpression(a)).join(", ");
         return `${mappedCallee}(${args})`;
       }

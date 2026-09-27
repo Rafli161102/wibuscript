@@ -1,0 +1,49 @@
+// ============================================================================
+// CONTOH: PEMROGRAMAN BERORIENTASI OBJEK (OOP) & SISTEM MODUL (v1.7.0)
+// Demonstrasi Sekte (Class), Tanjou (Constructor), Atarashii (New),
+// Keishou (Inheritance), Jibun (This), Koukai (Export), dan Toriyoseru (Import).
+// ============================================================================
+
+// 1. Deklarasi Sekte/Kelas Induk
+sekte Pendekar {
+  tanjou(nama, klan) {
+    jibun.nama = nama
+    jibun.klan = klan
+    jibun.chakra = 100
+  }
+
+  status() {
+    kaesu "[Pendekar: " + jibun.nama + " | Klan: " + jibun.klan + " | Chakra: " + jibun.chakra + "]"
+  }
+
+  latihan(jam) {
+    jibun.chakra = jibun.chakra + (jam * 10)
+    mite(jibun.nama + " berlatih selama " + jam + " jam. Chakra kini: " + jibun.chakra)
+  }
+}
+
+// 2. Pewarisan Sekte Anak
+sekte Kage keishou Pendekar {
+  tanjou(nama, klan, gelar) {
+    jibun.nama = nama
+    jibun.klan = klan
+    jibun.chakra = 500
+    jibun.gelar = gelar
+  }
+
+  jurusPemberantas() {
+    jibun.chakra = jibun.chakra - 50
+    mite(jibun.gelar + " " + jibun.nama + " mengeluarkan Rasengan Raksasa! Sisa chakra: " + jibun.chakra)
+  }
+}
+
+// 3. Instansiasi Objek Baru
+kore naruto = atarashii Kage("Naruto", "Uzumaki", "Hokage Ke-7")
+mite(naruto.status())
+naruto.jurusPemberantas()
+naruto.latihan(2)
+mite(naruto.status())
+
+// 4. Ekspor Objek
+koukai { naruto, Pendekar, Kage }
+mite("Ekspor selesai! WibuScript v1.7.0 OOP berjalan sempurna.")
