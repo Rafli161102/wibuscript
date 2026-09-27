@@ -1,0 +1,64 @@
+// ============================================================================
+// CONTOH: MEME RONGAWI WIBUSCRIPT (v1.6 - v1.8 NGAWIVERSE SLANG)
+// Demonstrasi arsitektur Sistem 4 Dialek Mutlak dialek Meme Rongawi
+// ============================================================================
+
+// 1. Variabel & Tetapan (pokmipokmi & bundarahma)
+pokmipokmi ksatria = "Rusdi Ngawi"
+bundarahma markas = "Istana Malaka"
+cawapresin("=== PETUALANGAN RONGAWI: " + ksatria + " DI " + markas + " ===")
+
+// 2. Koleksi & Iterasi (thugshaker ... alasdaun)
+pokmipokmi daftarItem = ["Linggis Jawa", "Minyak Pelumas", "Weekly Pass"]
+cawapresin("Jumlah inventaris: " + panjangberurat(daftarItem))
+
+thugshaker (item alasdaun daftarItem) {
+  cawapresin("- Item bawaan: " + item)
+}
+
+// 3. Destructuring Barisan & Rest Operator
+pokmipokmi [senjataUtama, ...cadangan] = daftarItem
+cawapresin("Senjata Utama: " + senjataUtama)
+
+// 4. Pendefinisian Kelas / Sekte (sektejomok, ambatunat, lanangmas, jalurhukum)
+sektejomok PasukanNgawi {
+  ambatunat(nama, power) {
+    lanangmas.nama = nama
+    lanangmas.power = power
+  }
+
+  unjukKekuatan() {
+    cawapresin(lanangmas.nama + " bersiap dengan kekuatan: " + lanangmas.power)
+  }
+}
+
+sektejomok PasukanKhusus jalurhukum PasukanNgawi {
+  goyangMaut() {
+    cawapresin(lanangmas.nama + " melancarkan jurus Thug Shaker!")
+  }
+}
+
+// 5. Instansiasi Objek (ambatumbas)
+pokmipokmi prajurit = ambatumbas PasukanKhusus("Amba", 9999)
+prajurit.unjukKekuatan()
+prajurit.goyangMaut()
+
+// 6. Pattern Matching (persimpangan, kenaben, yappingtolol)
+pokmipokmi statusPertarungan = "Menang"
+persimpangan (statusPertarungan) {
+  kenaben "Kalah": {
+    cawapresin("Status: Mundur ke Ngawiland!")
+  }
+  kenaben "Menang": {
+    cawapresin("Status: Menyala Abkuh! Mas Rusdi bangga!")
+  }
+  yappingtolol: {
+    cawapresin("Status: Nyocot doang tidak ada hasil.")
+  }
+}
+
+// 7. Undian Gacha RNG (weeklypass)
+pokmipokmi gachaReward = weeklypass(["Akun Tumbal", "Minyak Urut", "Pedang Daging"])
+cawapresin("Hadiah Gacha: " + gachaReward)
+
+cawapresin("=== EKSEKUSI RONGAWI SELESAI ===")

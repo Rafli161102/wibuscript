@@ -70,10 +70,10 @@ kore { nama, klan: marga } = { nama: "Itachi", klan: "Uchiha" }
 mite(\`Nama: \${nama}, Marga: \${marga}\`)
 
 // Pertukaran nilai variabel (Swapping)
-kore [a, b] = [100, 200]
-mite(\`Sebelum tukar: a=\${a}, b=\${b}\`)
-[a, b] = [b, a]
-mite(\`Sesudah tukar: a=\${a}, b=\${b}\`)
+kore [a, b] = [100, 200];
+mite(\`Sebelum tukar: a=\${a}, b=\${b}\`);
+[a, b] = [b, a];
+mite(\`Sesudah tukar: a=\${a}, b=\${b}\`);
 
 // Spread operator (...) pada barisan
 kore ganjil = [1, 3, 5]
@@ -287,6 +287,65 @@ kore kataArray = bunri(bersih, " ")
 kore slogan = tsunagu(kataArray, " -> ")
 mite(\`Slogan Terhubung: \${slogan}\`)
 mite(\`Apakah mengandung 'script'? \${fukumu(bersih, "script")}\`)`,
+
+  rongawiMemeDemo: `// Demonstrasi Dialek Meme Rongawi (Kultur Thugposting & Ngawiverse Slang)
+// 1. Variabel & Tetapan (pokmipokmi & bundarahma)
+pokmipokmi ksatria = "Rusdi Ngawi"
+bundarahma markas = "Istana Malaka"
+cawapresin("=== PETUALANGAN RONGAWI: " + ksatria + " DI " + markas + " ===")
+
+// 2. Koleksi & Iterasi (thugshaker ... alasdaun)
+pokmipokmi daftarItem = ["Linggis Jawa", "Minyak Pelumas", "Weekly Pass"]
+cawapresin("Jumlah inventaris: " + panjangberurat(daftarItem))
+
+thugshaker (item alasdaun daftarItem) {
+  cawapresin("- Item: " + item)
+}
+
+// 3. Destructuring & Rest (...)
+pokmipokmi [senjataUtama, ...cadangan] = daftarItem
+cawapresin("Senjata Utama: " + senjataUtama)
+
+// 4. Kelas/Sekte (sektejomok, ambatunat, lanangmas, jalurhukum)
+sektejomok PasukanNgawi {
+  ambatunat(nama, power) {
+    lanangmas.nama = nama
+    lanangmas.power = power
+  }
+  unjukKekuatan() {
+    cawapresin(lanangmas.nama + " bersiap dengan tenaga: " + lanangmas.power)
+  }
+}
+
+sektejomok PasukanKhusus jalurhukum PasukanNgawi {
+  jurusMaut() {
+    cawapresin(lanangmas.nama + " melancarkan jurus Thug Shaker!")
+  }
+}
+
+// 5. Instansiasi Objek (ambatumbas)
+pokmipokmi pendekar = ambatumbas PasukanKhusus("Mas Fuad", 9999)
+pendekar.unjukKekuatan()
+pendekar.jurusMaut()
+
+// 6. Pattern Matching (persimpangan, kenaben, yappingtolol)
+pokmipokmi kondisi = "Menang"
+persimpangan (kondisi) {
+  kenaben "Kalah": {
+    cawapresin("Status: Mundur ke Ngawiland!")
+  }
+  kenaben "Menang": {
+    cawapresin("Status: Menyala Abkuh! Mas Rusdi bangga!")
+  }
+  yappingtolol: {
+    cawapresin("Status: Nyocot doang tidak ada hasil.")
+  }
+}
+
+// 7. Gacha RNG (weeklypass)
+pokmipokmi reward = weeklypass(["Pedang Daging", "Minyak Urut", "Akun Tumbal"])
+cawapresin("Hadiah Gacha: " + reward)
+cawapresin("=== EKSEKUSI RONGAWI SELESAI ===")`,
 };
 
 // Data kartu referensi untuk Panel Panduan Cepat (4 Dialek Mutlak)
@@ -622,13 +681,13 @@ function handleEditorWillMount(monaco: Monaco): void {
       "suji", "suj", "jadiAngkaBanh", "ubahJadiDuit",
       "shurui", "shu", "iniApaan", "bendaApaanLur",
       "beki", "bek", "angkatin", "naikinPangkat",
-      "marume", "maru", "buletinBanh", "ratainLur",
-      "ireta", "ire", "masukinSini", "masukPakEko",
-      "toru", "to", "buangAja", "singkirkanLur",
-      "kiru", "ki", "potongBanh", "gorokLur",
-      "ookiku", "ooki", "bikinGede", "gedeinLur",
-      "chiisaku", "chii", "bikinKecil", "kecilinLur",
-      "randamu", "ran", "acakBanh", "kocokLur",
+      "marume", "maru", "bulatinBanh", "rapihinAngka",
+      "ireta", "ire", "masukinLur", "tambahBarang",
+      "toru", "tor", "ambilBelakang", "keluarinBarang",
+      "kiru", "kir", "potongSini", "cuilTeks",
+      "ookiku", "ook", "gedeinHuruf", "besarinSemua",
+      "chiisaku", "chi", "kecilinHuruf", "kecilinSemua",
+      "randamu", "ran", "gachaBanh", "kocokAngka",
       "shikei", "shi", "matiinProgram", "udahKelarinAja",
       "retsu", "ret", "bikinBarisan", "budakhitam",
       "yomu", "yo", "bacainBerkas", "bukaBerkasLur",
@@ -1031,6 +1090,7 @@ export default function WibuScriptPlayground() {
             <option value="default">Preset: RPG Quest Isekai (Array &amp; Template)</option>
             <option value="patternMatchingDemo">Preset: Pattern Matching &amp; Destructuring (v1.8.0)</option>
             <option value="oopModulDemo">Preset: OOP (Sekte) &amp; Modul (v1.7.0)</option>
+            <option value="rongawiMemeDemo">Preset: Meme Rongawi (Ngawiverse Slang v1.8)</option>
             <option value="dialekDemo">Preset: 4 Dialek Mutlak</option>
             <option value="tryCatchDemo">Preset: Penanganan Galat (Try-Catch)</option>
             <option value="iterasiDanGacha">Preset: Iterasi Koleksi, Lambda &amp; Gacha</option>

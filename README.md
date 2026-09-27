@@ -124,7 +124,7 @@ Pustaka Standar mengikuti beberapa aturan:
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | Output | `kuchiMite(pesan)` | `km(pesan)` | `bacotAmba(pesan)` | `cawapresin(pesan)` | `Null` | Menampilkan nilai atau pesan ke terminal. |
 | Jeda | `shibaraku(ms)` | `siba(ms)` | `santuyDulu(ms)` | `nungguinLu(ms)` | `Null` | Menghentikan sementara eksekusi selama milidetik tertentu. |
-| Waktu | `imaJikan()` | `ima(ms)` | `jamBerapaBanh()` | `cekJamLur()` | `String` | Mengambil waktu sistem saat program dijalankan. |
+| Waktu | `imaJikan()` | `ima()` | `jamBerapaBanh()` | `cekJamLur()` | `String` | Mengambil waktu sistem saat program dijalankan. |
 | Panjang | `nagasa(nilai)` | `naga(nilai)` | `seginiDoang(nilai)` | `panjangberurat(nilai)` | `Number` | Menghitung panjang teks atau jumlah elemen koleksi. |
 | Konversi Angka | `suji(teks)` | `suj(teks)` | `jadiAngkaBanh(teks)` | `ubahJadiDuit(teks)` | `Number` | Mengubah teks numerik menjadi angka. |
 | Jenis Nilai | `shurui(nilai)` | `shu(nilai)` | `iniApaan(nilai)` | `bendaApaanLur(nilai)` | `String` | Mengambil jenis nilai runtime. |
@@ -225,7 +225,7 @@ cawapresin ─────┘
 nagasa ─────────┐
 naga ───────────┤
 seginiDoang ────┼──→ LENGTH_RUNTIME
-itungPanjangLur ┘
+panjangberurat ─┘
 ```
 
 Dengan pendekatan tersebut, perubahan pada implementasi internal cukup dilakukan satu kali. Misalnya algoritma `nagasa()` diperbaiki, maka seluruh bentuk dialek otomatis mendapatkan perubahan yang sama:
@@ -234,7 +234,7 @@ Dengan pendekatan tersebut, perubahan pada implementasi internal cukup dilakukan
 Jepang Murni    → nagasa()
 Jepang Singkat  → naga()
 Wibu Absurd     → seginiDoang()
-Meme Rongawi    → itungPanjangLur()
+Meme Rongawi    → panjangberurat()
                          │
                          ▼
                   LENGTH_RUNTIME
@@ -352,10 +352,14 @@ npx wibu convert contoh.wibu --to rongawi -o rongawi.wibu
   - Object Destructuring: Deklarasi variabel `kore { nama, klan: marga } = {...}` dengan dukungan alias target variabel.
   - Operator Spread (`...`): Menggabungkan barisan literal `[1, ...arr, 2]` dan dekonstruksi karakter teks string `[... "Hai"]`.
 - **Sinkronisasi Ekosistem & Web Playground**:
+  - **Keamanan & Performa Playground**: Proteksi batas kedalaman rekursi (`maxCallStackDepth: 1000`), batas putaran loop (`maxLoopIterations: 50000`), timeout eksekusi (`timeoutMs: 10000`), tombol penghenti darurat interaktif (*Stop Button*), serta *output buffer streaming* anti-lag.
+  - **Pencegahan UI Freeze**: *Cooperative event loop yielding* pada runtime evaluator sehingga browser tidak akan pernah *freeze* pada loop berat.
+  - **Koreksi Tokenizer Monaco**: Penyelarasan penuh pewarnaan sintaksis dan penambahan preset demonstrasi Meme Rongawi.
+  - **Pemutakhiran Dialek Meme Rongawi**: Standardisasi 100% menggunakan kosakata otentik komunitas thugposting dan Ngawiverse (`pokmipokmi`, `bundarahma`, `thugshaker`, `alasdaun`, `sektejomok`, `ambatunat`, `ambatumbas`, `jalurhukum`, `lanangmas`, `umpansilang`, `begalbaju`, `ngawiland`, `persimpangan`, `kenaben`, `yappingtolol`, `panjangberurat`, `weeklypass`).
   - Pembaruan Dialect Auto-Converter untuk kata kunci `shougo`, `baai`, dan `hyoujun`.
   - JavaScript Transpiler diperbarui mendukung ES6 Destructuring dan percabangan `switch`.
   - TextMate Grammar VS Code dan Monaco Editor Tokenizer disinkronkan.
-  - Penambahan kartu panduan cepat serta preset demonstrasi v1.8.0 pada antarmuka Web Playground.
+  - Penambahan berkas demonstrasi [examples/rongawi_meme.wibu](file:///Users/macbookpro/Web/wibuscript/examples/rongawi_meme.wibu).
 
 ### v1.7.0 (Upgrade Phase 2: OOP & Module System)
 - **Pemrograman Berorientasi Objek (OOP)**:

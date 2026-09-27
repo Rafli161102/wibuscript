@@ -959,6 +959,10 @@ export class Parser {
       member = this.parseCallExpression(member);
       // Jika setelah pemanggilan terdapat akses anggota berantai: fn().prop atau fn()[indeks]
       while (this.at().type === TokenType.Dot || this.at().type === TokenType.OpenBracket) {
+        const prev = this.tokens[this.cursor - 1];
+        if (this.at().type === TokenType.OpenBracket && prev && this.at().line > prev.line) {
+          break;
+        }
         if (this.at().type === TokenType.Dot) {
           this.advance();
           const propToken = this.expect(
@@ -1001,6 +1005,10 @@ export class Parser {
     let object = this.parsePrimaryExpression();
 
     while (this.at().type === TokenType.Dot || this.at().type === TokenType.OpenBracket) {
+      const prev = this.tokens[this.cursor - 1];
+      if (this.at().type === TokenType.OpenBracket && prev && this.at().line > prev.line) {
+        break;
+      }
       if (this.at().type === TokenType.Dot) {
         this.advance(); // Konsumsi '.'
         const propertyToken = this.expect(
