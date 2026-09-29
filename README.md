@@ -17,7 +17,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![Vitest](https://img.shields.io/badge/Vitest-Passing%20107%2F107-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v2.0.1-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.1.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
@@ -225,6 +225,12 @@ wibu build skrip_kamu.wibu -o output.js
 
 # Mengonversi sintaks antar-dialek secara otomatis
 wibu convert skrip_kamu.wibu --to rongawi -o hasil_rongawi.wibu
+
+# Memasang pustaka pihak ketiga via Wibu Package Manager
+wibu add matematika-wibu
+
+# Menjalankan Language Server Protocol (LSP) mandiri
+wibu lsp
 ```
 
 <div style="clear: both;"></div>
@@ -232,6 +238,11 @@ wibu convert skrip_kamu.wibu --to rongawi -o hasil_rongawi.wibu
 ---
 
 ## Log Pembaruan
+
+### v2.1.0
+- Implementasi Wibu Package Manager (src/pm.ts) untuk instalasi paket via perintah 'wibu add' dan resolusi modul 'npm:nama-paket'.
+- Implementasi Language Server Protocol mandiri (src/lsp.ts) berbasis JSON-RPC melalui I/O standar untuk diagnostik real-time dan penyelesaian otomatis 4 dialek.
+- Penambahan argumen CLI 'wibu add <paket>' dan 'wibu lsp'.
 
 ### v2.0.1
 - Pembaruan aset animasi GIF dokumentasi menggunakan penyimpanan lokal persisten di folder assets/images/ dan tautan raw GitHub resmi untuk keandalan tampilan di GitHub dan web npmjs.com.

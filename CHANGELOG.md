@@ -6,6 +6,24 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan me
 
 ---
 
+## [v2.1.0] - 2026-09-29
+
+### Added
+- **Wibu Package Manager (`src/pm.ts`)**:
+  - Modul mandiri untuk manajemen dependensi pihak ketiga dan resolusi modul eksternal.
+  - Implementasi fungsi `installPackage(packageName)` berbasis `child_process.execSync` untuk instalasi otomatis pustaka npm ke direktori `node_modules/`.
+  - Sistem resolusi modul cerdas untuk sintaks impor eksternal `toriyoseru "npm:nama-paket"` yang mencari berkas `.wibu` di dalam direktori `node_modules/nama-paket/` (meliputi inspeksi `package.json`, `index.wibu`, `main.wibu`, dan subpath modul).
+- **Wibu Language Server Protocol (`src/lsp.ts`)**:
+  - Server mandiri berbasis standar JSON-RPC melalui antarmuka Standard I/O (stdin/stdout) tanpa dependensi eksternal.
+  - Pemantau dokumen real-time (`textDocument/didOpen`, `textDocument/didChange`, `textDocument/didClose`).
+  - Integrasi diagnostik galat sintaks langsung dengan Lexer dan Parser WibuScript yang menghasilkan array Diagnostic standar LSP untuk menampilkan garis bawah merah di editor teks seperti VS Code.
+  - Penyedia penyelesaian otomatis (`textDocument/completion`) yang memuat seluruh 341 kata kunci dari 4 Dialek Mutlak (Jepang Murni, Jepang Singkat, Wibu Absurd, Meme Rongawi) beserta dokumentasi terintegrasi.
+- **Ekspansi Antarmuka Baris Perintah CLI (`src/cli.ts`)**:
+  - Perintah baru `wibu add <paket>` untuk memasang paket eksternal langsung dari terminal.
+  - Perintah baru `wibu lsp` untuk mengaktifkan Language Server di latar belakang untuk koneksi ekstensi editor.
+
+---
+
 ## [v2.0.1] - 2026-09-29
 
 ### Fixed
