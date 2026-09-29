@@ -29,6 +29,7 @@ export type NodeType =
   | "AssignmentExpression"
   | "BinaryExpression"
   | "UnaryExpression"
+  | "AwaitExpression"
   | "ArrowFunctionExpression"
   | "CallExpression"
   | "NewExpression"
@@ -265,6 +266,14 @@ export interface UnaryExpression extends Expression {
   kind: "UnaryExpression";
   operator: string;
   operand: Expression;
+}
+
+/**
+ * Operasi await asinkronus: matte / mat / matteNe / admindatang <ekspresi>
+ */
+export interface AwaitExpression extends Expression {
+  kind: "AwaitExpression";
+  argument: Expression;
 }
 
 /**

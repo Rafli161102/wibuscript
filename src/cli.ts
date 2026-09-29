@@ -8,12 +8,19 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { runWibuScript, transpileToJS, convertDialect, type Dialect } from "./index";
+import {
+  runWibuScript,
+  transpileToJS,
+  convertDialect,
+  type Dialect,
+  transpileDOM,
+  generateBrowserHTML,
+} from "./index";
 import { startREPL } from "./repl";
 import { installPackage } from "./pm";
 import { startLanguageServer } from "./lsp";
 
-const WIBU_VERSION = "2.6.2";
+const WIBU_VERSION = "2.7.0";
 
 function printUsage(): void {
   console.log(`WibuScript CLI v${WIBU_VERSION}`);
@@ -22,8 +29,9 @@ function printUsage(): void {
   console.log("  wibu                          Memulai REPL interaktif");
   console.log("  wibu repl                     Memulai REPL interaktif");
   console.log("  wibu run <berkas.wibu>        Menjalankan berkas WibuScript");
+  console.log("  wibu web <berkas.wibu>        Kompilasi web browser/DOM (opsi: -o <output.html>, --title <judul>)");
   console.log("  wibu <berkas.wibu>            Menjalankan berkas WibuScript (pintasan)");
-  console.log("  wibu build <berkas.wibu>      Kompilasi berkas ke JavaScript (opsi: -o <output.js>)");
+  console.log("  wibu build <berkas.wibu>      Kompilasi berkas ke JavaScript (opsi: -o <output.js>, --dom)");
   console.log("  wibu convert <berkas> --to <dialek>  Konversi antar-dialek (murni, singkat, wibu, rongawi)");
   console.log("  wibu add <paket>              Mengunduh pustaka pihak ketiga ke node_modules");
   console.log("  wibu lsp                      Menjalankan Wibu Language Server Protocol (LSP)");
@@ -70,10 +78,12 @@ async function executeFile(filePath: string): Promise<void> {
 }
 
 function handleBuild(args: string[]): void {
-  const targetFile = args[0];
+  const isDom = args.includes("--dom");
+  const filteredArgs = args.filter((a) => a !== "--dom");
+  const targetFile = filteredArgs[0];
   if (!targetFile) {
     console.error("[Error] Berkas target .wibu diperlukan untuk 'build'.");
-    console.error("Penggunaan: wibu build <berkas.wibu> [-o output.js]");
+    console.error("Penggunaan: wibu build <berkas.wibu> [-o output.js] [--dom]");
     process.exit(1);
   }
 
@@ -84,6 +94,48 @@ function handleBuild(args: string[]): void {
   }
 
   let outputPath = resolvedPath.replace(/\.wibu$/i, ".js");
+  const oIdx = filteredArgs.indexOf("-o");
+  if (oIdx !== -1 && filteredArgs[oIdx + 1]) {
+    outputPath = path.resolve(process.cwd(), filteredArgs[oIdx + 1]!);
+  }
+
+  try {
+    const sourceCode = fs.readFileSync(resolvedPath, "utf-8");
+    const jsCode = isDom
+      ? transpileDOM(sourceCode, { wrapInIIFE: true, waitForDOM: true })
+      : transpileToJS(sourceCode);
+    fs.writeFileSync(outputPath, jsCode, "utf-8");
+    console.log(
+      `[Build Sukses] Sukses mengompilasi '${targetFile}' ke '${path.basename(outputPath)}'${isDom ? " (DOM Mode)" : ""}`
+    );
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[Build Error] ${msg}`);
+    process.exit(1);
+  }
+}
+
+function handleWeb(args: string[]): void {
+  const targetFile = args[0];
+  if (!targetFile || targetFile.startsWith("-")) {
+    console.error("[Error] Berkas target .wibu diperlukan untuk 'web'.");
+    console.error("Penggunaan: wibu web <berkas.wibu> [-o output.html] [--title <judul>]");
+    process.exit(1);
+  }
+
+  const resolvedPath = path.resolve(process.cwd(), targetFile);
+  if (!fs.existsSync(resolvedPath)) {
+    console.error(`[Error] Berkas tidak ditemukan: ${resolvedPath}`);
+    process.exit(1);
+  }
+
+  let title = "WibuScript Frontend Application";
+  const titleIdx = args.indexOf("--title");
+  if (titleIdx !== -1 && args[titleIdx + 1]) {
+    title = args[titleIdx + 1]!;
+  }
+
+  let outputPath = resolvedPath.replace(/\.wibu$/i, ".html");
   const oIdx = args.indexOf("-o");
   if (oIdx !== -1 && args[oIdx + 1]) {
     outputPath = path.resolve(process.cwd(), args[oIdx + 1]!);
@@ -91,12 +143,17 @@ function handleBuild(args: string[]): void {
 
   try {
     const sourceCode = fs.readFileSync(resolvedPath, "utf-8");
-    const jsCode = transpileToJS(sourceCode);
-    fs.writeFileSync(outputPath, jsCode, "utf-8");
-    console.log(`[Build Sukses] Sukses mengompilasi '${targetFile}' ke '${path.basename(outputPath)}'`);
+    const isJsTarget = outputPath.endsWith(".js");
+    const content = isJsTarget
+      ? transpileDOM(sourceCode, { wrapInIIFE: true, waitForDOM: true })
+      : generateBrowserHTML(sourceCode, { title });
+    fs.writeFileSync(outputPath, content, "utf-8");
+    console.log(
+      `[Web Sukses] Berkas web frontend berhasil dihasilkan di '${path.basename(outputPath)}'`
+    );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`[Build Error] ${msg}`);
+    console.error(`[Web Error] ${msg}`);
     process.exit(1);
   }
 }
@@ -186,6 +243,10 @@ async function main(): Promise<void> {
       await executeFile(targetFile);
       return;
     }
+
+    case "web":
+      handleWeb(args.slice(1));
+      return;
 
     case "build":
       handleBuild(args.slice(1));

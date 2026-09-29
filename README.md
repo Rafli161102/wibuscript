@@ -148,6 +148,9 @@ Perbedaan antardialek hanya ada pada penamaan fungsi, sementara hasil eksekusiny
 | **Angka Acak** | `randamu(min, max)` | `ran(min, max)` | `unmeiGacha(min, max)` | `rudalmentah(min, max)` | `Number` |
 | **Buat Barisan** | `retsu(...)` | `ret(...)` | `nakamaTachi(...)` | `budakhitam(...)` | `Array` |
 | **Tambah ke Array** | `ireta(arr, item)` | `ire(arr, item)` | `haireNe(arr, item)` | `priaotot(arr, item)` | `Array` |
+| **Lipat Barisan (REDUCE)** | `tatamu(arr, fn, init)` | `tat(arr, fn, init)` | `lipatBanh(arr, fn, init)` | `gulungJawa(arr, fn, init)` | `Any` |
+| **Nilai Minimum (MIN)** | `saishou(...)` | `sai(...)` | `palingKecilBanh(...)` | `kurapika(...)` | `Number` |
+| **Nilai Maksimum (MAX)** | `saidai(...)` | `dai(...)` | `palingGedeBanh(...)` | `megatron(...)` | `Number` |
 
 > [!NOTE]
 > Fungsi lain yang tersedia mencakup pengurai JSON, pemotongan teks, perhitungan akar, pembulatan angka, dan pembacaan berkas lokal pada mode CLI.
@@ -248,8 +251,11 @@ wibu
 # Menjalankan berkas kode WibuScript
 wibu run skrip_kamu.wibu
 
-# Mengompilasi kode WibuScript ke JavaScript modern
-wibu build skrip_kamu.wibu -o output.js
+# Mengompilasi kode frontend WibuScript langsung ke berkas HTML
+wibu web skrip_kamu.wibu -o index.html --title "Aplikasi Web Wibu"
+
+# Mengompilasi kode WibuScript ke JavaScript modern (opsi --dom untuk peramban)
+wibu build skrip_kamu.wibu -o output.js --dom
 
 # Mengonversi sintaks antar-dialek secara otomatis
 wibu convert skrip_kamu.wibu --to rongawi -o hasil_rongawi.wibu
@@ -266,6 +272,13 @@ wibu lsp
 ---
 
 ## Log Pembaruan
+
+### v2.7.0
+- **Operasi Asinkronus Mutlak (AwaitExpression)**: Implementasi parsing dan evaluasi `matte` (Murni), `mat` (Singkat), `matteNe` (Wibu), dan `admindatang` (Rongawi) untuk eksekusi asinkronus dan transpilasi ke `await` JavaScript ES2022+.
+- **Fungsi Tingkat Tinggi `tatamu` (Reduce)**: Penambahan operasi pelipatan barisan pada seluruh 4 Dialek Mutlak (`tatamu`, `tat`, `lipatBanh`, `gulungJawa`) dengan transpilasi ke `__tatamu`.
+- **Pustaka Matematika Ekstensi**: Penambahan fungsi pencarian nilai minimum `saishou`/`sai`/`palingKecilBanh`/`kurapika` dan nilai maksimum `saidai`/`dai`/`palingGedeBanh`/`megatron` dengan dukungan argumen angka ganda maupun barisan.
+- **Kompilasi Web & DOM Terpadu**: Integrasi perintah CLI `wibu web <berkas.wibu>` untuk pembuatan dokumen web HTML siap pakai dan opsi `--dom` pada `wibu build`.
+- **Suite Pengujian Vitest Diperluas**: 250 skenario uji otomatis dari 14 berkas uji lulus 100% tanpa satupun kegagalan.
 
 ### v2.6.2
 - **Pendaftaran GitHub Linguist & Pewarnaan Sintaks Repositori**: Penambahan `.gitattributes` di root repositori untuk memetakan seluruh berkas `*.wibu` ke penyorot sintaks GitHub Linguist (`linguist-language=JavaScript`, `linguist-detectable=true`), sehingga seluruh berkas WibuScript tampil dengan pewarnaan sintaks yang memukau dan nyaman dipandang pada GitHub UI. Disertai manifes spesifikasi bahasa `.github/linguist/wibuscript.yml`.

@@ -135,6 +135,8 @@ export function transpile(wibuCode: string, options: WibuDomTranspileOptions = {
   output = output.replace(/\bmenyalaAbkuh\b/g, "true");
   output = output.replace(/\bmaafLancang\b/g, "false");
   output = output.replace(/\bteriakAmba\b/g, "console.log");
+  output = output.replace(/\b(matte|mat|matteNe|admindatang)\b/g, "await");
+  output = output.replace(/\b(hikouki|hik|pesawatWibu|pesawat)\b/g, "async");
 
   // --------------------------------------------------------------------------
   // TAHAP 4: RESTORASI LITERAL STRING & KOMENTAR

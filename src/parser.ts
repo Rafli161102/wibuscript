@@ -34,6 +34,7 @@ import type {
   AssignmentExpression,
   BinaryExpression,
   UnaryExpression,
+  AwaitExpression,
   ArrowFunctionExpression,
   CallExpression,
   NewExpression,
@@ -971,6 +972,15 @@ export class Parser {
    * Operator uner: !<ekspresi> atau -<angka>
    */
   private parseUnaryExpression(): Expression {
+    if (this.at().type === TokenType.Await) {
+      this.advance(); // Konsumsi 'matte' / 'mat' / 'matteNe' / 'admindatang'
+      const argument = this.parseUnaryExpression();
+      return {
+        kind: "AwaitExpression",
+        argument,
+      } as AwaitExpression;
+    }
+
     if (this.at().type === TokenType.Not || this.at().type === TokenType.Minus) {
       const operator = this.advance().value;
       const operand = this.parseUnaryExpression();

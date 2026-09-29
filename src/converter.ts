@@ -87,6 +87,9 @@ export interface DialectMapping {
   shippai: [string, string, string, string];
   aru: [string, string, string, string];
   nai: [string, string, string, string];
+  tatamu: [string, string, string, string];
+  saishou: [string, string, string, string];
+  saidai: [string, string, string, string];
 }
 
 // Tabel Indeks: 0 = Murni, 1 = Singkat, 2 = Wibu, 3 = Rongawi
@@ -151,6 +154,9 @@ export const DIALECT_TABLE: Record<string, [string, string, string, string]> = {
   utsusu: ["utsusu", "utu", "henshinSuru", "predikbola"],
   erabu: ["erabu", "era", "senbatsuNe", "morebullets"],
   mitsukeru: ["mitsukeru", "mitu", "mitsuketaYo", "fesnuker"],
+  tatamu: ["tatamu", "tat", "lipatBanh", "gulungJawa"],
+  saishou: ["saishou", "sai", "palingKecilBanh", "kurapika"],
+  saidai: ["saidai", "dai", "palingGedeBanh", "megatron"],
   ruuto: ["ruuto", "ru", "heihoukon", "robogor"],
   zettaichi: ["zettaichi", "zet", "zettaiChi", "ironiman"],
   kiriSute: ["kiriSute", "ks", "shitaKiri", "hutanselatan"],

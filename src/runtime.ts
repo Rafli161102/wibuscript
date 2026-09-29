@@ -28,6 +28,7 @@ import type {
   AssignmentExpression,
   BinaryExpression,
   UnaryExpression,
+  AwaitExpression,
   ArrowFunctionExpression,
   CallExpression,
   Identifier,
@@ -1360,6 +1361,42 @@ export function createGlobalEnvironment(
   env.declareVar("mitsuketaYo", findFn);
   env.declareVar("fesnuker", findFn);
 
+  // Reduce: tatamu (Murni) / tat (Singkat) / lipatBanh (Wibu) / gulungJawa (Rongawi)
+  const reduceFn = MK_NATIVE_FN(async (args: RuntimeValue[], scopeEnv: Environment): Promise<RuntimeValue> => {
+    const arrArg = args[0];
+    const fnArg = args[1];
+    const initialVal = args[2];
+    if (!arrArg || arrArg.type !== "array") {
+      throw new Error("[Runtime Error] Argumen pertama tatamu harus berupa barisan (array).");
+    }
+    if (!fnArg || (fnArg.type !== "function" && fnArg.type !== "native-fn")) {
+      throw new Error("[Runtime Error] Argumen kedua tatamu harus berupa fungsi callback.");
+    }
+    const arr = arrArg as ArrayValue;
+    if (arr.elements.length === 0 && initialVal === undefined) {
+      throw new Error("[Runtime Error] Tatamu barisan kosong tanpa nilai awal tidak diperbolehkan.");
+    }
+    let accumulator: RuntimeValue;
+    let startIndex = 0;
+    if (initialVal !== undefined) {
+      accumulator = initialVal;
+    } else {
+      accumulator = arr.elements[0] as RuntimeValue;
+      startIndex = 1;
+    }
+    for (let i = startIndex; i < arr.elements.length; i++) {
+      const el = arr.elements[i] as RuntimeValue;
+      accumulator = await invokeFunction(fnArg, [accumulator, el, MK_NUMBER(i), arr], scopeEnv);
+    }
+    return accumulator;
+  });
+  env.declareVar("tatamu", reduceFn);
+  env.declareVar("tat", reduceFn);
+  env.declareVar("lipatBanh", reduceFn);
+  env.declareVar("tatamuNe", reduceFn);
+  env.declareVar("gulungJawa", reduceFn);
+  env.declareVar("lipatLur", reduceFn);
+
   // 24. Matematika Tingkat Lanjut:
   // Akar Kuadrat (SQRT): ruuto (Murni) / ru (Singkat) / akarPangkat (Wibu) / robogor (Rongawi)
   const sqrtFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
@@ -1420,6 +1457,74 @@ export function createGlobalEnvironment(
   env.declareVar("ueKiri", ceilFn);
   env.declareVar("menaracukur", ceilFn);
   env.declareVar("atasLur", ceilFn); // alias lama (deprecated)
+
+  // Nilai Minimum (MIN): saishou (Murni) / sai (Singkat) / palingKecilBanh (Wibu) / kurapika (Rongawi)
+  const minFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    if (args.length === 0) {
+      throw new Error("[Runtime Error] Argumen fungsi saishou tidak boleh kosong.");
+    }
+    const nums: number[] = [];
+    if (args[0] && args[0].type === "array") {
+      const arr = args[0] as ArrayValue;
+      if (arr.elements.length === 0) {
+        throw new Error("[Runtime Error] Barisan angka pada saishou tidak boleh kosong.");
+      }
+      for (const el of arr.elements) {
+        if (!el || el.type !== "number") {
+          throw new Error("[Runtime Error] Seluruh elemen barisan saishou harus berupa angka.");
+        }
+        nums.push((el as NumberValue).value);
+      }
+    } else {
+      for (const arg of args) {
+        if (!arg || arg.type !== "number") {
+          throw new Error("[Runtime Error] Seluruh argumen saishou harus berupa angka.");
+        }
+        nums.push((arg as NumberValue).value);
+      }
+    }
+    return MK_NUMBER(Math.min(...nums));
+  });
+  env.declareVar("saishou", minFn);
+  env.declareVar("sai", minFn);
+  env.declareVar("palingKecilBanh", minFn);
+  env.declareVar("saishouChi", minFn);
+  env.declareVar("kurapika", minFn);
+  env.declareVar("palingKecilLur", minFn);
+
+  // Nilai Maksimum (MAX): saidai (Murni) / dai (Singkat) / palingGedeBanh (Wibu) / megatron (Rongawi)
+  const maxFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    if (args.length === 0) {
+      throw new Error("[Runtime Error] Argumen fungsi saidai tidak boleh kosong.");
+    }
+    const nums: number[] = [];
+    if (args[0] && args[0].type === "array") {
+      const arr = args[0] as ArrayValue;
+      if (arr.elements.length === 0) {
+        throw new Error("[Runtime Error] Barisan angka pada saidai tidak boleh kosong.");
+      }
+      for (const el of arr.elements) {
+        if (!el || el.type !== "number") {
+          throw new Error("[Runtime Error] Seluruh elemen barisan saidai harus berupa angka.");
+        }
+        nums.push((el as NumberValue).value);
+      }
+    } else {
+      for (const arg of args) {
+        if (!arg || arg.type !== "number") {
+          throw new Error("[Runtime Error] Seluruh argumen saidai harus berupa angka.");
+        }
+        nums.push((arg as NumberValue).value);
+      }
+    }
+    return MK_NUMBER(Math.max(...nums));
+  });
+  env.declareVar("saidai", maxFn);
+  env.declareVar("dai", maxFn);
+  env.declareVar("palingGedeBanh", maxFn);
+  env.declareVar("saidaiChi", maxFn);
+  env.declareVar("megatron", maxFn);
+  env.declareVar("palingGedeLur", maxFn);
 
   // 25. Manipulasi Teks & String (String Utilities):
   // Pecah String: bunri (Murni) / bu (Singkat) / pecahKata (Wibu) / bedahno (Rongawi)
@@ -1935,6 +2040,9 @@ export async function evaluate(
 
     case "UnaryExpression":
       return await evalUnaryExpression(astNode as UnaryExpression, env);
+
+    case "AwaitExpression":
+      return await evalAwaitExpression(astNode as AwaitExpression, env);
 
     case "ArrowFunctionExpression":
       return evalArrowFunctionExpression(astNode as ArrowFunctionExpression, env);
@@ -2453,6 +2561,25 @@ async function evalUnaryExpression(
   }
 
   throw new Error(`[Runtime Error] Operator uner '${node.operator}' tidak didukung.`);
+}
+
+async function evalAwaitExpression(
+  node: AwaitExpression,
+  env: Environment
+): Promise<RuntimeValue> {
+  const evaluated = unwrapSignal(await evaluate(node.argument, env));
+  if (evaluated && typeof (evaluated as any).then === "function") {
+    const res = await (evaluated as any);
+    return jsValueToRuntimeValue(res);
+  }
+  if (evaluated && evaluated.type === "object" && (evaluated as any).rawJsObject) {
+    const raw = (evaluated as any).rawJsObject;
+    if (raw && typeof raw.then === "function") {
+      const res = await raw;
+      return jsValueToRuntimeValue(res);
+    }
+  }
+  return evaluated;
 }
 
 function evalArrowFunctionExpression(

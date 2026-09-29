@@ -111,7 +111,7 @@ jobs:
           RELEASE_EXISTS: ${{ steps.check_release.outputs.release_exists }}
         run: |
           ASSET_FILE=$(ls wibuscript-*.tgz 2>/dev/null | head -n 1 || true)
-          TITLE="v${VERSION} - Compiler Pipeline ES2022, Sandbox Runner, Dialect Parity"
+          TITLE="v${VERSION} - WibuScript Official Release"
 
           # Periksa ulang secara real-time apakah rilis sudah ada (mencegah tabrakan konkurensi)
           if gh release view "$TAG" >/dev/null 2>&1 || [ "$RELEASE_EXISTS" = "true" ]; then

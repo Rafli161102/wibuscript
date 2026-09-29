@@ -23,6 +23,7 @@ import type {
   AssignmentExpression,
   BinaryExpression,
   UnaryExpression,
+  AwaitExpression,
   ArrowFunctionExpression,
   CallExpression,
   Identifier,
@@ -163,6 +164,27 @@ const STDLIB_MAP: Record<string, string> = {
   unmeiGacha: "Math.random",
   rudalmentah: "Math.random",
 
+  saishou: "__saishou",
+  sai: "__saishou",
+  saishouChi: "__saishou",
+  palingKecilBanh: "__saishou",
+  kurapika: "__saishou",
+  palingKecilLur: "__saishou",
+
+  saidai: "__saidai",
+  dai: "__saidai",
+  saidaiChi: "__saidai",
+  palingGedeBanh: "__saidai",
+  megatron: "__saidai",
+  palingGedeLur: "__saidai",
+
+  tatamu: "__tatamu",
+  tat: "__tatamu",
+  lipatBanh: "__tatamu",
+  tatamuNe: "__tatamu",
+  gulungJawa: "__tatamu",
+  lipatLur: "__tatamu",
+
   // Penanganan Format JSON
   kanjiNi: "JSON.parse",
   kn: "JSON.parse",
@@ -264,6 +286,9 @@ export class Transpiler {
       "const __utsusu = (arr, fn) => (Array.isArray(arr) ? arr.map(fn) : []);",
       "const __erabu = (arr, fn) => (Array.isArray(arr) ? arr.filter(fn) : []);",
       "const __mitsukeru = (arr, fn) => (Array.isArray(arr) ? (arr.find(fn) ?? null) : null);",
+      "const __tatamu = (arr, fn, init) => (Array.isArray(arr) ? (init !== undefined ? arr.reduce(fn, init) : arr.reduce(fn)) : init);",
+      "const __saishou = (...args) => { const flat = args.length === 1 && Array.isArray(args[0]) ? args[0] : args; return Math.min(...flat); };",
+      "const __saidai = (...args) => { const flat = args.length === 1 && Array.isArray(args[0]) ? args[0] : args; return Math.max(...flat); };",
       "const __bunri = (str, sep) => String(str ?? '').split(sep ?? '');",
       "const __tsunagu = (arr, sep) => (Array.isArray(arr) ? arr.join(sep ?? '') : '');",
       "const __okikae = (str, from, to) => String(str ?? '').split(from).join(to);",
@@ -851,6 +876,11 @@ export class Transpiler {
         return `(${un.operator}${operand})`;
       }
 
+      case "AwaitExpression": {
+        const awaitExpr = expr as AwaitExpression;
+        return `(await ${this.transpileExpression(awaitExpr.argument)})`;
+      }
+
       case "ArrowFunctionExpression": {
         const arrow = expr as ArrowFunctionExpression;
         const params = arrow.parameters.join(", ");
@@ -909,6 +939,17 @@ export class Transpiler {
           const arr = this.transpileExpression(call.args[0]!);
           const fn = this.transpileExpression(call.args[1]!);
           return `__mitsukeru(${arr}, ${fn})`;
+        }
+
+        if (
+          ["tatamu", "tat", "lipatBanh", "tatamuNe", "gulungJawa", "lipatLur"].includes(
+            calleeName
+          )
+        ) {
+          const arr = this.transpileExpression(call.args[0]!);
+          const fn = this.transpileExpression(call.args[1]!);
+          const init = call.args[2] ? `, ${this.transpileExpression(call.args[2])}` : "";
+          return `__tatamu(${arr}, ${fn}${init})`;
         }
 
         if (

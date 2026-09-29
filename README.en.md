@@ -157,6 +157,9 @@ WibuScript provides built-in utilities to facilitate standard data operations wi
 | **Random Integer** | `randamu(min, max)` | `ran(min, max)` | `unmeiGacha(min, max)` | `rudalmentah(min, max)` | `Number` |
 | **Create Array** | `retsu(...)` | `ret(...)` | `nakamaTachi(...)` | `budakhitam(...)` | `Array` |
 | **Append Array** | `ireta(arr, item)` | `ire(arr, item)` | `haireNe(arr, item)` | `priaotot(arr, item)` | `Array` |
+| **Fold Array (REDUCE)** | `tatamu(arr, fn, init)` | `tat(arr, fn, init)` | `lipatBanh(arr, fn, init)` | `gulungJawa(arr, fn, init)` | `Any` |
+| **Minimum Value (MIN)** | `saishou(...)` | `sai(...)` | `palingKecilBanh(...)` | `kurapika(...)` | `Number` |
+| **Maximum Value (MAX)** | `saidai(...)` | `dai(...)` | `palingGedeBanh(...)` | `megatron(...)` | `Number` |
 
 ### Modern Functional Types: Result & Option
 
@@ -279,8 +282,11 @@ wibu
 # Execute a WibuScript script file
 wibu run your_script.wibu
 
-# Compile WibuScript code to modern JavaScript (ES2022+)
-wibu build your_script.wibu -o output.js
+# Compile WibuScript frontend code directly to standalone HTML
+wibu web your_script.wibu -o index.html --title "Wibu Web App"
+
+# Compile WibuScript code to modern JavaScript (ES2022+, optional --dom for browser)
+wibu build your_script.wibu -o output.js --dom
 
 # Convert syntax between dialects automatically
 wibu convert your_script.wibu --to rongawi -o output_rongawi.wibu
@@ -297,6 +303,13 @@ wibu lsp
 ---
 
 ## Changelog
+
+### v2.7.0
+- **Asynchronous Await Operations (AwaitExpression)**: Implemented full AST, Parser, Evaluator, and Transpiler support for `matte` (Pure Japanese), `mat` (Short Japanese), `matteNe` (Absurd Weeb), and `admindatang` (Meme Rongawi) compiling to native `await` in JavaScript ES2022+.
+- **Higher-Order Array Function `tatamu` (Reduce)**: Added array fold/reduction across all 4 Absolute Dialects (`tatamu`, `tat`, `lipatBanh`, `gulungJawa`) with automatic transpilation to `__tatamu`.
+- **Extended Math Utilities**: Added `saishou`/`sai`/`palingKecilBanh`/`kurapika` (min) and `saidai`/`dai`/`palingGedeBanh`/`megatron` (max) accepting multiple number arguments or arrays.
+- **Frontend Web & DOM Compilation**: Integrated `wibu web` command for generating complete browser-ready HTML documents and `--dom` flag for `wibu build`.
+- **Expanded Test Suite**: 250 automated tests across 14 test files passing with 100% success rate.
 
 ### v2.6.2
 - **GitHub Linguist Registration & Code Syntax Highlighting**: Configured `.gitattributes` to map all `*.wibu` files to GitHub Linguist syntax highlighter (`linguist-language=JavaScript`, `linguist-detectable=true`) for rich, readable code presentation on GitHub. Provided language specification manifest `.github/linguist/wibuscript.yml`.
