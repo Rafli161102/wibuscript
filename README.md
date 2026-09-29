@@ -17,11 +17,15 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![Vitest](https://img.shields.io/badge/Vitest-Passing%20179%2F179-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v2.5.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.6.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
   <b>Jepang Murni | Jepang Singkat | Wibu Absurd | Meme Rongawi</b>
+</p>
+
+<p align="center">
+  <b>Bahasa Indonesia</b> | <a href="README.en.md">English</a>
 </p>
 
 <p align="center">
@@ -262,6 +266,11 @@ wibu lsp
 ---
 
 ## Log Pembaruan
+
+### v2.6.0
+- **Dokumentasi Internasional (`README.en.md`)**: Penyediaan dokumentasi lengkap berbahasa Inggris yang mencakup seluruh konsep WibuScript, Sistem 4 Dialek Mutlak, tabel pemetaan kata kunci, pustaka standar, tipe fungsional modern (Result & Option), modul domain (web & server), serta panduan CLI dan instalasi.
+- **Navigasi Dwibahasa**: Penambahan penaut navigasi bahasa bolak-balik antara Bahasa Indonesia (`README.md`) dan Bahasa Inggris (`README.en.md`).
+- **Verifikasi Kualitas Mesin**: Menjaga 100% kelulusan seluruh 179 skenario pengujian unit otomatis pada Vitest dan keberhasilan kompilasi bundel produksi.
 
 ### v2.5.0
 - **Modul Domain Dasar Web (`wibuscript/web`)**: Implementasi wrapper tipis untuk pengambilan data HTTP via Fetch API dan manipulasi DOM isomorfik (DOM peramban asli atau Virtual DOM untuk Node.js/CLI/SSR) dengan kesetaraan 100% pada 4 Dialek Mutlak (`tsunagari`/`tarikData`/`sedotdata`, `yousoTsukuru`/`bikinElemen`/`cetakunsur`, dsb.).

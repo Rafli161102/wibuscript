@@ -4,6 +4,20 @@ Semua pembaruan penting dan catatan rilis untuk proyek **WibuScript** didokument
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan mematuhi [Semantic Versioning](https://semver.org/).
 
+## [v2.6.0] - 2026-09-29
+
+### Added
+- **Dokumentasi Internasional Lengkap (`README.en.md`)**:
+  - Seluruh dokumentasi proyek kini tersedia dalam versi bahasa Inggris (`README.en.md`) yang tersinkronisasi 100% dengan `README.md`.
+  - Mencakup penjelasan filosofi WibuScript, diagram arsitektur sistem, tabel referensi kata kunci 4 Dialek Mutlak, fungsi populer pustaka standar, tipe fungsional modern (`Hasil`/`Opsional`), modul domain dasar (`web` dan `server`), contoh program multi-dialek, serta panduan lengkap instalasi dan perintah CLI.
+- **Navigasi Dwibahasa Lintas Dokumen**:
+  - Penambahan tautan pengalih bahasa (language switcher) bolak-balik antara Bahasa Indonesia (`README.md`) dan Bahasa Inggris (`README.en.md`) pada bagian atas dokumen.
+- **Verifikasi Kualitas & Konsistensi Ekosistem**:
+  - Sinkronisasi penomoran versi `2.6.0` pada `package.json`, `src/cli.ts`, dan ekstensi editor `vscode-extension/package.json`.
+  - Verifikasi otomatis seluruh 179 skenario pengujian unit Vitest lulus 100% tanpa regresi.
+
+---
+
 ## [v2.5.0] - 2026-09-29
 
 ### Added
