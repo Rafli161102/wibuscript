@@ -16,8 +16,8 @@
 [![npm monthly downloads](https://img.shields.io/npm/dm/wibuscript.svg?style=for-the-badge&logo=npm&logoColor=white&color=007ACC&label=downloads%2Fbulan)](https://www.npmjs.com/package/wibuscript)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-Passing%2096%2F96-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v1.9.1-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Vitest](https://img.shields.io/badge/Vitest-Passing%20107%2F107-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.0.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
@@ -40,9 +40,9 @@
 
 ## Tentang WibuScript
 
-WibuScript adalah bahasa pemrograman esoterik yang dibuat di atas TypeScript dan berjalan lewat mesin Tree-Walking Interpreter. Konsep utamanya sederhana: menyediakan sintaks pemrograman yang unik lewat Sistem 4 Dialek Mutlak, mulai dari Romaji Jepang rapi sampai meme internet lokal.
+WibuScript adalah bahasa pemrograman esoterik yang dibuat di atas TypeScript dengan arsitektur v2.0 Compiler Pipeline (JS Target ES2022+) dan Tree-Walking Interpreter bawaan untuk REPL interaktif. Konsep utamanya sederhana: menyediakan sintaks pemrograman yang unik lewat Sistem 4 Dialek Mutlak, mulai dari Romaji Jepang rapi sampai meme internet lokal.
 
-Meskipun pembawaannya santai dan absurd, proyek ini dirancang dengan standar teknis yang serius. Mesin kompilasinya modular, aman dijalankan langsung di browser untuk Web Playground, dan dilengkapi CLI berbasis Node.js untuk eksekusi file script secara lokal.
+Meskipun pembawaannya santai dan absurd, proyek ini dirancang dengan standar teknis yang serius. Mesin kompilasinya modular, aman dijalankan langsung di browser untuk Web Playground dalam lingkungan Web Worker Sandbox terisolasi, dan dilengkapi CLI berbasis Node.js untuk eksekusi file script secara lokal.
 
 <img src="https://media.tenor.com/fA15L6yUks0AAAAi/anime-glasses.gif" width="140" align="right" alt="Analisis Teknis" />
 
@@ -53,22 +53,31 @@ Struktur direktori WibuScript memisahkan logika kompilasi inti dengan antarmuka 
 ```text
 wibuscript/
 |-- src/
-|   |-- ast.ts          # Struktur Abstract Syntax Tree (AST)
-|   |-- lexer.ts        # Scanner token dan resolusi 4 dialek
-|   |-- parser.ts       # Recursive Descent Parser ke bentuk AST
-|   |-- runtime.ts      # Tree-Walking Evaluator dan Pustaka Standar
-|   |-- index.ts        # Entry point browser-safe untuk Web Playground
-|   `-- cli.ts          # Eksekutor baris perintah Node.js
-|-- app/                # Web Playground berbasis Next.js App Router
-|-- contoh.wibu         # File demonstrasi kode
-`-- README.md           # Dokumentasi teknis proyek
+|   |-- ast.ts                  # Struktur Abstract Syntax Tree (AST)
+|   |-- lexer.ts                # Scanner token dan resolusi 4 dialek
+|   |-- parser.ts               # Recursive Descent Parser ke bentuk AST
+|   |-- transpiler.ts           # JS Transpiler (ES2022+) & Source Map v3
+|   |-- sandbox.ts              # Web Worker & Worker Threads Sandbox Runner
+|   |-- dialect-definitions.ts  # Single Source of Truth Dialect Grammar
+|   |-- runtime.ts              # Tree-Walking Evaluator dan Pustaka Standar
+|   |-- index.ts                # Entry point inti mesin WibuScript
+|   `-- cli.ts                  # Eksekutor baris perintah Node.js
+|-- scripts/
+|   `-- generate-grammars.ts    # Generator TextMate & Monarch Tokenizer
+|-- tests/
+|   `-- dialect_snapshot.test.ts # Suite pengujian snapshot parity 4 dialek
+|-- app/                        # Web Playground berbasis Next.js App Router
+|-- vscode-extension/           # Ekstensi resmi TextMate VS Code
+`-- README.md                   # Dokumentasi teknis proyek
 ```
 
 ### Komponen Utama
 - **Lexer**: Mengurai baris teks program menjadi token secara konsisten. Mendukung literal string, angka desimal, ekspresi logika, sampai pelacakan posisi baris dan kolom.
-- **Parser**: Membangun pohon sintaksis bertipe kuat menggunakan metode Recursive Descent Parsing dengan aturan prioritas operator matematika.
-- **Runtime**: Mengeksekusi simpul AST secara asinkronus menggunakan Environment bertingkat dengan penanganan loop dan sinyal kembali yang aman.
-- **Web Playground**: Editor interaktif berbasis Next.js dan Tailwind CSS yang mengeksekusi kode langsung di browser pengguna tanpa backend eksternal.
+- **Parser**: Membangun pohon sintaksis bertipe kuat menggunakan metode Recursive Descent Parsing yang murni independen dari target eksekusi.
+- **Transpiler (Jalur Utama v2.0)**: Mengompilasi seluruh simpul AST ke JavaScript modern (ES2022+) berkecepatan tinggi dengan pemetaan runtime pustaka standar dan Source Map v3 resmi.
+- **Sandbox Runner**: Lapisan proteksi terisolasi menggunakan Web Worker (browser) dan Worker Threads (Node.js) dengan batas waktu eksekusi (timeout 5000 ms), limit memori, dan keamanan *default-deny*.
+- **Runtime Interpreter**: Mengeksekusi simpul AST secara asinkronus untuk kebutuhan interaktif REPL dan debugging.
+- **Web Playground**: Editor interaktif berbasis Next.js dan Tailwind CSS yang mengeksekusi kode langsung di browser pengguna dalam sandbox Web Worker tanpa server eksternal.
 
 <div style="clear: both;"></div>
 
@@ -109,6 +118,14 @@ Keempat dialek ini dipetakan ke Token Type yang sama di dalam Lexer, jadi perila
 | **Objek Baru (NEW)** | `atarashii` | `ata` | `atarashiiNe` | `ambatumbas` | Membuat instance baru dari suatu kelas. |
 | **Pewarisan** | `keishou` | `kei` | `kouhaiDesu` | `jalurhukum` | Mewariskan metode dan properti dari kelas induk. |
 | **Instance (THIS)** | `jibun` | `ji` | `oreSama` | `lanangmas` | Merujuk pada instance aktif saat ini. |
+| **Ekspor (EXPORT)** | `koukai` | `kou` | `sebarJutsu` | `umpansilang` | Mengekspor simbol keluar modul. |
+| **Impor (IMPORT)** | `toriyoseru` | `tori` | `summonJutsu` | `begalbaju` | Mengimpor simbol dari modul lain. |
+| **Sumber Modul (FROM)** | `kara` | `kra` | `dari` | `ngawiland` | Jalur asal berkas impor. |
+| **Pencocokan Pola (MATCH)** | `shougo` | `sho` | `cocokkan` | `persimpangan` | Struktur switch/case eksklusif untuk pencocokan nilai. |
+| **Kasus Pola (CASE)** | `baai` | `baa` | `kaloPas` | `kenaben` | Cabang kondisi nilai yang dicocokkan. |
+| **Kasus Standar (DEFAULT)** | `hyoujun` | `hyo` | `sisaan` | `yappingtolol` | Cabang fallback jika tidak ada kasus yang cocok. |
+| **Iterasi Koleksi (FOR)** | `subete` | `sube` | `zenbuNe` | `thugshaker` | Perulangan untuk menjelajahi elemen barisan. |
+| **Partikel Koleksi (IN)** | `no` | `no` | `dari` | `alasdaun` | Kata penghubung elemen terhadap koleksi data. |
 
 ## Pustaka Standar
 
@@ -215,6 +232,13 @@ wibu convert skrip_kamu.wibu --to rongawi -o hasil_rongawi.wibu
 ---
 
 ## Log Pembaruan
+
+### v2.0.0
+- Transisi resmi ke Arsitektur Compiler Pipeline & JS Target ES2022+ sebagai jalur eksekusi utama.
+- Single Source of Truth Dialect Grammar (src/dialect-definitions.ts) untuk Monaco Editor dan VS Code TextMate.
+- Web Worker Sandbox Runner (src/sandbox.ts) isomorfik dengan timeout default 5000 ms, memory limit, dan default-deny security.
+- Transpiler JavaScript teroptimasi dengan dukungan penuh Source Map v3 (Base64 VLQ mapping).
+- Dialect Parity Snapshot Test Suite (tests/dialect_snapshot.test.ts) dengan verifikasi 100% AST identik dan output identik di seluruh 4 dialek (107/107 tes lulus).
 
 ### v1.9.1
 - Publikasi resmi WibuScript ke registry npm global publik.
