@@ -107,7 +107,7 @@ export function transpile(wibuCode: string, options: WibuDomTranspileOptions = {
   // TAHAP 4: RESTORASI LITERAL STRING & KOMENTAR
   // --------------------------------------------------------------------------
   output = output.replace(/__WIBU_LITERAL_(\d+)__/g, (_, index) => {
-    return literalsPool[Number(index)];
+    return literalsPool[Number(index)] ?? _;
   });
 
   // --------------------------------------------------------------------------
