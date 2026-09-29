@@ -38,6 +38,10 @@ for (const file of jsFiles) {
     }
   );
 
+  if (file === "cli.js" && !content.startsWith("#!/usr/bin/env node")) {
+    content = `#!/usr/bin/env node\n${content}`;
+  }
+
   if (content !== original) {
     fs.writeFileSync(filePath, content, "utf8");
     totalPatched++;
