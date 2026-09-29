@@ -33,7 +33,10 @@
     "core:build": "tsc -p tsconfig.build.json && node scripts/fix-esm-imports.cjs",
     "repl": "tsx src/cli.ts repl",
     "build:wibu": "tsx src/cli.ts build",
-    "convert": "tsx src/cli.ts convert"
+    "convert": "tsx src/cli.ts convert",
+    "submit:linguist": "bash scripts/submit-linguist.sh",
+    "submit:awesome-esolangs": "bash scripts/submit-awesome-esolangs.sh",
+    "submit:esolangs-wiki": "bash scripts/submit-esolangs-wiki.sh"
   },
   "files": [
     "dist",
