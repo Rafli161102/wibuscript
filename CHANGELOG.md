@@ -6,6 +6,29 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan me
 
 ---
 
+## [v2.2.0] - 2026-09-29
+
+### Added
+- **Interoperabilitas NPM / Foreign Function Interface (`src/runtime.ts`)**:
+  - Dukungan pemanggilan fungsi pustaka JavaScript npm asli secara dua arah (WibuScript to JS dan JS to WibuScript).
+  - Pembungkusan otomatis fungsi JavaScript menjadi nilai native WibuScript (`MK_NATIVE_FN`) sehingga dapat dipanggil dengan sintaks fungsi standar WibuScript.
+  - Resolusi properti modul berstruktur fungsi (seperti `lodash`) yang menyimpan fungsi utilitas pada objek callable.
+  - Dukungan impor paket npm lintas 4 Dialek Mutlak: `toriyoseru ... kara` (Jepang Murni), `tori ... kra` (Jepang Singkat), `summonJutsu ... dari` (Wibu Absurd), dan `begalbaju ... ngawiland` (Meme Rongawi).
+  - Dukungan wildcard import (`*`) dari pustaka npm ke dalam ruang lingkup variabel skrip pemanggil.
+- **Penyempurnaan Wibu Package Manager (`src/pm.ts`)**:
+  - Penambahan fungsi `normalizePackageName` untuk menangani format `npm:nama-paket`, scoped packages (`@scope/pkg`), dan whitespace secara konsisten.
+  - Resolusi paket mode ganda: mendeteksi apakah paket merupakan modul WibuScript murni (`.wibu`) atau pustaka JavaScript FFI (`.js`).
+  - Pemanggilan modul JS via `createRequire` dengan pelacakan hierarkis direktori `node_modules`.
+  - Penanganan galat instalasi informatif untuk kasus: nama paket tidak valid, paket tidak ditemukan di registry npm (404/E404), versi tidak kompatibel (ETARGET), dan kegagalan koneksi jaringan (ENOTFOUND/ETIMEDOUT).
+  - Penambahan anotasi komentar `turbopackIgnore` dan pemeriksaan lingkungan Node.js untuk kompatibilitas kompilasi bundler Turbopack Next.js.
+- **Transpiler ES2022 (`src/transpiler.ts`)**:
+  - Pembersihan otomatis prefiks `npm:` pada impor modul agar menghasilkan pernyataan `import` standar ES2022 (misalnya `import { chunk } from "lodash";`).
+- **Contoh & Pengujian**:
+  - Berkas contoh nyata `examples/interop_npm.wibu` yang mengimpor paket `lodash` dan menggunakan fungsi `chunk`, `capitalize`, `difference`, dan `compact`.
+  - Suite pengujian unit `tests/npm_interop.test.ts` (14 pengujian) yang memverifikasi manajemen paket, interop runtime 4 dialek, wildcard import, transpiler ES2022, dan penanganan galat.
+
+---
+
 ## [v2.1.0] - 2026-09-29
 
 ### Added

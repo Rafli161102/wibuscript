@@ -265,6 +265,14 @@ export function jsValueToRuntimeValue(val: unknown): RuntimeValue {
   if (typeof val === "boolean") return MK_BOOL(val);
   if (typeof val === "number") return MK_NUMBER(val);
   if (typeof val === "string") return MK_STRING(val);
+  if (typeof val === "function") {
+    const fn = val as (...args: unknown[]) => unknown;
+    return MK_NATIVE_FN((args: RuntimeValue[]) => {
+      const jsArgs = args.map(runtimeValueToJsValue);
+      const res = fn(...jsArgs);
+      return jsValueToRuntimeValue(res);
+    });
+  }
   if (Array.isArray(val)) {
     return MK_ARRAY(val.map(jsValueToRuntimeValue));
   }
@@ -296,6 +304,17 @@ export function runtimeValueToJsValue(val: RuntimeValue): unknown {
         obj[k] = runtimeValueToJsValue(v);
       }
       return obj;
+    }
+    case "native-fn":
+    case "function": {
+      return (...jsArgs: unknown[]) => {
+        const wibuArgs = jsArgs.map(jsValueToRuntimeValue);
+        if (val.type === "native-fn") {
+          const res = (val as NativeFnValue).call(wibuArgs, new Environment());
+          return runtimeValueToJsValue(res as RuntimeValue);
+        }
+        return formatRuntimeValue(val);
+      };
     }
     default:
       return formatRuntimeValue(val);
@@ -2612,15 +2631,106 @@ async function evalImportStatement(
     process.versions != null &&
     process.versions.node != null
   ) {
-    try {
-      const resolvedPath = path.isAbsolute(source)
-        ? source
-        : path.resolve(/*turbopackIgnore: true*/ process.cwd(), source);
-      if (fs.existsSync(resolvedPath)) {
-        moduleCode = fs.readFileSync(resolvedPath, "utf-8");
+    if (source.startsWith("npm:")) {
+      const { resolveNpmPackage, loadNpmJsModule } = await import("./pm");
+      const pkgInfo = resolveNpmPackage(source);
+
+      if (!pkgInfo) {
+        const cleanName = source.slice(4).trim();
+        throw new Error(
+          `[Runtime Error] Pustaka '${source}' tidak ditemukan di node_modules. Silakan pasang terlebih dahulu dengan: wibu add ${cleanName}`
+        );
       }
-    } catch {
-      // Abaikan error fs
+
+      if (pkgInfo.kind === "wibu") {
+        try {
+          moduleCode = fs.readFileSync(pkgInfo.entryPath, "utf-8");
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          throw new Error(
+            `[Runtime Error] Gagal membaca berkas modul WibuScript '${pkgInfo.entryPath}': ${msg}`
+          );
+        }
+      } else {
+        // Interop Pustaka JavaScript NPM (FFI)
+        let jsModule: any;
+        try {
+          jsModule = loadNpmJsModule(pkgInfo.packageName);
+        } catch (loadErr: unknown) {
+          const msg = loadErr instanceof Error ? loadErr.message : String(loadErr);
+          throw new Error(msg);
+        }
+
+        const isObjectLike = (v: any): boolean =>
+          (typeof v === "object" || typeof v === "function") && v !== null;
+
+        const resolvedTarget =
+          isObjectLike(jsModule) &&
+          jsModule.default &&
+          Object.keys(jsModule).length === 1
+            ? jsModule.default
+            : jsModule;
+
+        if (stmt.importedNames.includes("*")) {
+          const alias = pkgInfo.packageName.replace(/[^a-zA-Z0-9_]/g, "_");
+          try {
+            env.declareVar(alias, jsValueToRuntimeValue(resolvedTarget));
+          } catch {
+            env.assignVar(alias, jsValueToRuntimeValue(resolvedTarget));
+          }
+
+          if (isObjectLike(resolvedTarget)) {
+            for (const [key, val] of Object.entries(resolvedTarget)) {
+              const runtimeVal = jsValueToRuntimeValue(val);
+              try {
+                env.declareVar(key, runtimeVal);
+              } catch {
+                env.assignVar(key, runtimeVal);
+              }
+            }
+          }
+        } else {
+          for (const name of stmt.importedNames) {
+            let foundVal =
+              isObjectLike(resolvedTarget) && name in resolvedTarget
+                ? (resolvedTarget as any)[name]
+                : undefined;
+
+            if (foundVal === undefined && isObjectLike(jsModule) && name in jsModule) {
+              foundVal = (jsModule as any)[name];
+            }
+
+            if (foundVal === undefined) {
+              throw new Error(
+                `[Runtime Error] Simbol '${name}' tidak ditemukan pada pustaka npm '${source}'.`
+              );
+            }
+
+            const runtimeVal = jsValueToRuntimeValue(foundVal);
+            try {
+              env.declareVar(name, runtimeVal);
+            } catch {
+              env.assignVar(name, runtimeVal);
+            }
+          }
+        }
+
+        return MK_NULL();
+      }
+    } else {
+      try {
+        const directPath = path.isAbsolute(source)
+          ? source
+          : path.resolve(/*turbopackIgnore: true*/ process.cwd(), source);
+
+        if (fs.existsSync(directPath)) {
+          moduleCode = fs.readFileSync(directPath, "utf-8");
+        } else if (fs.existsSync(`${directPath}.wibu`)) {
+          moduleCode = fs.readFileSync(`${directPath}.wibu`, "utf-8");
+        }
+      } catch {
+        // Abaikan error fs
+      }
     }
   }
 

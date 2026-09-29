@@ -1,0 +1,38 @@
+// File: examples/interop_npm.wibu
+// ============================================================================
+// DEMO INTEROPERABILITAS NPM (FFI) WIBUSCRIPT
+// Mendemonstrasikan impor fungsi dari paket JavaScript npm asli (lodash)
+// dan menggunakannya secara langsung di dalam kode WibuScript.
+// ============================================================================
+
+mite("--- Memulai Uji Interop NPM WibuScript (lodash) ---");
+
+// 1. Mengimpor fungsi-fungsi dari pustaka npm:lodash
+toriyoseru { chunk, capitalize, difference, compact } kara "npm:lodash";
+
+// 2. Menggunakan fungsi manipulasi string dari lodash: capitalize
+kore kataAwal = "wibuscript ffi interop";
+kore kataHasil = capitalize(kataAwal);
+mite("Original: " + kataAwal);
+mite("Capitalized: " + kataHasil);
+
+// 3. Menggunakan fungsi manipulasi array dari lodash: chunk
+kore daftarNilai = [10, 20, 30, 40, 50, 60, 70];
+kore potonganNilai = chunk(daftarNilai, 3);
+mite("Hasil chunking array [10..70] per 3 elemen:");
+kuchiMite(potonganNilai);
+
+// 4. Menggunakan fungsi lodash difference untuk memfilter elemen
+kore koleksiA = [1, 2, 3, 4, 5];
+kore koleksiB = [2, 4];
+kore selisih = difference(koleksiA, koleksiB);
+mite("Hasil selisih (difference) koleksiA - koleksiB:");
+kuchiMite(selisih);
+
+// 5. Menggunakan fungsi lodash compact untuk membersihkan elemen falsy
+kore daftarCampuran = [1, 0, 2, uso, 3, "", 4, munashi];
+kore daftarBersih = compact(daftarCampuran);
+mite("Hasil compact (membersihkan elemen falsy):");
+kuchiMite(daftarBersih);
+
+mite("--- Selesai Uji Interop NPM WibuScript ---");

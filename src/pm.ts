@@ -5,14 +5,32 @@
 // Mendukung instalasi paket via npm dan resolusi modul 'npm:nama-paket'.
 // ============================================================================
 
-import * as fs from "node:fs";
-import * as path from "node:path";
-import { execSync } from "node:child_process";
+import * as fs from "fs";
+import * as path from "path";
+import { execSync } from "child_process";
+import { createRequire } from "module";
 
 export interface PackageInstallOptions {
   cwd?: string;
   dev?: boolean;
   quiet?: boolean;
+}
+
+export interface ResolvedNpmModule {
+  kind: "wibu" | "js";
+  entryPath: string;
+  packageName: string;
+}
+
+/**
+ * Membersihkan dan menormalisasi nama paket dari awalan 'npm:'.
+ */
+export function normalizePackageName(rawName: string): string {
+  const trimmed = (rawName || "").trim();
+  if (trimmed.startsWith("npm:")) {
+    return trimmed.slice(4).trim();
+  }
+  return trimmed;
 }
 
 /**
@@ -26,10 +44,13 @@ export function isNpmModuleSpecifier(specifier: string): boolean {
  * Mencari direktori node_modules terdekat dengan menelusuri hierarki direktori ke atas.
  */
 export function findNodeModulesDir(startDir?: string): string | null {
-  let currentDir = path.resolve(startDir || process.cwd());
+  if (typeof process === "undefined" || !process.versions?.node) {
+    return null;
+  }
+  let currentDir = path.resolve(/*turbopackIgnore: true*/ startDir || process.cwd());
 
   while (true) {
-    const candidate = path.join(currentDir, "node_modules");
+    const candidate = path.join(/*turbopackIgnore: true*/ currentDir, "node_modules");
     if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
       return candidate;
     }
@@ -52,7 +73,7 @@ export function findPackageWibuEntry(packageDir: string): string | null {
   }
 
   // 1. Cek konfigurasi package.json paket jika tersedia
-  const pkgJsonPath = path.join(packageDir, "package.json");
+  const pkgJsonPath = path.join(/*turbopackIgnore: true*/ packageDir, "package.json");
   if (fs.existsSync(pkgJsonPath)) {
     try {
       const rawPkg = fs.readFileSync(pkgJsonPath, "utf-8");
@@ -60,7 +81,7 @@ export function findPackageWibuEntry(packageDir: string): string | null {
 
       // Prioritas 1: properti 'wibu' eksplisit pada package.json
       if (typeof pkg.wibu === "string" && pkg.wibu.trim().length > 0) {
-        const candidate = path.resolve(packageDir, pkg.wibu.trim());
+        const candidate = path.resolve(/*turbopackIgnore: true*/ packageDir, pkg.wibu.trim());
         if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
           return candidate;
         }
@@ -68,7 +89,7 @@ export function findPackageWibuEntry(packageDir: string): string | null {
 
       // Prioritas 2: properti 'main' jika berakhiran .wibu
       if (typeof pkg.main === "string" && pkg.main.trim().endsWith(".wibu")) {
-        const candidate = path.resolve(packageDir, pkg.main.trim());
+        const candidate = path.resolve(/*turbopackIgnore: true*/ packageDir, pkg.main.trim());
         if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
           return candidate;
         }
@@ -90,7 +111,7 @@ export function findPackageWibuEntry(packageDir: string): string | null {
   ];
 
   for (const relPath of candidateFiles) {
-    const candidate = path.join(packageDir, relPath);
+    const candidate = path.join(/*turbopackIgnore: true*/ packageDir, relPath);
     if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
       return candidate;
     }
@@ -100,17 +121,62 @@ export function findPackageWibuEntry(packageDir: string): string | null {
 }
 
 /**
- * Menyelesaikan lokasi absolut berkas .wibu dari specifier 'npm:nama-paket[/subpath]'.
+ * Menemukan berkas entri JavaScript utama dari sebuah paket npm di dalam node_modules.
  */
-export function resolveNpmModule(
+export function findPackageJsEntry(packageDir: string): string | null {
+  if (!fs.existsSync(packageDir) || !fs.statSync(packageDir).isDirectory()) {
+    return null;
+  }
+
+  const pkgJsonPath = path.join(/*turbopackIgnore: true*/ packageDir, "package.json");
+  if (fs.existsSync(pkgJsonPath)) {
+    try {
+      const rawPkg = fs.readFileSync(pkgJsonPath, "utf-8");
+      const pkg = JSON.parse(rawPkg);
+
+      if (typeof pkg.main === "string" && pkg.main.trim().length > 0) {
+        const candidate = path.resolve(/*turbopackIgnore: true*/ packageDir, pkg.main.trim());
+        if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+          return candidate;
+        }
+        if (fs.existsSync(`${candidate}.js`) && fs.statSync(`${candidate}.js`).isFile()) {
+          return `${candidate}.js`;
+        }
+      }
+    } catch {
+      // Abaikan error parse
+    }
+  }
+
+  const jsCandidates = [
+    "index.js",
+    "main.js",
+    path.join("dist", "index.js"),
+    path.join("lib", "index.js")
+  ];
+
+  for (const rel of jsCandidates) {
+    const candidate = path.join(/*turbopackIgnore: true*/ packageDir, rel);
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Menyelesaikan metadata paket npm (apakah modul WibuScript atau pustaka JavaScript FFI).
+ */
+export function resolveNpmPackage(
   importSpecifier: string,
   fromDir?: string
-): string | null {
+): ResolvedNpmModule | null {
   if (!isNpmModuleSpecifier(importSpecifier)) {
     return null;
   }
 
-  const rawPath = importSpecifier.slice(4).trim(); // Menghapus awalan 'npm:'
+  const rawPath = normalizePackageName(importSpecifier);
   if (rawPath.length === 0) {
     return null;
   }
@@ -120,7 +186,7 @@ export function resolveNpmModule(
     return null;
   }
 
-  // Pisahkan nama paket dan subpath (mendukung scoped package seperti @organisasi/paket)
+  // Pisahkan nama paket dan subpath (mendukung scoped package seperti @scope/pkg)
   let packageName = "";
   let subPath = "";
 
@@ -138,29 +204,54 @@ export function resolveNpmModule(
     subPath = parts.slice(1).join("/");
   }
 
-  const packageDir = path.join(nodeModulesDir, packageName);
+  const packageDir = path.join(/*turbopackIgnore: true*/ nodeModulesDir, packageName);
   if (!fs.existsSync(packageDir)) {
     return null;
   }
 
-  // Jika menyertakan subpath spesifik (misal 'npm:matematika/aljabar')
+  // Kasus 1: Subpath tertentu (misal 'npm:matematika/kalkulator')
   if (subPath.length > 0) {
-    const cleanSubPath = subPath.endsWith(".wibu") ? subPath : `${subPath}.wibu`;
-    const directCandidate = path.join(packageDir, cleanSubPath);
-    if (fs.existsSync(directCandidate) && fs.statSync(directCandidate).isFile()) {
-      return directCandidate;
+    const wibuSubPath = subPath.endsWith(".wibu") ? subPath : `${subPath}.wibu`;
+    const candidateWibu = path.join(/*turbopackIgnore: true*/ packageDir, wibuSubPath);
+    if (fs.existsSync(candidateWibu) && fs.statSync(candidateWibu).isFile()) {
+      return { kind: "wibu", entryPath: candidateWibu, packageName };
     }
 
-    const indexCandidate = path.join(packageDir, subPath, "index.wibu");
-    if (fs.existsSync(indexCandidate) && fs.statSync(indexCandidate).isFile()) {
-      return indexCandidate;
+    const indexWibu = path.join(/*turbopackIgnore: true*/ packageDir, subPath, "index.wibu");
+    if (fs.existsSync(indexWibu) && fs.statSync(indexWibu).isFile()) {
+      return { kind: "wibu", entryPath: indexWibu, packageName };
     }
 
-    return null;
+    const jsSubPath = subPath.endsWith(".js") ? subPath : `${subPath}.js`;
+    const candidateJs = path.join(/*turbopackIgnore: true*/ packageDir, jsSubPath);
+    if (fs.existsSync(candidateJs) && fs.statSync(candidateJs).isFile()) {
+      return { kind: "js", entryPath: candidateJs, packageName };
+    }
   }
 
-  // Jika tanpa subpath, cari berkas entri utama
-  return findPackageWibuEntry(packageDir);
+  // Kasus 2: Entri berkas WibuScript (.wibu)
+  const wibuEntry = findPackageWibuEntry(packageDir);
+  if (wibuEntry) {
+    return { kind: "wibu", entryPath: wibuEntry, packageName };
+  }
+
+  // Kasus 3: Pustaka JavaScript umum (Foreign Function Interface / FFI)
+  const jsEntry = findPackageJsEntry(packageDir) || packageDir;
+  return { kind: "js", entryPath: jsEntry, packageName };
+}
+
+/**
+ * Menyelesaikan lokasi absolut berkas .wibu dari specifier 'npm:nama-paket[/subpath]'.
+ */
+export function resolveNpmModule(
+  importSpecifier: string,
+  fromDir?: string
+): string | null {
+  const resolved = resolveNpmPackage(importSpecifier, fromDir);
+  if (resolved && resolved.kind === "wibu") {
+    return resolved.entryPath;
+  }
+  return null;
 }
 
 /**
@@ -194,13 +285,50 @@ export function resolveModulePath(
 }
 
 /**
+ * Memuat modul JavaScript eksternal dari direktori node_modules pada lingkungan Node.js.
+ */
+export function loadNpmJsModule(packageName: string, fromDir?: string): any {
+  if (typeof process === "undefined" || !process.versions?.node) {
+    throw new Error(
+      "[Wibu PM Error] Interop pustaka npm JavaScript hanya didukung pada lingkungan Node.js."
+    );
+  }
+
+  const cleanName = normalizePackageName(packageName);
+  const baseDir = fromDir || process.cwd();
+  const req = createRequire(path.resolve(baseDir, "package.json"));
+
+  try {
+    return req(cleanName);
+  } catch (err: unknown) {
+    // Jika paket adalah ES Module murni atau path file langsung
+    const packageDir = findNodeModulesDir(baseDir);
+    if (packageDir) {
+      const directTarget = path.join(/*turbopackIgnore: true*/ packageDir, cleanName);
+      if (fs.existsSync(directTarget)) {
+        try {
+          return req(directTarget);
+        } catch {
+          // Lanjutkan ke pelemparan error asli
+        }
+      }
+    }
+
+    const errMessage = err instanceof Error ? err.message : String(err);
+    throw new Error(
+      `[Wibu PM Error] Tidak dapat memuat modul npm '${cleanName}': ${errMessage}`
+    );
+  }
+}
+
+/**
  * Menginstal paket pustaka eksternal ke dalam direktori node_modules menggunakan npm CLI.
  */
 export function installPackage(
   packageName: string,
   options?: PackageInstallOptions
 ): boolean {
-  const targetPkg = (packageName || "").trim();
+  const targetPkg = normalizePackageName(packageName);
   if (targetPkg.length === 0) {
     console.error("[Wibu PM Error] Nama paket tidak boleh kosong.");
     return false;
@@ -208,7 +336,9 @@ export function installPackage(
 
   // Validasi karakter dasar untuk mencegah injection
   if (!/^(@?[a-zA-Z0-9_.-]+)(\/[a-zA-Z0-9_.-]+)?(@[a-zA-Z0-9^~_.-]+)?$/.test(targetPkg)) {
-    console.error(`[Wibu PM Error] Format nama paket tidak valid: '${targetPkg}'`);
+    console.error(
+      `[Wibu PM Error] Format nama paket tidak valid: '${targetPkg}'. Nama paket hanya boleh mengandung huruf, angka, tanda minus (-), underscore (_), titik (.), atau tag versi (@).`
+    );
     return false;
   }
 
@@ -225,7 +355,7 @@ export function installPackage(
   try {
     execSync(command, {
       cwd,
-      stdio: isQuiet ? "ignore" : "inherit",
+      stdio: isQuiet ? "ignore" : "pipe",
       encoding: "utf-8"
     });
 
@@ -233,9 +363,31 @@ export function installPackage(
       console.log(`[Wibu PM] Sukses memasang pustaka '${targetPkg}'.`);
     }
     return true;
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(`[Wibu PM Error] Gagal memasang paket '${targetPkg}': ${message}`);
+  } catch (error: any) {
+    const stderr = (error.stderr || error.message || "").toString();
+
+    if (stderr.includes("404") || stderr.includes("E404")) {
+      console.error(
+        `[Wibu PM Error] Paket '${targetPkg}' tidak ditemukan di registry npm. Pastikan ejaan nama paket sudah benar.`
+      );
+    } else if (stderr.includes("ETARGET") || stderr.includes("No matching version")) {
+      console.error(
+        `[Wibu PM Error] Versi yang diminta untuk paket '${targetPkg}' tidak kompatibel atau tidak tersedia di registry npm.`
+      );
+    } else if (
+      stderr.includes("ENOTFOUND") ||
+      stderr.includes("ECONNREFUSED") ||
+      stderr.includes("ETIMEDOUT")
+    ) {
+      console.error(
+        `[Wibu PM Error] Gagal terhubung ke registry npm saat memasang '${targetPkg}'. Periksa koneksi internet Anda.`
+      );
+    } else {
+      console.error(
+        `[Wibu PM Error] Gagal memasang paket '${targetPkg}'. Detail kesalahan:\n${stderr.trim()}`
+      );
+    }
+
     return false;
   }
 }
@@ -244,6 +396,9 @@ export function installPackage(
  * Menghasilkan daftar nama paket yang terpasang di direktori node_modules proyek.
  */
 export function getInstalledPackages(projectRoot?: string): string[] {
+  if (typeof process === "undefined" || !process.versions?.node) {
+    return [];
+  }
   const nodeModulesDir = findNodeModulesDir(projectRoot);
   if (!nodeModulesDir || !fs.existsSync(nodeModulesDir)) {
     return [];
@@ -257,7 +412,7 @@ export function getInstalledPackages(projectRoot?: string): string[] {
       continue;
     }
 
-    const fullPath = path.join(nodeModulesDir, entry);
+    const fullPath = path.join(/*turbopackIgnore: true*/ nodeModulesDir, entry);
     if (!fs.statSync(fullPath).isDirectory()) {
       continue;
     }

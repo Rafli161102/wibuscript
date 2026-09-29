@@ -516,10 +516,18 @@ export class Transpiler {
   }
 
   private transpileImportStatement(node: ImportStatement): string {
+    const rawSource = node.source;
+    const isNpm = rawSource.startsWith("npm:");
+    const targetSource = isNpm ? rawSource.slice(4) : rawSource;
+
     if (node.importedNames.length === 1 && node.importedNames[0] === "*") {
-      return `${this.indent()}import "${node.source}";`;
+      if (isNpm) {
+        const alias = `_mod_${targetSource.replace(/[^a-zA-Z0-9_]/g, "_")}`;
+        return `${this.indent()}import * as ${alias} from "${targetSource}";\n${this.indent()}Object.assign(globalThis, ${alias}.default && Object.keys(${alias}).length === 1 ? ${alias}.default : ${alias});`;
+      }
+      return `${this.indent()}import "${targetSource}";`;
     }
-    return `${this.indent()}import { ${node.importedNames.join(", ")} } from "${node.source}";`;
+    return `${this.indent()}import { ${node.importedNames.join(", ")} } from "${targetSource}";`;
   }
 
   private transpileReturnStatement(node: ReturnStatement): string {

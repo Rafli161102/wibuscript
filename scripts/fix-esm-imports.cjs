@@ -38,6 +38,15 @@ for (const file of jsFiles) {
     }
   );
 
+  // Menambahkan .js ke dynamic import relatif: import("./module") -> import("./module.js")
+  content = content.replace(
+    /import\(\s*["'](\.\/.+?)["']\s*\)/g,
+    (match, importPath) => {
+      if (importPath.endsWith(".js")) return match;
+      return `import("${importPath}.js")`;
+    }
+  );
+
   if (file === "cli.js" && !content.startsWith("#!/usr/bin/env node")) {
     content = `#!/usr/bin/env node\n${content}`;
   }

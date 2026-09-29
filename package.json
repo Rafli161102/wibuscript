@@ -1,6 +1,6 @@
 {
   "name": "wibuscript",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Bahasa Pemrograman Esoterik WibuScript dengan Web Playground",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -55,6 +55,7 @@
   "homepage": "https://github.com/Rafli161102/wibuscript#readme",
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
+    "lodash": "^4.18.1",
     "lucide-react": "^1.48.0",
     "next": "^16.3.6",
     "react": "^19.3.0",
@@ -62,6 +63,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
+    "@types/lodash": "^4.17.25",
     "@types/node": "^26.6.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

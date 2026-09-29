@@ -16,8 +16,8 @@
 [![npm monthly downloads](https://img.shields.io/npm/dm/wibuscript.svg?style=for-the-badge&logo=npm&logoColor=white&color=007ACC&label=downloads%2Fbulan)](https://www.npmjs.com/package/wibuscript)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-Passing%20107%2F107-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v2.1.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Vitest](https://img.shields.io/badge/Vitest-Passing%20121%2F121-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.2.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
@@ -238,6 +238,12 @@ wibu lsp
 ---
 
 ## Log Pembaruan
+
+### v2.2.0
+- Penguatan interoperabilitas npm (FFI): kemampuan mengimpor langsung paket JavaScript npm asli (seperti lodash) dan mengeksekusi fungsinya secara mulus di seluruh 4 dialek.
+- Penyempurnaan Wibu Package Manager (src/pm.ts): normalisasi prefiks 'npm:', resolusi mode ganda (modul .wibu vs modul JavaScript JS), serta penanganan galat instalasi yang informatif dan aman.
+- Peningkatan Transpiler ES2022 (src/transpiler.ts) untuk menghasilkan sintaks import ES standar tanpa prefiks 'npm:'.
+- Penambahan skrip contoh interoperabilitas (examples/interop_npm.wibu) dan rangkaian pengujian unit vitest (tests/npm_interop.test.ts) dengan 121 tes lulus 100%.
 
 ### v2.1.0
 - Implementasi Wibu Package Manager (src/pm.ts) untuk instalasi paket via perintah 'wibu add' dan resolusi modul 'npm:nama-paket'.
