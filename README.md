@@ -1,7 +1,7 @@
 <!-- File: README.md -->
 <div align="center">
 
-  <img src="https://media.tenor.com/7H-O7N7m4q0AAAAi/anime-typing.gif" width="180" alt="Animasi Mengetik Cepat" />
+  <img src="https://raw.githubusercontent.com/Rafli161102/wibuscript/main/assets/images/header-typing.gif" width="180" alt="Animasi Mengetik Cepat" />
 
 # WibuScript
 
@@ -17,7 +17,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![Vitest](https://img.shields.io/badge/Vitest-Passing%20107%2F107-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v2.0.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.0.1-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
@@ -44,7 +44,7 @@ WibuScript adalah bahasa pemrograman esoterik yang dibuat di atas TypeScript den
 
 Meskipun pembawaannya santai dan absurd, proyek ini dirancang dengan standar teknis yang serius. Mesin kompilasinya modular, aman dijalankan langsung di browser untuk Web Playground dalam lingkungan Web Worker Sandbox terisolasi, dan dilengkapi CLI berbasis Node.js untuk eksekusi file script secara lokal.
 
-<img src="https://media.tenor.com/fA15L6yUks0AAAAi/anime-glasses.gif" width="140" align="right" alt="Analisis Teknis" />
+<img src="https://raw.githubusercontent.com/Rafli161102/wibuscript/main/assets/images/tech-glasses.gif" width="140" align="right" alt="Analisis Teknis" />
 
 ## Arsitektur Sistem
 
@@ -150,7 +150,7 @@ Perbedaan antardialek hanya ada pada penamaan fungsi, sementara hasil eksekusiny
 
 ## Contoh Kode
 
-<img align="right" width="160" src="https://media.tenor.com/jNgKSlUpmkEAAAAM/typing-laptop.gif" alt="Cat Coding" />
+<img align="right" width="160" src="https://raw.githubusercontent.com/Rafli161102/wibuscript/main/assets/images/cat-coding.gif" alt="Cat Coding" />
 
 Berikut adalah contoh program sederhana yang menggabungkan manipulasi objek, array, dan kontrol loop dengan beberapa dialek sekaligus:
 
@@ -196,7 +196,7 @@ kuchiMite("Seluruh proses berhasil dijalankan.");
 
 ## Instalasi dan CLI
 
-<img src="https://media.tenor.com/-wZAi-4EXugAAAAM/anime-keyboard.gif" width="140" align="right" alt="Animasi Mengetik Cepat" />
+<img src="https://raw.githubusercontent.com/Rafli161102/wibuscript/main/assets/images/fast-keyboard.gif" width="140" align="right" alt="Animasi Mengetik Cepat" />
 
 Kamu bisa langsung mencoba WibuScript tanpa instalasi menggunakan npx:
 
@@ -233,6 +233,9 @@ wibu convert skrip_kamu.wibu --to rongawi -o hasil_rongawi.wibu
 
 ## Log Pembaruan
 
+### v2.0.1
+- Pembaruan aset animasi GIF dokumentasi menggunakan penyimpanan lokal persisten di folder assets/images/ dan tautan raw GitHub resmi untuk keandalan tampilan di GitHub dan web npmjs.com.
+
 ### v2.0.0
 - Transisi resmi ke Arsitektur Compiler Pipeline & JS Target ES2022+ sebagai jalur eksekusi utama.
 - Single Source of Truth Dialect Grammar (src/dialect-definitions.ts) untuk Monaco Editor dan VS Code TextMate.
@@ -265,6 +268,6 @@ wibu convert skrip_kamu.wibu --to rongawi -o hasil_rongawi.wibu
 ---
 
 <div align="center">
-  <img src="https://media.tenor.com/mN-2yFvFO8UAAAAM/anime-sleep-sleepy.gif" width="200" alt="Animasi Istirahat" />
+  <img src="https://raw.githubusercontent.com/Rafli161102/wibuscript/main/assets/images/sleepy-footer.gif" width="200" alt="Animasi Istirahat" />
   <p><i>Proses kompilasi selesai. Selamat bereksplorasi dengan WibuScript!</i></p>
 </div>

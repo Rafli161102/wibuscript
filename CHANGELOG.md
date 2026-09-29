@@ -6,6 +6,17 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan me
 
 ---
 
+## [v2.0.1] - 2026-09-29
+
+### Fixed
+- **Pembaruan Aset Animasi GIF Dokumentasi**:
+  - Memperbaiki tautan eksternal animasi GIF pada README.md yang sempat mengalami 404 (Not Found) dari penyedia CDN pihak ketiga.
+  - Memigrasikan seluruh 5 aset animasi (header-typing, tech-glasses, cat-coding, fast-keyboard, sleepy-footer) langsung ke repositori lokal pada direktori `assets/images/`.
+  - Menggunakan tautan raw GitHub resmi berkecepatan tinggi agar tampilan animasi GIF dijamin selalu aktif, tajam, dan tidak pernah rusak baik pada repositori GitHub maupun di portal web npmjs.com.
+  - Menyertakan folder `assets` ke dalam distribusi paket npm (`files` array pada `package.json`).
+
+---
+
 ## [v2.0.0] - 2026-09-29
 
 ### Added
