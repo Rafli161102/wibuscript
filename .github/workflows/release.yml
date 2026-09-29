@@ -1,0 +1,128 @@
+name: Release Automation
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    name: Build, Test, and Publish Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Run Test Suite
+        run: npm test
+
+      - name: Build Core Artifacts
+        run: npm run core:build
+
+      - name: Determine Version and Tag
+        id: meta
+        run: |
+          node -e '
+            const fs = require("fs");
+            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            let tag = "";
+            let version = pkg.version;
+
+            const refType = process.env.GITHUB_REF_TYPE;
+            const refName = process.env.GITHUB_REF_NAME;
+
+            if (refType === "tag" && refName.startsWith("v")) {
+              tag = refName;
+              version = refName.replace(/^v/, "");
+            } else {
+              tag = `v${version}`;
+            }
+
+            console.log(`Resolved version: ${version}`);
+            console.log(`Resolved tag: ${tag}`);
+
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\n`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `tag=${tag}\n`);
+          '
+
+      - name: Check Existing Git Tag and Release
+        id: check_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "release_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "release_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create Git Tag if Missing
+        if: steps.check_release.outputs.tag_exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.meta.outputs.tag }}" -m "Release ${{ steps.meta.outputs.tag }} - WibuScript Official Release"
+          git push origin "${{ steps.meta.outputs.tag }}"
+
+      - name: Generate Tarball Asset
+        run: |
+          npm pack
+
+      - name: Extract Release Notes from CHANGELOG
+        run: |
+          node scripts/extract-changelog.cjs "${{ steps.meta.outputs.version }}" > RELEASE_NOTES.md
+          cat RELEASE_NOTES.md
+
+      - name: Publish or Update GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          RELEASE_EXISTS: ${{ steps.check_release.outputs.release_exists }}
+        run: |
+          ASSET_FILE=$(ls wibuscript-*.tgz | head -n 1)
+          TITLE="v${VERSION} - Compiler Pipeline ES2022, Sandbox Runner, Dialect Parity"
+
+          if [ "$RELEASE_EXISTS" = "true" ]; then
+            echo "Release $TAG already exists. Updating release notes and assets..."
+            gh release edit "$TAG" \
+              --title "$TITLE" \
+              --notes-file RELEASE_NOTES.md \
+              --latest
+            if [ -n "$ASSET_FILE" ]; then
+              gh release upload "$TAG" "$ASSET_FILE" --clobber
+            fi
+          else
+            echo "Creating new release for $TAG..."
+            gh release create "$TAG" \
+              --title "$TITLE" \
+              --notes-file RELEASE_NOTES.md \
+              --latest \
+              "$ASSET_FILE"
+          fi
