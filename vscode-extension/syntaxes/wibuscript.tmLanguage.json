@@ -98,7 +98,7 @@
       "patterns": [
         {
           "name": "constant.language",
-          "match": "\\b(hontou|hon|hontouNi|unjukkebolehan|uso|chigauYo|keracunanmbg|munashi|mu|naniKore|blukutuk|maji|majiBener|kara|kosongZannen)\\b"
+          "match": "\\b(unjukkebolehan|keracunanmbg|menyalaAbkuh|kosongZannen|maafLancang|ladehBanh|majiBener|usoBanget|hontouNi|chigauYo|naniKore|blukutuk|munashi|hontou|maji|hon|uso|mu)\\b"
         }
       ]
     },
@@ -106,7 +106,7 @@
       "patterns": [
         {
           "name": "keyword.control",
-          "match": "\\b(moshi|mo|moShiKalo|izintampil|soretomo|sore|soredemoNe|wowok|hoka|ho|shoganaiNe|woijawa|zutto|zu|zuttoLoop|nyawit|yame|ya|yameteKure|bijisatu|tsugi|tsu|tsugiNe|ambatukam|matte|mat|matteNe|admindatang|kokoromi|koko|yatteMiyo|ragnamok|yurusu|yuru|gomennasai|amanBos|subete|sube|zenbuNe|thugshaker|no|dari|alasdaun|toriyoseru|tori|summonJutsu|begalbaju|kara|kra|ngawiland|koukai|kou|sebarJutsu|umpansilang|shougo|sho|cocokkan|persimpangan|baai|baa|kaloPas|kenaben|hyoujun|hyo|sisaan|yappingtolol)\\b"
+          "match": "\\b(persimpangan|yappingtolol|gasSampePagi|cobaDuluBanh|admindatang|summonJutsu|umpansilang|kaloGakGitu|yaudahlahYa|lanjutPart2|izintampil|soredemoNe|shoganaiNe|yameteKure|gomennasai|thugshaker|toriyoseru|sebarJutsu|ampunSepuh|sikatSemua|moShiKalo|zuttoLoop|ambatukam|yatteMiyo|begalbaju|ngawiland|sabarBanh|gasTesLur|santaiAja|soretomo|bijisatu|kokoromi|ragnamok|alasdaun|cocokkan|woijawa|tsugiNe|matteNe|amanBos|zenbuNe|kaloPas|kenaben|hyoujun|nyawit|yurusu|subete|koukai|shougo|sisaan|whenYh|karaNe|moshi|wowok|zutto|tsugi|matte|sore|hoka|yame|koko|yuru|sube|dari|tori|kara|baai|tsu|mat|kra|kou|sho|baa|hyo|mo|ho|zu|ya|no)\\b"
         }
       ]
     },
@@ -114,7 +114,7 @@
       "patterns": [
         {
           "name": "keyword.declaration",
-          "match": "\\b(kore|ko|iniDesu|pokmipokmi|zettai|ze|zettaiDa|bundarahma|jutsu|ju|mybini|fufufafa|kaesu|kae|haiBeri|kandabahlil|sekte|sek|nakama|sektejomok|tanjou|tan|umareta|ambatunat|atarashii|ata|atarashiiNe|ambatumbas|keishou|kei|kouhaiDesu|jalurhukum|jibun|ji|oreSama|lanangmas)\\b"
+          "match": "\\b(watashiJutsu|kandabahlil|atarashiiNe|turunanDari|pokmipokmi|bundarahma|sektejomok|ambatumbas|kouhaiDesu|jalurhukum|kasihPaham|ambatunat|atarashii|lanangmas|hargaMati|paguyuban|bikinBaru|zettaiDa|fufufafa|iniDesu|haiBeri|umareta|keishou|oreSama|lahiran|zettai|mybini|nakama|tanjou|siImut|siAing|jutsu|kaesu|sekte|jibun|kore|kae|sek|tan|ata|kei|ko|ze|ju|ji)\\b"
         }
       ]
     },
@@ -122,7 +122,7 @@
       "patterns": [
         {
           "name": "support.function",
-          "match": "\\b(mite|mi|iuYo|salamkenal|kuchiMite|km|omaeWaIu|cawapresin|shibaraku|siba|matteNeSikit|nungguinLu|imaJikan|ima|nanjiDesu|kopihitam|nagasa|naga|doreKurai|panjangberurat|suji|suj|suujiNi|ubahJadiDuit|shurui|shu|naniTypeNe|omagot|beki|bek|tsuyokuNare|naikinPangkat|marume|maru|maneNi|shakerbot|ireta|ire|haireNe|priaotot|toru|to|deteike|danaterbakar|kiru|ki|kiriteNe|kertaslecek|ookiku|ooki|ookiVoice|gakhabisgila|chiisaku|chii|chiisaiVoice|monyetbanyumas|randamu|ran|unmeiGacha|rudalmentah|shikei|shi|shineeeYo|udahKelarinAja|retsu|ret|nakamaTachi|budakhitam|yomu|yo|yomimasuNe|ototkawat|kaku|ka|kakimasuNe|teksusang|yobu|yoB|mottekite|sikatBanh|ukeru|uke|tottekiteNe|SepongMas|kanjiNi|kn|wakattaYo|salintempel|kanjiMojiretsu|kmj|oshieteNe|copascaption|utsusu|utu|henshinSuru|predikbola|erabu|era|senbatsuNe|morebullets|mitsukeru|mitu|mitsuketaYo|fesnuker|ruuto|ru|heihoukon|robogor|zettaichi|zet|zettaiChi|ironiman|kiriSute|ks|shitaKiri|hutanselatan|kiriAge|kia|ueKiri|menaracukur|bunri|bu|barabara|pecahkepala|tsunagu|tsuna|isshoNi|lendirmurni|okikae|oki|irekaeruNe|akuntumbal|kiri|kri|kireeNi|cukurfade|fukumu|fuku|hairuKana|monyetijo|narabikae|nara|narabeteNe|goyangpantat|kirinuki|kinu|sukoshiDake|pedangdaging|gacha|gac|tarikGacha|weeklypass)\\b"
+          "match": "\\b(tolongCekNagasa|panjangberurat|monyetbanyumas|udahKelarinAja|kanjiMojiretsu|bungkusJsonLur|potongSebagian|naikinPangkat|jamBerapaBanh|jadiAngkaBanh|bikinJadiSuji|kumpulinBocah|matteNeSikit|ubahJadiDuit|danaterbakar|gakhabisgila|chiisaiVoice|copascaption|hutanselatan|goyangpantat|pedangdaging|bikinBarisan|kumpulinJawa|tsuyokuNare|kertaslecek|rudalmentah|nakamaTachi|tottekiteNe|salintempel|henshinSuru|morebullets|mitsuketaYo|menaracukur|pecahkepala|lendirmurni|sukoshiDake|seginiDoang|akarPangkat|bawahinBanh|uraiJsonLur|mputerNasib|salamkenal|cawapresin|nungguinLu|naniTypeNe|unmeiGacha|budakhitam|yomimasuNe|kakimasuNe|predikbola|senbatsuNe|irekaeruNe|akuntumbal|narabeteNe|tarikGacha|weeklypass|teriakAmba|mutlakBanh|atasinBanh|petainBanh|saringBanh|cariinBanh|kuchiMite|shibaraku|nanjiDesu|kopihitam|doreKurai|shakerbot|ookiVoice|shineeeYo|ototkawat|teksusang|mottekite|sikatBanh|SepongMas|wakattaYo|oshieteNe|mitsukeru|heihoukon|zettaichi|zettaiChi|shitaKiri|cukurfade|hairuKana|monyetijo|narabikae|bacotAmba|cekJamLur|cekUkuran|mutlakLur|pecahKata|gandengen|sulapKata|tumbalkan|omaeWaIu|imaJikan|priaotot|kiriteNe|chiisaku|fesnuker|ironiman|kiriSute|barabara|kirinuki|bawahLur|gantinen|potongen|punyaGak|cuplikno|spinZeus|suujiNi|haireNe|deteike|randamu|kanjiNi|robogor|kiriAge|tsunagu|isshoNi|kireeNi|akarLur|atasLur|bedahno|pecahin|lemKata|pangkas|rapihin|barisin|nagasa|shurui|omagot|marume|maneNi|ookiku|shikei|utsusu|ueKiri|okikae|fukumu|adaGak|urutno|ireta|retsu|ukeru|erabu|ruuto|bunri|tsuna|gacha|lemin|cukur|onora|comot|mite|iuYo|siba|naga|suji|beki|maru|toru|kiru|ooki|chii|yomu|kaku|yobu|mitu|kiri|fuku|nara|kinu|ima|suj|shu|bek|ire|ran|shi|ret|yoB|uke|kmj|utu|era|zet|kia|oki|kri|gac|mi|km|to|ki|yo|ka|kn|ru|ks|bu)\\b"
         }
       ]
     },
@@ -130,7 +130,7 @@
       "patterns": [
         {
           "name": "keyword.operator",
-          "match": "(==|!=|<=|>=|=>|<|>|&&|\\|\\||!|\\.\\.\\.|\\+|-|\\*|/|%|=)"
+          "match": "(\\.\\.\\.|\\|\\||==|!=|<=|>=|=>|&&|\\+|\\*|<|>|!|-|/|%|=)"
         }
       ]
     }

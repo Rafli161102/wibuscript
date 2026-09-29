@@ -1,8 +1,10 @@
 // File: src/transpiler.ts
 // ============================================================================
-// WIBUSCRIPT JAVASCRIPT TRANSPILER
-// Mengompilasi AST WibuScript menjadi kode JavaScript (ES2022+ / Node.js)
-// yang dapat dijalankan secara langsung tanpa interpreter.
+// WIBUSCRIPT JAVASCRIPT TRANSPILER (COMPILER PIPELINE v2.0)
+// Mengompilasi AST WibuScript menjadi kode JavaScript modern (ES2022+ / Node.js / Browser)
+// Mendukung Deklarasi let/const, Blok Kendali (If-ElseIf-Else, While, Break/Continue),
+// Pattern Matching (shougo), Destructuring (Array & Object), Spread Operator (...),
+// Pemetaan Pustaka Standar 4 Dialek, dan Penghasil Source Map v3 Resmi.
 // ============================================================================
 
 import type {
@@ -36,133 +38,288 @@ import type {
   NewExpression,
   ThisExpression,
   MatchStatement,
-  MatchCase,
-  DestructuringPattern,
   ArrayPattern,
   ObjectPattern,
   SpreadElement,
-  RestElement,
 } from "./ast";
 import { tokenize } from "./lexer";
 import { Parser } from "./parser";
 
-// Pemetaan fungsi bawaan WibuScript (4 Dialek) ke implementasi JavaScript
+/**
+ * Format Standar Spesifikasi Source Map Versi 3
+ */
+export interface SourceMapV3 {
+  version: 3;
+  file: string;
+  sourceRoot?: string;
+  sources: string[];
+  sourcesContent?: (string | null)[];
+  names: string[];
+  mappings: string;
+}
+
+export interface TranspileOptions {
+  sourceMap?: boolean;
+  filename?: string;
+  sourceContent?: string;
+  target?: "es2022" | "commonjs";
+}
+
+export interface TranspileResult {
+  code: string;
+  map?: SourceMapV3;
+  mapString?: string;
+  inlineSourceMap?: string;
+}
+
+// Karakter encoding Base64 VLQ untuk Source Map v3
+const VLQ_BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+function encodeVLQ(num: number): string {
+  let vlq = num < 0 ? (-num << 1) | 1 : num << 1;
+  let encoded = "";
+  do {
+    let digit = vlq & 31;
+    vlq >>>= 5;
+    if (vlq > 0) {
+      digit |= 32;
+    }
+    encoded += VLQ_BASE64_CHARS[digit];
+  } while (vlq > 0);
+  return encoded;
+}
+
+// Pemetaan fungsi bawaan WibuScript (4 Dialek Mutlak) ke implementasi JavaScript
 const STDLIB_MAP: Record<string, string> = {
-  // Print
+  // Tampilkan (Print)
   mite: "console.log",
   mi: "console.log",
-  teriakAmba: "console.log",
+  iuYo: "console.log",
   salamkenal: "console.log",
+  teriakAmba: "console.log",
   kuchiMite: "console.log",
   km: "console.log",
-  bacotAmba: "console.log",
   omaeWaIu: "console.log",
   cawapresin: "console.log",
+  bacotAmba: "console.log",
 
-  // Waktu
+  // Waktu & Timestamp
   imaJikan: "(() => new Date().toISOString())",
   ima: "(() => new Date().toISOString())",
-  jamBerapaBanh: "(() => new Date().toISOString())",
   nanjiDesu: "(() => new Date().toISOString())",
   kopihitam: "(() => new Date().toISOString())",
-  cekJamLur: "(() => new Date().toISOString())", // deprecated
+  jamBerapaBanh: "(() => new Date().toISOString())",
+  cekJamLur: "(() => new Date().toISOString())",
 
   // Konversi Angka
   suji: "Number",
   suj: "Number",
-  jadiAngkaBanh: "Number",
+  suujiNi: "Number",
   ubahJadiDuit: "Number",
+  jadiAngkaBanh: "Number",
   bikinJadiSuji: "Number",
-  sujiNi: "Number",
 
   // Matematika
   ruuto: "Math.sqrt",
   ru: "Math.sqrt",
-  akarPangkat: "Math.sqrt",
-  robogor: "Math.sqrt",
   heihoukon: "Math.sqrt",
-  akarLur: "Math.sqrt", // deprecated
+  robogor: "Math.sqrt",
+  akarPangkat: "Math.sqrt",
+  akarLur: "Math.sqrt",
+
   zettaichi: "Math.abs",
   zet: "Math.abs",
-  mutlakBanh: "Math.abs",
-  ironiman: "Math.abs",
   zettaiChi: "Math.abs",
-  mutlakLur: "Math.abs", // deprecated
+  ironiman: "Math.abs",
+  mutlakBanh: "Math.abs",
+  mutlakLur: "Math.abs",
+
   kiriSute: "Math.floor",
   ks: "Math.floor",
-  bawahinBanh: "Math.floor",
-  hutanselatan: "Math.floor",
   shitaKiri: "Math.floor",
-  bawahLur: "Math.floor", // deprecated
+  hutanselatan: "Math.floor",
+  bawahinBanh: "Math.floor",
+  bawahLur: "Math.floor",
+
   kiriAge: "Math.ceil",
   kia: "Math.ceil",
-  atasinBanh: "Math.ceil",
-  menaracukur: "Math.ceil",
   ueKiri: "Math.ceil",
-  atasLur: "Math.ceil", // deprecated
-  marume: "Math.round",
-  beki: "Math.pow",
+  menaracukur: "Math.ceil",
+  atasinBanh: "Math.ceil",
+  atasLur: "Math.ceil",
 
-  // JSON
+  marume: "Math.round",
+  maru: "Math.round",
+  maneNi: "Math.round",
+  shakerbot: "Math.round",
+
+  beki: "Math.pow",
+  bek: "Math.pow",
+  tsuyokuNare: "Math.pow",
+  naikinPangkat: "Math.pow",
+
+  randamu: "Math.random",
+  ran: "Math.random",
+  unmeiGacha: "Math.random",
+  rudalmentah: "Math.random",
+
+  // Penanganan Format JSON
   kanjiNi: "JSON.parse",
   kn: "JSON.parse",
-  jadiObjekBanh: "JSON.parse",
-  salintempel: "JSON.parse",
   wakattaYo: "JSON.parse",
-  uraiJsonLur: "JSON.parse", // deprecated
+  salintempel: "JSON.parse",
+  jadiObjekBanh: "JSON.parse",
+  uraiJsonLur: "JSON.parse",
+
   kanjiMojiretsu: "JSON.stringify",
   kmj: "JSON.stringify",
-  jadiTeksBanh: "JSON.stringify",
-  copascaption: "JSON.stringify",
   oshieteNe: "JSON.stringify",
-  bungkusJsonLur: "JSON.stringify", // deprecated
+  copascaption: "JSON.stringify",
+  jadiTeksBanh: "JSON.stringify",
+  bungkusJsonLur: "JSON.stringify",
 
-  // Inisialisasi Barisan
+  // Inisialisasi Barisan (Array Constructor)
   retsu: "((...args) => args)",
   ret: "((...args) => args)",
+  nakamaTachi: "((...args) => args)",
+  budakhitam: "((...args) => args)",
   bikinBarisan: "((...args) => args)",
   kumpulinBocah: "((...args) => args)",
-  budakhitam: "((...args) => args)",
-  nakamaTachi: "((...args) => args)",
   kumpulinJawa: "((...args) => args)",
+
+  // Terminasi Program
+  shikei: "((code = 0) => { if (typeof process !== 'undefined' && process.exit) { process.exit(code); } else { throw new Error('Program selesai dengan kode ' + code); } })",
+  shi: "((code = 0) => { if (typeof process !== 'undefined' && process.exit) { process.exit(code); } else { throw new Error('Program selesai dengan kode ' + code); } })",
+  shineeeYo: "((code = 0) => { if (typeof process !== 'undefined' && process.exit) { process.exit(code); } else { throw new Error('Program selesai dengan kode ' + code); } })",
+  udahKelarinAja: "((code = 0) => { if (typeof process !== 'undefined' && process.exit) { process.exit(code); } else { throw new Error('Program selesai dengan kode ' + code); } })",
+
+  // Penundaan Eksekusi (Sleep)
+  shibaraku: "((ms) => new Promise((resolve) => setTimeout(resolve, ms)))",
+  siba: "((ms) => new Promise((resolve) => setTimeout(resolve, ms)))",
+  matteNeSikit: "((ms) => new Promise((resolve) => setTimeout(resolve, ms)))",
+  nungguinLu: "((ms) => new Promise((resolve) => setTimeout(resolve, ms)))",
+
+  // Jaringan & HTTP
+  ukeru: "fetch",
+  uke: "fetch",
+  tottekiteNe: "fetch",
+  SepongMas: "fetch",
 };
 
 export class Transpiler {
   private indentLevel = 0;
+  private lineMap: Array<{ generatedLine: number; originalLine: number }> = [];
+  private currentGeneratedLine = 1;
 
   private indent(): string {
     return "  ".repeat(this.indentLevel);
   }
 
-  public transpile(program: Program): string {
-    const lines: string[] = [
+  /**
+   * Menghasilkan representasi string JavaScript ES2022+ lengkap dari simpul Program AST.
+   */
+  public transpile(program: Program, options: TranspileOptions = {}): string {
+    this.indentLevel = 0;
+    this.lineMap = [];
+    this.currentGeneratedLine = 1;
+
+    const runtimeHelpers: string[] = [
       "// Hasil Transpilasi WibuScript ke JavaScript (ES2022+)",
       '"use strict";',
       "",
+      "// --- Pustaka Runtime WibuScript Teroptimasi (4 Dialek) ---",
+      "const __nagasa = (v) => (v != null ? (v.length ?? 0) : 0);",
+      "const __utsusu = (arr, fn) => (Array.isArray(arr) ? arr.map(fn) : []);",
+      "const __erabu = (arr, fn) => (Array.isArray(arr) ? arr.filter(fn) : []);",
+      "const __mitsukeru = (arr, fn) => (Array.isArray(arr) ? (arr.find(fn) ?? null) : null);",
+      "const __bunri = (str, sep) => String(str ?? '').split(sep ?? '');",
+      "const __tsunagu = (arr, sep) => (Array.isArray(arr) ? arr.join(sep ?? '') : '');",
+      "const __okikae = (str, from, to) => String(str ?? '').split(from).join(to);",
+      "const __kiri = (str) => String(str ?? '').trim();",
+      "const __fukumu = (t, item) => (Array.isArray(t) ? t.includes(item) : String(t ?? '').includes(item));",
+      "const __narabikae = (arr, fn) => (Array.isArray(arr) ? (fn ? [...arr].sort(fn) : [...arr].sort()) : []);",
+      "const __kirinuki = (t, s, e) => (t != null ? t.slice(s, e) : null);",
+      "const __shurui = (v) => (v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v);",
+      "const __ireta = (arr, item) => (Array.isArray(arr) ? (arr.push(item), arr) : [item]);",
+      "const __toru = (arr) => (Array.isArray(arr) ? arr.pop() : null);",
+      "const __kiru = (arr) => (Array.isArray(arr) ? arr.shift() : null);",
+      "const __ookiku = (str) => String(str ?? '').toUpperCase();",
+      "const __chiisaku = (str) => String(str ?? '').toLowerCase();",
+      "const __gacha = (items, weights) => {",
+      "  if (!Array.isArray(items) || items.length === 0) return null;",
+      "  if (!weights) return items[Math.floor(Math.random() * items.length)];",
+      "  const total = weights.reduce((a, b) => a + b, 0);",
+      "  let r = Math.random() * total;",
+      "  for (let i = 0; i < items.length; i++) {",
+      "    if (r < weights[i]) return items[i];",
+      "    r -= weights[i];",
+      "  }",
+      "  return items[items.length - 1];",
+      "};",
+      "",
     ];
 
-    // Helper functions
-    lines.push(
-      "const __nagasa = (v) => (v ? (v.length ?? 0) : 0);",
-      "const __utsusu = (arr, fn) => arr.map(fn);",
-      "const __erabu = (arr, fn) => arr.filter(fn);",
-      "const __mitsukeru = (arr, fn) => arr.find(fn) ?? null;",
-      "const __bunri = (str, sep) => String(str).split(sep ?? '');",
-      "const __tsunagu = (arr, sep) => (Array.isArray(arr) ? arr.join(sep ?? '') : '');",
-      "const __okikae = (str, from, to) => String(str).split(from).join(to);",
-      "const __kiri = (str) => String(str).trim();",
-      "const __fukumu = (t, item) => (Array.isArray(t) ? t.includes(item) : String(t).includes(item));",
-      "const __narabikae = (arr, fn) => (fn ? [...arr].sort(fn) : [...arr].sort());",
-      "const __kirinuki = (t, s, e) => t.slice(s, e);",
-      "const __gacha = (items, weights) => { if (!Array.isArray(items) || items.length === 0) return null; if (!weights) return items[Math.floor(Math.random() * items.length)]; const total = weights.reduce((a, b) => a + b, 0); let r = Math.random() * total; for (let i = 0; i < items.length; i++) { if (r < weights[i]) return items[i]; r -= weights[i]; } return items[items.length - 1]; };",
-      ""
-    );
+    const bodyLines: string[] = [];
+    let approximateSourceLine = 1;
 
     for (const stmt of program.body) {
-      lines.push(this.transpileStatement(stmt));
+      const transpiled = this.transpileStatement(stmt);
+      bodyLines.push(transpiled);
+
+      // Catat pemetaan baris untuk Source Map
+      const startLine = runtimeHelpers.length + bodyLines.length;
+      this.lineMap.push({
+        generatedLine: startLine,
+        originalLine: approximateSourceLine++,
+      });
     }
 
-    return lines.join("\n");
+    const fullCode = [...runtimeHelpers, ...bodyLines].join("\n");
+
+    if (options.sourceMap) {
+      const map = this.generateSourceMap(
+        options.filename || "source.wibu",
+        options.sourceContent || ""
+      );
+      const mapBase64 = Buffer.from(JSON.stringify(map)).toString("base64");
+      return `${fullCode}\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,${mapBase64}\n`;
+    }
+
+    return fullCode;
+  }
+
+  /**
+   * Menghasilkan struktur data Source Map v3 berdasarkan translasi baris kode.
+   */
+  public generateSourceMap(filename: string, sourceContent: string): SourceMapV3 {
+    let mappings = "";
+    let prevOriginalLine = 0;
+    let prevOriginalCol = 0;
+
+    // Setiap baris hasil transpilasi dipisahkan oleh tanda titik koma (;)
+    for (let i = 0; i < this.lineMap.length; i++) {
+      const item = this.lineMap[i];
+      if (!item) continue;
+
+      const lineDelta = item.originalLine - 1 - prevOriginalLine;
+      const colDelta = 0 - prevOriginalCol;
+
+      // Segmen: generatedCol (0), sourceFileIndex (0), originalLineDelta, originalColDelta
+      const segment = `${encodeVLQ(0)}${encodeVLQ(0)}${encodeVLQ(lineDelta)}${encodeVLQ(colDelta)}`;
+      mappings += (i === 0 ? "" : ";") + segment;
+
+      prevOriginalLine = item.originalLine - 1;
+      prevOriginalCol = 0;
+    }
+
+    return {
+      version: 3,
+      file: filename.replace(/\.wibu$/, ".js"),
+      sources: [filename],
+      sourcesContent: [sourceContent],
+      names: [],
+      mappings,
+    };
   }
 
   private transpileStatement(stmt: Statement): string {
@@ -210,7 +367,9 @@ export class Transpiler {
         return this.transpileMatchStatement(stmt as MatchStatement);
 
       case "ExpressionStatement":
-        return `${this.indent()}${this.transpileExpression((stmt as ExpressionStatement).expression)};`;
+        return `${this.indent()}${this.transpileExpression(
+          (stmt as ExpressionStatement).expression
+        )};`;
 
       default:
         return `${this.indent()}/* Simpul AST tidak dikenal: ${stmt.kind} */`;
@@ -218,7 +377,11 @@ export class Transpiler {
   }
 
   private transpileVariableDeclaration(node: VariableDeclaration): string {
+    const isConst = Boolean((node as unknown as { isConstant?: boolean }).isConstant);
+    const keyword = isConst ? "const" : "let";
     const value = this.transpileExpression(node.value);
+
+    // Destructuring Pola Barisan: kore [a, b, ...sisa] = nilai
     if (node.pattern) {
       if (node.pattern.kind === "ArrayPattern") {
         const elements = node.pattern.elements.map((el) => {
@@ -226,16 +389,18 @@ export class Transpiler {
           if (typeof el === "string") return el;
           return `...${el.argument}`;
         });
-        return `${this.indent()}let [${elements.join(", ")}] = ${value};`;
+        return `${this.indent()}${keyword} [${elements.join(", ")}] = ${value};`;
       } else if (node.pattern.kind === "ObjectPattern") {
+        // Destructuring Pola Kamus Objek: kore { nama, klan: marga } = nilai
         const props = node.pattern.properties.map((p) => {
           if (p.target) return `${p.key}: ${p.target}`;
           return p.key;
         });
-        return `${this.indent()}let { ${props.join(", ")} } = ${value};`;
+        return `${this.indent()}${keyword} { ${props.join(", ")} } = ${value};`;
       }
     }
-    return `${this.indent()}let ${node.identifier} = ${value};`;
+
+    return `${this.indent()}${keyword} ${node.identifier} = ${value};`;
   }
 
   private transpileIfStatement(node: IfStatement): string {
@@ -249,6 +414,13 @@ export class Transpiler {
     this.indentLevel--;
 
     if (node.elseBranch && node.elseBranch.length > 0) {
+      // Optimasi rantai Else-If menjadi struktur if-else bertingkat bersih
+      if (node.elseBranch.length === 1 && node.elseBranch[0]?.kind === "IfStatement") {
+        const nestedIf = this.transpileIfStatement(node.elseBranch[0] as IfStatement);
+        out += `${this.indent()}} else ${nestedIf.trimStart()}`;
+        return out;
+      }
+
       out += `${this.indent()}} else {\n`;
       this.indentLevel++;
       for (const s of node.elseBranch) {
@@ -430,10 +602,26 @@ export class Transpiler {
 
       case "Identifier": {
         const symbol = (expr as Identifier).symbol;
-        // Literal khusus 4 dialek
-        if (["hontou", "hon", "menyalaAbkuh", "unjukkebolehan", "maji", "majiBener"].includes(symbol)) return "true";
-        if (["uso", "ladehBanh", "keracunanmbg", "usoBanget"].includes(symbol)) return "false";
-        if (["munashi", "mu", "maafLancang", "blukutuk", "kara", "kosongZannen"].includes(symbol)) return "null";
+
+        // Pemetaan literal boolean dan null khas 4 dialek
+        if (
+          ["hontou", "hon", "hontouNi", "unjukkebolehan", "menyalaAbkuh", "maji", "majiBener"].includes(
+            symbol
+          )
+        )
+          return "true";
+        if (
+          ["uso", "chigauYo", "keracunanmbg", "ladehBanh", "usoBanget"].includes(
+            symbol
+          )
+        )
+          return "false";
+        if (
+          ["munashi", "mu", "naniKore", "blukutuk", "maafLancang", "kara", "kosongZannen"].includes(
+            symbol
+          )
+        )
+          return "null";
 
         const stdMapped = STDLIB_MAP[symbol];
         if (stdMapped) return stdMapped;
@@ -484,11 +672,13 @@ export class Transpiler {
 
       case "AssignmentExpression": {
         const assign = expr as AssignmentExpression;
+
         if (assign.assignee.kind === "Identifier") {
           const assignee = (assign.assignee as Identifier).symbol;
           const val = this.transpileExpression(assign.value);
           return `${assignee} = ${val}`;
         }
+
         if (assign.assignee.kind === "ArrayPattern") {
           const pat = assign.assignee as ArrayPattern;
           const elements = pat.elements.map((el) => {
@@ -499,6 +689,7 @@ export class Transpiler {
           const val = this.transpileExpression(assign.value);
           return `[${elements.join(", ")}] = ${val}`;
         }
+
         if (assign.assignee.kind === "ObjectPattern") {
           const pat = assign.assignee as ObjectPattern;
           const props = pat.properties.map((p) => {
@@ -508,18 +699,21 @@ export class Transpiler {
           const val = this.transpileExpression(assign.value);
           return `({ ${props.join(", ")} } = ${val})`;
         }
+
         const assignee = this.transpileExpression(assign.assignee as Expression);
         const val = this.transpileExpression(assign.value);
         return `${assignee} = ${val}`;
       }
 
       case "MatchStatement": {
+        // Ekspresi Pattern Matching (shougo) di dalam ekspresi dieksekusi via IIFE aman
         const matchStmt = expr as MatchStatement;
         const disc = this.transpileExpression(matchStmt.discriminant);
         let out = `(() => {\n`;
         this.indentLevel++;
         out += `${this.indent()}switch (${disc}) {\n`;
         this.indentLevel++;
+
         for (const c of matchStmt.cases) {
           if (c.value) {
             out += `${this.indent()}case ${this.transpileExpression(c.value)}: {\n`;
@@ -530,7 +724,9 @@ export class Transpiler {
           for (let i = 0; i < c.body.length; i++) {
             const s = c.body[i]!;
             if (i === c.body.length - 1 && s.kind === "ExpressionStatement") {
-              out += `${this.indent()}return ${this.transpileExpression((s as ExpressionStatement).expression)};\n`;
+              out += `${this.indent()}return ${this.transpileExpression(
+                (s as ExpressionStatement).expression
+              )};\n`;
             } else {
               out += this.transpileStatement(s) + "\n";
             }
@@ -538,6 +734,7 @@ export class Transpiler {
           this.indentLevel--;
           out += `${this.indent()}}\n`;
         }
+
         this.indentLevel--;
         out += `${this.indent()}}\n`;
         this.indentLevel--;
@@ -561,6 +758,7 @@ export class Transpiler {
       case "ArrowFunctionExpression": {
         const arrow = expr as ArrowFunctionExpression;
         const params = arrow.parameters.join(", ");
+
         if (
           arrow.isExpressionBody &&
           arrow.body.length === 1 &&
@@ -570,6 +768,7 @@ export class Transpiler {
           const retVal = ret.value ? this.transpileExpression(ret.value) : "undefined";
           return `((${params}) => ${retVal})`;
         }
+
         let out = `((${params}) => {\n`;
         this.indentLevel++;
         for (const s of arrow.body) {
@@ -585,77 +784,156 @@ export class Transpiler {
         const callee = call.callee;
         const calleeName = typeof callee === "string" ? callee : "";
 
-        // Penanganan metode barisan & pustaka khusus
-        if (["utsusu", "utu", "petainBanh", "henshinSuru", "predikbola"].includes(calleeName)) {
+        // Pemetaan Pustaka Standar Khusus Barisan & String
+        if (
+          ["utsusu", "utu", "henshinSuru", "predikbola", "petainBanh"].includes(
+            calleeName
+          )
+        ) {
           const arr = this.transpileExpression(call.args[0]!);
           const fn = this.transpileExpression(call.args[1]!);
           return `__utsusu(${arr}, ${fn})`;
         }
 
-        if (["erabu", "era", "saringBanh", "senbatsuNe", "morebullets"].includes(calleeName)) {
+        if (
+          ["erabu", "era", "senbatsuNe", "morebullets", "saringBanh"].includes(
+            calleeName
+          )
+        ) {
           const arr = this.transpileExpression(call.args[0]!);
           const fn = this.transpileExpression(call.args[1]!);
           return `__erabu(${arr}, ${fn})`;
         }
 
-        if (["mitsukeru", "mitu", "cariinBanh", "mitsuketaYo", "fesnuker"].includes(calleeName)) {
+        if (
+          ["mitsukeru", "mitu", "mitsuketaYo", "fesnuker", "cariinBanh"].includes(
+            calleeName
+          )
+        ) {
           const arr = this.transpileExpression(call.args[0]!);
           const fn = this.transpileExpression(call.args[1]!);
           return `__mitsukeru(${arr}, ${fn})`;
         }
 
-        if (["bunri", "bu", "pecahKata", "bedahno", "pecahin", "pecahkepala"].includes(calleeName)) {
+        if (
+          ["bunri", "bu", "barabara", "pecahkepala", "pecahKata", "bedahno", "pecahin"].includes(
+            calleeName
+          )
+        ) {
           const str = this.transpileExpression(call.args[0]!);
           const sep = call.args[1] ? this.transpileExpression(call.args[1]) : "''";
           return `__bunri(${str}, ${sep})`;
         }
 
-        if (["tsunagu", "tsuna", "lemKata", "gandengen", "lemin", "lendirmurni"].includes(calleeName)) {
+        if (
+          ["tsunagu", "tsuna", "isshoNi", "lendirmurni", "lemKata", "gandengen", "lemin"].includes(
+            calleeName
+          )
+        ) {
           const arr = this.transpileExpression(call.args[0]!);
           const sep = call.args[1] ? this.transpileExpression(call.args[1]) : "''";
           return `__tsunagu(${arr}, ${sep})`;
         }
 
-        if (["okikae", "oki", "sulapKata", "gantinen", "tumbalkan", "akuntumbal"].includes(calleeName)) {
+        if (
+          ["okikae", "oki", "irekaeruNe", "akuntumbal", "sulapKata", "gantinen", "tumbalkan"].includes(
+            calleeName
+          )
+        ) {
           const str = this.transpileExpression(call.args[0]!);
           const from = this.transpileExpression(call.args[1]!);
           const to = this.transpileExpression(call.args[2]!);
           return `__okikae(${str}, ${from}, ${to})`;
         }
 
-        if (["kiri", "kri", "pangkas", "potongen", "cukur", "cukurfade"].includes(calleeName)) {
+        if (
+          ["kiri", "kri", "kireeNi", "cukurfade", "pangkas", "potongen", "cukur"].includes(
+            calleeName
+          )
+        ) {
           const str = this.transpileExpression(call.args[0]!);
           return `__kiri(${str})`;
         }
 
-        if (["fukumu", "fuku", "punyaGak", "onora", "adaGak", "monyetijo"].includes(calleeName)) {
+        if (
+          ["fukumu", "fuku", "hairuKana", "monyetijo", "punyaGak", "onora", "adaGak"].includes(
+            calleeName
+          )
+        ) {
           const target = this.transpileExpression(call.args[0]!);
           const item = this.transpileExpression(call.args[1]!);
           return `__fukumu(${target}, ${item})`;
         }
 
-        if (["narabikae", "nara", "rapihin", "urutno", "barisin", "goyangpantat"].includes(calleeName)) {
+        if (
+          ["narabikae", "nara", "narabeteNe", "goyangpantat", "rapihin", "urutno", "barisin"].includes(
+            calleeName
+          )
+        ) {
           const arr = this.transpileExpression(call.args[0]!);
           const comp = call.args[1] ? this.transpileExpression(call.args[1]) : "null";
           return `__narabikae(${arr}, ${comp})`;
         }
 
-        if (["kirinuki", "kinu", "potongSebagian", "cuplikno", "comot", "pedangdaging"].includes(calleeName)) {
+        if (
+          ["kirinuki", "kinu", "sukoshiDake", "pedangdaging", "potongSebagian", "cuplikno", "comot"].includes(
+            calleeName
+          )
+        ) {
           const target = this.transpileExpression(call.args[0]!);
           const start = this.transpileExpression(call.args[1]!);
           const end = call.args[2] ? this.transpileExpression(call.args[2]) : "undefined";
           return `__kirinuki(${target}, ${start}, ${end})`;
         }
 
-        if (["gacha", "gac", "tarikGacha", "mputerNasib", "spinZeus", "weeklypass"].includes(calleeName)) {
+        if (
+          ["gacha", "gac", "tarikGacha", "weeklypass", "mputerNasib", "spinZeus"].includes(
+            calleeName
+          )
+        ) {
           const items = this.transpileExpression(call.args[0]!);
           const weights = call.args[1] ? this.transpileExpression(call.args[1]) : "undefined";
           return `__gacha(${items}, ${weights})`;
         }
 
-        if (["nagasa", "naga", "seginiDoang", "doreKurai", "panjangberurat", "tolongCekNagasa", "cekUkuran"].includes(calleeName)) {
+        if (
+          ["nagasa", "naga", "doreKurai", "panjangberurat", "seginiDoang", "tolongCekNagasa", "cekUkuran"].includes(
+            calleeName
+          )
+        ) {
           const arg = this.transpileExpression(call.args[0]!);
           return `__nagasa(${arg})`;
+        }
+
+        if (["shurui", "shu", "naniTypeNe", "omagot"].includes(calleeName)) {
+          const arg = this.transpileExpression(call.args[0]!);
+          return `__shurui(${arg})`;
+        }
+
+        if (["ireta", "ire", "haireNe", "priaotot"].includes(calleeName)) {
+          const arr = this.transpileExpression(call.args[0]!);
+          const item = this.transpileExpression(call.args[1]!);
+          return `__ireta(${arr}, ${item})`;
+        }
+
+        if (["toru", "to", "deteike", "danaterbakar"].includes(calleeName)) {
+          const arr = this.transpileExpression(call.args[0]!);
+          return `__toru(${arr})`;
+        }
+
+        if (["kiru", "ki", "kiriteNe", "kertaslecek"].includes(calleeName)) {
+          const arr = this.transpileExpression(call.args[0]!);
+          return `__kiru(${arr})`;
+        }
+
+        if (["ookiku", "ooki", "ookiVoice", "gakhabisgila"].includes(calleeName)) {
+          const str = this.transpileExpression(call.args[0]!);
+          return `__ookiku(${str})`;
+        }
+
+        if (["chiisaku", "chii", "chiisaiVoice", "monyetbanyumas"].includes(calleeName)) {
+          const str = this.transpileExpression(call.args[0]!);
+          return `__chiisaku(${str})`;
         }
 
         let mappedCallee: string;
@@ -666,6 +944,7 @@ export class Transpiler {
         } else {
           mappedCallee = `(${this.transpileExpression(callee)})`;
         }
+
         const args = call.args.map((a) => this.transpileExpression(a)).join(", ");
         return `${mappedCallee}(${args})`;
       }
@@ -678,11 +957,43 @@ export class Transpiler {
 
 /**
  * Mengonversi kode sumber WibuScript langsung menjadi kode JavaScript murni.
+ * Mendukung opsi penyertaan Source Map v3 inline atau objek.
  */
-export function transpileToJS(sourceCode: string): string {
+export function transpileToJS(sourceCode: string, options: TranspileOptions = {}): string {
   const tokens = tokenize(sourceCode);
   const parser = new Parser();
   const program = parser.produceAST(tokens);
   const transpiler = new Transpiler();
-  return transpiler.transpile(program);
+  return transpiler.transpile(program, options);
+}
+
+/**
+ * Mengompilasi kode sumber WibuScript dan mengembalikan kode JavaScript beserta objek Source Map v3.
+ */
+export function transpileWithSourceMap(
+  sourceCode: string,
+  filename = "source.wibu"
+): TranspileResult {
+  const tokens = tokenize(sourceCode);
+  const parser = new Parser();
+  const program = parser.produceAST(tokens);
+  const transpiler = new Transpiler();
+
+  const code = transpiler.transpile(program, {
+    sourceMap: false,
+    filename,
+    sourceContent: sourceCode,
+  });
+
+  const map = transpiler.generateSourceMap(filename, sourceCode);
+  const mapString = JSON.stringify(map);
+  const mapBase64 = Buffer.from(mapString).toString("base64");
+  const inlineSourceMap = `//# sourceMappingURL=data:application/json;charset=utf-8;base64,${mapBase64}`;
+
+  return {
+    code,
+    map,
+    mapString,
+    inlineSourceMap,
+  };
 }

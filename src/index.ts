@@ -45,7 +45,33 @@ import {
   type RunWibuScriptOptions,
 } from "./runtime";
 import { convertDialect, type Dialect, DIALECT_TABLE } from "./converter";
-import { transpileToJS, Transpiler } from "./transpiler";
+import {
+  transpileToJS,
+  transpileWithSourceMap,
+  Transpiler,
+  type SourceMapV3,
+  type TranspileOptions,
+  type TranspileResult,
+} from "./transpiler";
+import {
+  WibuSandbox,
+  runInSandbox,
+  type SandboxOptions,
+  type SandboxResult,
+} from "./sandbox";
+import {
+  DIALECTS,
+  OFFICIAL_VISUAL_THEME,
+  getDialectMetadata,
+  getKeywordsByCategory,
+  getAllKeywordsForDialect,
+  getAllKeywords,
+  getRegexForCategory,
+  generateMonarchTokensProvider,
+  generateTextMateGrammar,
+  type DialectId,
+  type VisualTokenCategory,
+} from "./dialect-definitions";
 
 export {
   tokenize,
@@ -93,7 +119,26 @@ export {
   type Dialect,
   DIALECT_TABLE,
   transpileToJS,
+  transpileWithSourceMap,
   Transpiler,
+  type SourceMapV3,
+  type TranspileOptions,
+  type TranspileResult,
+  WibuSandbox,
+  runInSandbox,
+  type SandboxOptions,
+  type SandboxResult,
+  DIALECTS,
+  OFFICIAL_VISUAL_THEME,
+  getDialectMetadata,
+  getKeywordsByCategory,
+  getAllKeywordsForDialect,
+  getAllKeywords,
+  getRegexForCategory,
+  generateMonarchTokensProvider,
+  generateTextMateGrammar,
+  type DialectId,
+  type VisualTokenCategory,
 };
 
 export * from "./ast";

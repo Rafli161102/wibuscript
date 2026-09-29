@@ -6,6 +6,27 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan me
 
 ---
 
+## [v2.0.0] - 2026-09-29
+
+### Added
+- **Arsitektur Compiler Pipeline & JS Target Modern (ES2022+)**:
+  - Implementasi kompilasi penuh simpul AST ke JavaScript modern (`let`, `const`, deklarasi fungsi, blok bersarang, perulangan `while` dengan `break`/`continue`).
+  - Pemetaan panggilan fungsi Pustaka Standar (seluruh 4 dialek) langsung ke runtime JavaScript teroptimasi.
+  - Penghasil Source Map v3 resmi (`data:application/json;charset=utf-8;base64,...`) dengan Base64 VLQ encoding untuk kemudahan pelacakan debugging di Node.js dan browser.
+- **Single Source of Truth Dialect Grammar (`src/dialect-definitions.ts`)**:
+  - Definisi tunggal metadata resmi 4 dialek (Jepang Murni, Jepang Singkat, Wibu Absurd, Meme Rongawi).
+  - Skrip otomatisasi generator (`scripts/generate-grammars.ts`) untuk memproduksi Monaco Monarch Tokenizer (Web Playground) dan VS Code TextMate Grammar (`vscode-extension/syntaxes/wibuscript.tmLanguage.json`).
+- **Web Worker Sandbox Runner (`src/sandbox.ts`)**:
+  - Eksekusi terisolasi isomorfik menggunakan `node:worker_threads` pada lingkungan Node.js dan Web Worker pada peramban.
+  - Proteksi resource limit: batas waktu eksekusi default 5000 ms (auto-termination pada infinite loop), pembatas memori, dan keamanan *default-deny* terhadap modul berbahaya.
+  - Komunikasi dua arah (message passing) untuk pengiriman kode sumber dan streaming output terminal (`stdout`/`stderr`).
+- **Dialect Parity & Snapshot Test Suite (`tests/dialect_snapshot.test.ts`)**:
+  - Pengujian parity komprehensif untuk 4 program logika kompleks (Faktorial, Manipulasi Array, Pattern Matching, Destructuring) yang ditulis dalam 4 dialek berbeda.
+  - Verifikasi asersi mutlak: 100% AST identik dan 100% output eksekusi identik di seluruh dialek.
+  - Total pengujian otomatis Vitest meningkat menjadi 107/107 tes (lulus 100%).
+
+---
+
 ## [v1.9.1] - 2026-09-28
 
 ### Added
