@@ -1,12 +1,12 @@
 <!-- File: README.md -->
 <div align="center">
 
-  <img src="https://media.tenor.com/7H-O7N7m4q0AAAAi/anime-typing.gif" width="180" alt="Coding Furiously" />
+  <img src="https://media.tenor.com/7H-O7N7m4q0AAAAi/anime-typing.gif" width="180" alt="Petualang Mengetik Mantra" />
 
-# WibuScript
+# WibuScript: Grimoire Esolang Dunia Isekai
 
 <a href="https://github.com/Rafli161102/wibuscript">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&duration=3500&pause=1000&color=CB3837&center=true&vCenter=true&width=700&lines=Bahasa+Pemrograman+Paling+Absurd+di+Bumi;Kompilator+AST+Skala+Korporat+Ngawiverse;Satu+Kemampuan+Runtime,+Empat+Dialek+Mutlak;Ditulis+Sambil+Merenungi+Nasib;npm+install+-g+wibuscript" alt="WibuScript Typing Animation" />
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&duration=3500&pause=1000&color=CB3837&center=true&vCenter=true&width=700&lines=Selamat+Datang+di+Guild+WibuScript;Bahasa+Pemrograman+Esoterik+Rasa+JRPG;Satu+Mantra+Runtime,+Empat+Faksi+Dialek;Kompilasi+AST+Tanpa+Bikin+UI+Freeze;npm+install+-g+wibuscript" alt="WibuScript Typing Banner" />
 </a>
 
 <br/>
@@ -20,236 +20,197 @@
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
-  <b>Jepang Murni | Jepang Singkat | Wibu Absurd | Meme Rongawi</b>
+  <b>Faksi Jepang Murni | Faksi Jepang Singkat | Faksi Wibu Absurd | Faksi Meme Rongawi</b>
 </p>
 
 <p align="center">
-  <a href="#arsitektur-sistem">Arsitektur</a> |
-  <a href="#spesifikasi-sintaks-sistem-4-dialek-mutlak">4 Dialek Mutlak</a> |
-  <a href="#pustaka-standar-standard-library">Pustaka Standar</a> |
-  <a href="#contoh-program-wibuscript">Contoh Kode</a> |
-  <a href="#panduan-penggunaan-dan-instalasi">Instalasi</a> |
-  <a href="#log-pembaruan-changelog">Changelog</a>
+  <a href="#prolog-dunia-wibuscript">Prolog</a> |
+  <a href="#pilih-faksi-karakter-sistem-4-dialek-mutlak">Pilih Faksi</a> |
+  <a href="#grimoire-mantra-bawaan-pustaka-standar">Grimoire Mantra</a> |
+  <a href="#simulasi-dungeon-battle-contoh-kode">Dungeon Battle</a> |
+  <a href="#quest-memulai-petualangan-instalasi--cli">Quest Log</a>
 </p>
 
 ---
 
 </div>
 
-WibuScript adalah bahasa pemrograman esoterik yang diimplementasikan menggunakan TypeScript dan berjalan di atas arsitektur Tree-Walking Interpreter. Bahasa ini mengabstraksi konstruksi sintaks pemrograman melalui arsitektur Sistem 4 Dialek Mutlak (Jepang Murni, Jepang Singkat, Wibu Absurd Cringe Indo-Jepang, dan Meme Rongawi Otentik Ngawiverse). Proyek ini tersedia secara publik di npm (`npm install -g wibuscript`) dan GitHub Packages, dilengkapi modul inti (Core Engine) yang sepenuhnya universal dan aman untuk peramban, serta antarmuka Web Playground interaktif berbasis Next.js App Router untuk eksekusi kode secara client-side.
+## Prolog: Dunia WibuScript
 
-> [!NOTE]
-> WibuScript dirancang sebagai bahasa pemrograman universal dengan pemisahan tegas antara mesin inti yang aman untuk peramban web dan CLI Runner berbasis Node.js.
+Pernah kepikiran ngoding tapi suasananya berasa lagi ngerapal sihir bareng party di game JRPG jadul? WibuScript lahir buat itu. Ini adalah bahasa pemrograman esoterik berbasis TypeScript dengan arsitektur Tree-Walking Interpreter sungguhan. 
 
-## Arsitektur Sistem
+Bukan sekadar proyek lelucon biasa, WibuScript punya arsitektur solid yang membagi tugas antara Core Engine universal (aman running di browser tanpa modul OS aneh-aneh) dan CLI Runner berbasis Node.js buat eksekusi file script langsung di terminal PC lu.
 
-<img src="https://media.tenor.com/fA15L6yUks0AAAAi/anime-glasses.gif" width="130" align="right" alt="Anime Glasses Architecture" />
+<img src="https://media.tenor.com/fA15L6yUks0AAAAi/anime-glasses.gif" width="140" align="right" alt="Kacamata Analisis Strategi" />
 
-Struktur direktori proyek dirancang secara modular dengan pemisahan tegas antara logika mesin kompilasi, eksekutor baris perintah, dan antarmuka web interaktif:
+### Blueprint Mesin Kompilasi
+Struktur direktori WibuScript dibangun modular biar gampang dirawat pas party lagi leveling:
 
 ```text
 wibuscript/
-├── src/
-│   ├── ast.ts          # Definisi tipe dan struktur Abstract Syntax Tree (AST)
-│   ├── lexer.ts        # Analisis leksikal, tokenisasi, dan resolusi 4 Dialek Mutlak
-│   ├── parser.ts       # Analisis sintaksis (Recursive Descent Parsing ke AST)
-│   ├── runtime.ts      # Tree-Walking Evaluator, Environment hierarkis, dan Standard Library
-│   ├── index.ts        # Entry point Core Engine (ekspor modul universal & browser-safe)
-│   └── cli.ts          # Eksekutor baris perintah (CLI) untuk berkas .wibu via Node.js
-├── app/
-│   ├── layout.tsx      # Root Layout Next.js App Router
-│   ├── page.tsx        # Antarmuka Web Playground dan virtual terminal emulator
-│   └── globals.css     # Konfigurasi Tailwind CSS v4
-├── contoh.wibu         # Berkas demonstrasi kode program WibuScript
-├── package.json        # Konfigurasi dependensi dan skrip proyek
-├── tsconfig.json       # Konfigurasi kompilator TypeScript (Strict Mode)
-└── README.md           # Dokumentasi teknis proyek
+|-- src/
+|   |-- ast.ts          # Definisi struktur pohon sintaks (AST)
+|   |-- lexer.ts        # Scanner mantra dan resolusi 4 Faksi Dialek
+|   |-- parser.ts       # Recursive Descent Parser pengubah token ke AST
+|   |-- runtime.ts      # Tree-Walking Evaluator dan Grimoire Pustaka
+|   |-- index.ts        # Entry point browser-safe untuk Web Playground
+|   `-- cli.ts          # Terminal runner untuk file berekstensi .wibu
+|-- app/                # Arena Web Playground berbasis Next.js App Router
+|-- contoh.wibu         # Skrip uji coba dungeon
+`-- README.md           # Peta panduan petualang
 ```
-
-### 1. Core Engine
-- **Lexer (`src/lexer.ts`)**: Mengurai kode sumber mentah menjadi rangkaian token secara deterministik. Mendukung literal string, numerik, operator aritmatika, operator relasional, akses titik, pelacakan posisi baris/kolom, serta resolusi 4 Dialek Mutlak.
-- **Parser (`src/parser.ts`)**: Menerapkan metode Recursive Descent Parsing berbasis prioritas operator untuk menghasilkan pohon sintaksis abstrak bertipe kuat.
-- **Runtime & Evaluator (`src/runtime.ts`)**: Mengeksekusi simpul AST secara asinkronus menggunakan arsitektur Environment bertingkat.
-- **Browser-Safe Core (`src/index.ts`)**: Menyediakan ekspor API mesin kompilasi yang sepenuhnya steril dari modul internal sistem operasi, memungkinkan eksekusi langsung di lingkungan peramban.
-
-### 2. Frontend Web Playground
-- Dibangun di atas Next.js App Router dan Tailwind CSS v4.
-- Evaluasi kode dilakukan secara murni di sisi peramban pengguna.
-- Menyediakan editor kode berbasis teks dengan dukungan indentasi tab, metrik waktu eksekusi, penghitung token, virtual terminal interaktif, dan fitur Shareable URL.
 
 <div style="clear: both;"></div>
 
-## Spesifikasi Sintaks (Sistem 4 Dialek Mutlak)
+## Pilih Faksi Karakter: Sistem 4 Dialek Mutlak
 
-WibuScript menerapkan standardisasi kosakata berarsitektur **"Sistem 4 Dialek Mutlak"** secara eksklusif pada seluruh lapisan mesin kompilator. Setiap instruksi inti bahasa diakomodasi oleh 4 dialek yang saling kompatibel dan dapat digunakan secara bersilangan.
+Di dunia WibuScript, gak ada kata kunci bahasa Inggris konvensional kayak `let`, `if`, atau `while`. Semuanya sudah diganti total lewat Sistem 4 Dialek Mutlak. Lu bebas milih gaya penulisan sesuai faksi karakter yang lu mainkan:
 
-### Tabel Pemetaan 4 Dialek Mutlak
+- **Jepang Murni**: Kelas Paladin/Mage elegan. Menggunakan istilah Romaji standar yang tertata rapi.
+- **Jepang Singkat**: Kelas Assassin/Ninja. Dibuat serba minimalis buat speedrun ngetik mantra kilat.
+- **Wibu Absurd**: Kelas Isekai Adventurer. Gaya bahasa wibu internet lokal yang cringe dan hiperbolis.
+- **Meme Rongawi**: Kelas Berserker Otentik. Mengadopsi kosakata kultural internet paling liar.
 
-| Kategori Token | Jepang Murni | Jepang Singkat | Wibu Absurd | Meme Rongawi | TokenType | Deskripsi |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Variabel (LET)** | `kore` | `ko` | `iniDesu` | `pokmipokmi` | `TokenType.Var` | Alokasi variabel baru dalam lingkup aktif. |
-| **Tetapan (CONST)** | `zettai` | `ze` | `zettaiDa` | `bundarahma` | `TokenType.Const` | Alokasi konstanta / tetapan nilai memori. |
-| **Kosong (NULL)** | `munashi` | `mu` | `naniKore` | `blukutuk` | `TokenType.Null` | Representasi ketiadaan nilai (null). |
-| **Benar (TRUE)** | `hontou` | `hon` | `hontouNi` | `unjukkebolehan` | `TokenType.True` | Nilai boolean benar (true). |
-| **Salah (FALSE)** | `uso` | `uso` | `chigauYo` | `keracunanmbg` | `TokenType.False` | Nilai boolean salah (false). |
-| **Jika (IF)** | `moshi` | `mo` | `moShiKalo` | `izintampil` | `TokenType.If` | Percabangan kondisi kondisional. |
-| **Selain Jika (ELSE IF)** | `soretomo` | `sore` | `soredemoNe` | `wowok` | `TokenType.ElseIf` | Cabang alternatif bersyarat berikutnya. |
-| **Selainnya (ELSE)** | `hoka` | `ho` | `shoganaiNe` | `woijawa` | `TokenType.Else` | Blok alternatif jika seluruh kondisi tidak terpenuhi. |
-| **Perulangan (WHILE)** | `zutto` | `zu` | `zuttoLoop` | `nyawit` | `TokenType.Loop` | Pengulangan blok selama predikat bernilai truthy. |
-| **Berhenti (BREAK)** | `yame` | `ya` | `yameteKure` | `bijisatu` | `TokenType.Break` | Menghentikan eksekusi perulangan saat ini. |
-| **Lanjut (CONTINUE)** | `tsugi` | `tsu` | `tsugiNe` | `ambatukam` | `TokenType.Continue` | Melompati iterasi perulangan ke putaran berikutnya. |
-| **Fungsi (FUNCTION)** | `jutsu` | `ju` | `watashiJutsu` | `fufufafa` | `TokenType.Function` | Deklarasi subrutin / fungsi berparameter. |
-| **Kembalikan (RETURN)** | `kaesu` | `kae` | `haiBeri` | `kandabahlil` | `TokenType.Return` | Menghentikan fungsi dan mengembalikan nilai. |
-| **Tampilkan (PRINT)** | `mite` | `mi` | `iuYo` | `salamkenal` | `TokenType.Print` | Mencetak pesan ke konsol terminal. |
-| **Tunggu (AWAIT)** | `matte` | `mat` | `matteNe` | `admindatang` | `TokenType.Await` | Penanda jeda waktu atau eksekusi asinkronus. |
-| **Coba (TRY)** | `kokoromi` | `koko` | `yatteMiyo` | `ragnamok` | `TokenType.Try` | Blok penanganan eksepsi berpotensi galat. |
-| **Tangani (CATCH)** | `yurusu` | `yuru` | `gomennasai` | `amanBos` | `TokenType.Catch` | Blok tangkapan dan pemulihan galat runtime. |
-| **Iterasi (FOR-IN)** | `subete` | `sube` | `zenbuNe` | `thugshaker` | `TokenType.ForEach` | Perulangan melintasi seluruh elemen koleksi barisan atau teks. |
-| **Penghubung (IN)** | `no` | `no` | `karaNe` | `alasdaun` | `TokenType.In` | Partikel penghubung variabel elemen dan koleksi. |
-| **Kelas (CLASS)** | `sekte` | `sek` | `nakama` | `sektejomok` | `TokenType.Class` | Deklarasi cetak biru objek / kelas sekte. |
-| **Konstruktor (CONSTRUCTOR)** | `tanjou` | `tan` | `umareta` | `ambatunat` | `TokenType.Constructor` | Metode inisialisasi instansi objek sekte. |
-| **Objek Baru (NEW)** | `atarashii` | `ata` | `atarashiiNe` | `ambatumbas` | `TokenType.New` | Membuat instansi objek baru dari sekte/kelas. |
-| **Pewarisan (EXTENDS)** | `keishou` | `kei` | `kouhaiDesu` | `jalurhukum` | `TokenType.Extends` | Menurunkan properti dan metode dari sekte induk. |
-| **Diri Sendiri (THIS)** | `jibun` | `ji` | `oreSama` | `lanangmas` | `TokenType.This` | Mengakses dan memodifikasi anggota instansi objek aktif. |
-| **Ekspor (EXPORT)** | `koukai` | `kou` | `sebarJutsu` | `umpansilang` | `TokenType.Export` | Mengekspor simbol dan fungsi ke luar berkas modul. |
-| **Impor (IMPORT)** | `toriyoseru` | `tori` | `summonJutsu` | `begalbaju` | `TokenType.Import` | Mengimpor simbol atau pustaka dari berkas/modul lain. |
+Kerennya lagi, mesin Lexer memetakan keempat dialek ini ke Token Type yang sama di belakang layar. Lu bahkan bisa bikin kode campur aduk antar-faksi tanpa bikin parser meledak.
 
-## Pustaka Standar (Standard Library)
+### Tabel Mantra Inti (Core Syntax)
+
+| Kategori Mantra | Faksi Jepang Murni | Faksi Jepang Singkat | Faksi Wibu Absurd | Faksi Meme Rongawi | Fungsi Logika |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Simpan Variabel** | `kore` | `ko` | `iniDesu` | `pokmipokmi` | Simpan data yang nilainya bisa berubah sewaktu-waktu. |
+| **Kunci Tetapan** | `zettai` | `ze` | `zettaiDa` | `bundarahma` | Kunci nilai absolut, haram hukumnya diubah. |
+| **Ketiadaan (Null)** | `munashi` | `mu` | `naniKore` | `blukutuk` | Menandakan slot inventaris atau variabel kosong melompong. |
+| **Kondisi Valid** | `hontou` | `hon` | `hontouNi` | `unjukkebolehan` | Nilai kebenaran boolean (True). |
+| **Kondisi Palsu** | `uso` | `uso` | `chigauYo` | `keracunanmbg` | Nilai kepalsuan boolean (False). |
+| **Percabangan (If)** | `moshi` | `mo` | `moShiKalo` | `izintampil` | Cek kondisi, lanjut eksekusi kalau status valid. |
+| **Alternatif (Else If)** | `soretomo` | `sore` | `soredemoNe` | `wowok` | Jalur alternatif kalau kondisi pertama gagal. |
+| **Mentok (Else)** | `hoka` | `ho` | `shoganaiNe` | `woijawa` | Rute cadangan terakhir saat semua cabang buntu. |
+| **Looping (While)** | `zutto` | `zu` | `zuttoLoop` | `nyawit` | Grinding kode terus-menerus selama syarat terpenuhi. |
+| **Keluar Loop** | `yame` | `ya` | `yameteKure` | `bijisatu` | Berhenti paksa dari perulangan dungeon. |
+| **Lanjut Loop** | `tsugi` | `tsu` | `tsugiNe` | `ambatukam` | Skip sisa putaran saat ini, langsung tancap gas ke iterasi berikutnya. |
+| **Segel Jurus (Func)** | `jutsu` | `ju` | `watashiJutsu` | `fufufafa` | Bungkus logika jadi fungsi sakti yang bisa dipanggil ulang. |
+| **Lempar Hasil** | `kaesu` | `kae` | `haiBeri` | `kandabahlil` | Kembalikan hasil olahan jurus ke pemanggil. |
+| **Teriak Console** | `mite` | `mi` | `iuYo` | `salamkenal` | Cetak pesan atau hasil mantra ke layar konsol terminal. |
+| **Jeda Asinkronus** | `matte` | `mat` | `matteNe` | `admindatang` | Tahan eksekusi proses nungguin tugas async kelar. |
+| **Tes Bahaya (Try)** | `kokoromi` | `koko` | `yatteMiyo` | `ragnamok` | Masuk ke blok rawan galat tanpa takut game over. |
+| **Atasi Galat (Catch)** | `yurusu` | `yuru` | `gomennasai` | `amanBos` | Tangkap error dan pulihkan kondisi sistem. |
+| **Buka Party (Class)** | `sekte` | `sek` | `nakama` | `sektejomok` | Deklarasi cetak biru objek atau guild karakter. |
+| **Lahir Objek** | `tanjou` | `tan` | `umareta` | `ambatunat` | Inisialisasi status dasar saat anggota party baru diciptakan. |
+| **Summon Instansi** | `atarashii` | `ata` | `atarashiiNe` | `ambatumbas` | Buat instansi nyata dari cetak biru kelas. |
+| **Warisan Guild** | `keishou` | `kei` | `kouhaiDesu` | `jalurhukum` | Turunkan jurus dan status dari kelas induk ke anak. |
+| **Status Diri** | `jibun` | `ji` | `oreSama` | `lanangmas` | Akses properti milik instansi karakter itu sendiri. |
+
+## Grimoire Mantra Bawaan (Pustaka Standar)
 
 <img src="https://media.tenor.com/K_l082wA3m8AAAAi/magic-anime.gif" width="130" align="left" alt="Anime Magic Syntax" style="margin-right: 15px;" />
 
-WibuScript menyediakan Pustaka Standar sebagai kumpulan fungsi bawaan yang dapat digunakan tanpa membuat implementasi fungsi tersebut secara manual.
+WibuScript menyediakan Grimoire mantra bawaan biar lu gak perlu repot bikin fungsi dasar dari nol saat bertualang. Mengusung prinsip satu implementasi internal untuk empat faksi sintaks, semua fungsi ini punya perilaku runtime yang identik di balik layar.
 
-Pustaka Standar dirancang mengikuti prinsip utama WibuScript:
-> Satu kemampuan runtime, empat bentuk sintaks.
-
-Keempat dialek tidak memiliki implementasi pustaka yang terpisah. Setiap nama fungsi pada masing-masing dialek hanya merupakan nama permukaan yang dipetakan menuju fungsi internal yang sama.
+Perbedaan faksi cuma ada di cara manggil mantranya, bukan di efek sihirnya.
 
 <div style="clear: both;"></div>
 
-Dengan demikian:
-```text
-Jepang Murni ─────┐
-Jepang Singkat ───┤
-Wibu Absurd ──────┼──→ Fungsi Runtime yang sama
-Meme Rongawi ─────┘
-```
+### Daftar Mantra Pustaka Unggulan
 
-Perbedaan dialek hanya berada pada cara programmer memanggil fungsi, bukan pada perilaku fungsi tersebut.
-
-### Prinsip Pustaka
-Pustaka Standar mengikuti beberapa aturan:
-1. Setiap fungsi memiliki satu fungsi internal.
-2. Setiap dialek memiliki satu nama khusus untuk fungsi tersebut.
-3. Tidak terdapat alias tambahan dalam dialek yang sama.
-4. Nama fungsi pustaka tidak boleh menggunakan kata yang telah ditetapkan sebagai kata kunci inti (seperti mite, iuYo, dsb).
-5. Fungsi yang sama harus menghasilkan perilaku runtime yang sama pada seluruh dialek.
-6. Penamaan pustaka tidak mengubah struktur AST maupun evaluator.
-
-### Daftar Fungsi Pustaka Utama
-
-| Kemampuan | Jepang Murni | Jepang Singkat | Wibu Absurd | Meme Rongawi | Balikan |
+| Efek Sihir | Faksi Jepang Murni | Faksi Jepang Singkat | Faksi Wibu Absurd | Faksi Meme Rongawi | Output |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Output** | `kuchiMite(pesan)` | `km(pesan)` | `omaeWaIu(pesan)` | `cawapresin(pesan)` | `Null` |
-| **Jeda** | `shibaraku(ms)` | `siba(ms)` | `matteNeSikit(ms)` | `nungguinLu(ms)` | `Null` |
-| **Waktu** | `imaJikan()` | `ima()` | `nanjiDesu()` | `kopihitam()` | `String` |
-| **Panjang** | `nagasa(nilai)` | `naga(nilai)` | `doreKurai(nilai)` | `panjangberurat(nilai)` | `Number` |
-| **Angka Acak** | `randamu(min, max)` | `ran(min, max)` | `unmeiGacha(min, max)` | `rudalmentah(min, max)` | `Number` |
-| **Buat Array** | `retsu(...)` | `ret(...)` | `nakamaTachi(...)` | `budakhitam(...)` | `Array` |
+| **Kirim Pesan** | `kuchiMite(teks)` | `km(teks)` | `omaeWaIu(teks)` | `cawapresin(teks)` | `Null` |
+| **Meditasi (Delay)** | `shibaraku(ms)` | `siba(ms)` | `matteNeSikit(ms)` | `nungguinLu(ms)` | `Null` |
+| **Cek Waktu Realtime** | `imaJikan()` | `ima()` | `nanjiDesu()` | `kopihitam()` | `String` |
+| **Ukur Kapasitas** | `nagasa(target)` | `naga(target)` | `doreKurai(target)` | `panjangberurat(target)` | `Number` |
+| **Gacha Nasib (RNG)** | `randamu(min, max)` | `ran(min, max)` | `unmeiGacha(min, max)` | `rudalmentah(min, max)` | `Number` |
+| **Bentuk Pasukan** | `retsu(...)` | `ret(...)` | `nakamaTachi(...)` | `budakhitam(...)` | `Array` |
+| **Tarik Anggota (Push)** | `ireta(arr, item)` | `ire(arr, item)` | `haireNe(arr, item)` | `priaotot(arr, item)` | `Array` |
 
 > [!NOTE]
-> Untuk daftar lengkap Pustaka Standar (termasuk fungsi Array, Manipulasi String, I/O Berkas, dan Operasi Matematika), silakan merujuk pada berkas dokumentasi internal di repositori WibuScript.
+> Grimoire lengkap mencakup pengolahan JSON, kalkulasi akar/pangkat, pemotongan teks, sampai sistem I/O berkas untuk mode CLI.
 
-## Contoh Program WibuScript
+## Simulasi Dungeon Battle: Contoh Kode
 
 <img align="right" width="160" src="https://media.tenor.com/jNgKSlUpmkEAAAAM/typing-laptop.gif" alt="Cat Coding" />
 
-Berikut adalah contoh program lengkap yang mendemonstrasikan integrasi Sistem 4 Dialek Mutlak dengan manipulasi teks, array, objek kamus, dan kontrol loop. Kode ini ditulis menggunakan campuran dialek untuk memperlihatkan kebebasan kompilator.
+Di bawah ini adalah simulasi pertempuran mini yang ditulis pake gaya campuran antar-faksi. Ini bukti nyata kalau arsitektur kompilator WibuScript fleksibel dan membebaskan gaya koding lu:
 
 ```javascript
-// Demonstrasi Tipe Data Objek, Sistem 4 Dialek Mutlak, dan Kontrol Perulangan
-kore pahlawan = { 
-  nama: "Ksatria", 
-  elemen: "Cahaya", 
-  level: 1 
+// Mempersiapkan Status Karakter Pahlawan
+kore pahlawan = {
+  nama: "Ksatria Kegelapan",
+  level: 1,
+  hp: 100
 };
 
-zettai namaBesar = ookiku(pahlawan.nama);
-ko namaKecil = chiisaku(pahlawan.nama);
-kuchiMite("Karakter Kapital: " + namaBesar + " | Huruf Kecil: " + namaKecil);
-km("Waktu eksekusi: " + ima());
+zettai namaKeren = ookiku(pahlawan.nama);
+kuchiMite("Pahlawan yang terpilih: " + namaKeren);
+km("Waktu mulai raid: " + ima());
 
-iniDesu daftarSkill = nakamaTachi("Tebasan Cahaya", "Perisai Suci");
-haireNe(daftarSkill, "Penyembuhan");
-omaeWaIu("Jumlah skill aktif: " + doreKurai(daftarSkill));
+// Membentuk Inventaris Skill Memakai Faksi Wibu Absurd
+iniDesu kantongSkill = nakamaTachi("Tebasan Angin", "Pelindung Bayangan");
+haireNe(kantongSkill, "Mantra Darurat");
+omaeWaIu("Jumlah skill yang siap dipakai: " + doreKurai(kantongSkill));
 
-pokmipokmi hitung = 0;
-zutto (hitung < 5) {
-  hitung = hitung + 1;
+// Simulasi Pertarungan Looping Campuran Faksi Rongawi dan Jepang
+pokmipokmi ronde = 0;
+zutto (ronde < 5) {
+  ronde = ronde + 1;
 
-  moshi (hitung == 2) {
-    cawapresin("Sesi 2 dilewati (tsugi)");
+  moshi (ronde == 2) {
+    cawapresin("Ronde 2 musuh kabur sebentar, skip giliran!");
     tsugi;
   }
 
-  kuchiMite("Menyelesaikan sesi ke-" + hitung);
+  kuchiMite("Menyerang monster di ronde ke-" + ronde);
 
-  moShiKalo (hitung == 4) {
-    kuchiMite("Stamina habis! (yame)");
+  moShiKalo (ronde == 4) {
+    kuchiMite("Mana karakter habis, batalkan raid!");
     bijisatu;
   }
 }
 
-kuchiMite("Simulasi selesai.");
+kuchiMite("Ekspedisi dungeon selesai dengan damai.");
 ```
 
 <div style="clear: both;"></div>
 
-## Panduan Penggunaan dan Instalasi
+## Quest Memulai Petualangan: Instalasi & CLI
 
 <img src="https://media.tenor.com/-wZAi-4EXugAAAAM/anime-keyboard.gif" width="140" align="right" alt="Anime Hacker Typing" />
 
-> [!TIP]
-> Paket CLI resmi WibuScript dapat dijalankan langsung tanpa instalasi lokal menggunakan npx:
-> ```bash
-> npx wibuscript --help
-> ```
+Lu gak perlu repot ritual berbelit-belit buat mulai jalanin skrip WibuScript di komputer lu. Semua perkakas baris perintah sudah dipaketkan rapi di npm global.
 
-### 1. Kebutuhan Sistem
-- **Node.js**: Versi 18.0.0 atau lebih baru.
-- **npm**: Versi 9.0.0 atau lebih baru.
-
-### 2. Penggunaan Baris Perintah (CLI)
-WibuScript CLI menyediakan fungsionalitas menyeluruh untuk pengembangan lokal:
+Mau coba instan tanpa perlu instalasi lokal? Langsung panggil via npx:
 
 ```bash
-# 0. Instalasi Global via NPM
+npx wibuscript --help
+```
+
+### Kebutuhan Perangkat Petualang
+- **Node.js**: Versi 18.0.0 atau yang lebih baru.
+- **npm**: Versi 9.0.0 atau yang lebih baru.
+
+### Perintah Mantra CLI (Command Center)
+
+```bash
+# 1. Pasang paket petualang secara global
 npm install -g wibuscript
 
-# 1. Memulai REPL Interaktif
+# 2. Buka konsol sihir interaktif (REPL)
 wibu
 
-# 2. Menjalankan berkas kode sumber
-wibu run contoh.wibu
+# 3. Jalankan skrip petualangan file .wibu
+wibu run quest_pertama.wibu
 
-# 3. Mengompilasi ke JavaScript modern
-wibu build contoh.wibu -o hasil.js
+# 4. Transpile mantra WibuScript ke JavaScript modern
+wibu build quest_pertama.wibu -o hasil_mantra.js
 
-# 4. Mengonversi otomatis antar-4 dialek
-wibu convert contoh.wibu --to rongawi -o rongawi.wibu
+# 5. Konversi otomatis gaya penulisan ke faksi Rongawi
+wibu convert quest_pertama.wibu --to rongawi -o versi_rongawi.wibu
 ```
 
 <div style="clear: both;"></div>
-
----
-
-## Log Pembaruan (Changelog)
-
-Catatan rilis lengkap dan riwayat perubahan versi WibuScript dapat dilihat pada berkas [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
 <div align="center">
   <img src="https://media.tenor.com/mN-2yFvFO8UAAAAM/anime-sleep-sleepy.gif" width="200" alt="Anime Sleeping Exhausted" />
-  <p><i>Kompilator selesai dieksekusi... Saatnya istirahat.</i></p>
+  <p><i>Kompilator selesai dieksekusi... Saatnya party beristirahat di inn terdekat.</i></p>
 </div>
