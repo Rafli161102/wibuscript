@@ -1,15 +1,17 @@
-#!/usr/bin/env node
 // File: src/cli.ts
 // ============================================================================
 // WIBUSCRIPT CLI RUNNER
 // Eksekutor Command Line Interface untuk menjalankan berkas .wibu,
-// memulai REPL interaktif, mengompilasi ke JavaScript, dan mengonversi antar-dialek.
+// memulai REPL interaktif, mengompilasi ke JavaScript, mengonversi antar-dialek,
+// memasang dependensi (Wibu PM), serta menjalankan Language Server (LSP).
 // ============================================================================
 
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { runWibuScript, transpileToJS, convertDialect, type Dialect } from "./index";
 import { startREPL } from "./repl";
+import { installPackage } from "./pm";
+import { startLanguageServer } from "./lsp";
 
 const WIBU_VERSION = "2.0.1";
 
@@ -23,6 +25,8 @@ function printUsage(): void {
   console.log("  wibu <berkas.wibu>            Menjalankan berkas WibuScript (pintasan)");
   console.log("  wibu build <berkas.wibu>      Kompilasi berkas ke JavaScript (opsi: -o <output.js>)");
   console.log("  wibu convert <berkas> --to <dialek>  Konversi antar-dialek (murni, singkat, wibu, rongawi)");
+  console.log("  wibu add <paket>              Mengunduh pustaka pihak ketiga ke node_modules");
+  console.log("  wibu lsp                      Menjalankan Wibu Language Server Protocol (LSP)");
   console.log("  wibu --version, -v            Menampilkan versi CLI");
   console.log("  wibu --help, -h               Menampilkan bantuan ini\n");
   console.log("Contoh:");
@@ -30,6 +34,8 @@ function printUsage(): void {
   console.log("  wibu run kode.wibu");
   console.log("  wibu build kode.wibu -o hasil.js");
   console.log("  wibu convert kode.wibu --to rongawi");
+  console.log("  wibu add matematika-wibu");
+  console.log("  wibu lsp");
 }
 
 function printVersion(): void {
@@ -87,7 +93,7 @@ function handleBuild(args: string[]): void {
     const sourceCode = fs.readFileSync(resolvedPath, "utf-8");
     const jsCode = transpileToJS(sourceCode);
     fs.writeFileSync(outputPath, jsCode, "utf-8");
-    console.log(`✨ Sukses mengompilasi '${targetFile}' ke '${path.basename(outputPath)}'`);
+    console.log(`[Build Sukses] Sukses mengompilasi '${targetFile}' ke '${path.basename(outputPath)}'`);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error(`[Build Error] ${msg}`);
@@ -130,7 +136,7 @@ function handleConvert(args: string[]): void {
 
     if (outputPath) {
       fs.writeFileSync(outputPath, convertedCode, "utf-8");
-      console.log(`✨ Sukses mengonversi dialek ke '${targetDialect}' pada '${path.basename(outputPath)}'`);
+      console.log(`[Convert Sukses] Sukses mengonversi dialek ke '${targetDialect}' pada '${path.basename(outputPath)}'`);
     } else {
       console.log(convertedCode);
     }
@@ -187,6 +193,24 @@ async function main(): Promise<void> {
 
     case "convert":
       handleConvert(args.slice(1));
+      return;
+
+    case "add": {
+      const targetPkg = args[1];
+      if (!targetPkg) {
+        console.error("[Error] Nama paket pihak ketiga diperlukan setelah 'add'.");
+        console.error("Penggunaan: wibu add <nama-paket>");
+        process.exit(1);
+      }
+      const success = installPackage(targetPkg);
+      if (!success) {
+        process.exit(1);
+      }
+      return;
+    }
+
+    case "lsp":
+      startLanguageServer();
       return;
 
     default: {
