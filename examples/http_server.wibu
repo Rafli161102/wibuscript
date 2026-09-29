@@ -20,7 +20,7 @@ kore server = sabahTsukuru((req, res) => {
       status: "sukses",
       pesan: "WibuScript Server berjalan dengan normal",
       waktu: imaJikan(),
-      versi: "2.6.1"
+      versi: "2.6.2"
     }, 200);
   } hoka moshi (req.url == "/api/wibu") {
     res.json({

@@ -2,7 +2,7 @@
   "name": "wibuscript-lang",
   "displayName": "WibuScript Language Support",
   "description": "Language Server Protocol dan Syntax Highlighting resmi untuk bahasa pemrograman WibuScript",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "publisher": "wibuscript-opensource",
   "engines": {
     "vscode": "^1.80.0"

@@ -4,7 +4,7 @@ Semua pembaruan penting dan catatan rilis untuk proyek **WibuScript** didokument
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan mematuhi [Semantic Versioning](https://semver.org/).
 
-## [v2.6.1] - 2026-09-29
+## [v2.6.2] - 2026-09-29
 
 ### Added
 - **Pendaftaran GitHub Linguist & Pewarnaan Sintaks Repositori**:

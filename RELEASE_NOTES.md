@@ -1,11 +1,11 @@
 # WibuScript Official Release Notes
-Dokumen Catatan Rilis Resmi WibuScript (v1.0.0 - v2.6.1)
+Dokumen Catatan Rilis Resmi WibuScript (v1.0.0 - v2.6.2)
 
 Semua riwayat pembaruan, evolusi arsitektur, dan catatan rilis resmi untuk ekosistem bahasa pemrograman WibuScript didokumentasikan di sini secara kronologis dari versi awal hingga versi terbaru.
 
 ---
 
-## [v2.6.1] - 2026-09-29
+## [v2.6.2] - 2026-09-29
 
 ### Added
 - **Pendaftaran GitHub Linguist & Pewarnaan Sintaks Repositori**:

@@ -17,7 +17,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![Vitest](https://img.shields.io/badge/Vitest-Passing%20189%2F189-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v2.6.1-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.6.2-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
@@ -298,7 +298,7 @@ wibu lsp
 
 ## Changelog
 
-### v2.6.1
+### v2.6.2
 - **GitHub Linguist Registration & Code Syntax Highlighting**: Configured `.gitattributes` to map all `*.wibu` files to GitHub Linguist syntax highlighter (`linguist-language=JavaScript`, `linguist-detectable=true`) for rich, readable code presentation on GitHub. Provided language specification manifest `.github/linguist/wibuscript.yml`.
 - **Deep Code Stabilization & Example Test Suite (`tests/examples.test.ts`)**: Added 10 automated test cases verifying that all example scripts (`examples/kalkulator.wibu`, `examples/utama.wibu`, `examples/oop_sekte.wibu`, `examples/rongawi_meme.wibu`, `examples/interop_npm.wibu`, `examples/http_server.wibu`, `examples/web_fetch_dom.wibu`, `contoh.wibu`, `uji.wibu`) run cleanly without error. Total test suite expanded to 189 passing tests.
 - **Historical v1.0 Syntax Backward Compatibility**: Restored legacy keyword aliases in Lexer (`koreWa`, `bikinJutsu`, `balikinDesu`, `chigau`, `kasihMite`) for seamless legacy code execution.
