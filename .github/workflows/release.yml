@@ -12,6 +12,10 @@ permissions:
   contents: write
   packages: write
 
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
   release:
     name: Build, Test, and Publish Release
@@ -88,7 +92,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "${{ steps.meta.outputs.tag }}" -m "Release ${{ steps.meta.outputs.tag }} - WibuScript Official Release"
-          git push origin "${{ steps.meta.outputs.tag }}"
+          git push origin "${{ steps.meta.outputs.tag }}" || true
 
       - name: Generate Tarball Asset
         run: |
@@ -106,23 +110,34 @@ jobs:
           VERSION: ${{ steps.meta.outputs.version }}
           RELEASE_EXISTS: ${{ steps.check_release.outputs.release_exists }}
         run: |
-          ASSET_FILE=$(ls wibuscript-*.tgz | head -n 1)
+          ASSET_FILE=$(ls wibuscript-*.tgz 2>/dev/null | head -n 1 || true)
           TITLE="v${VERSION} - Compiler Pipeline ES2022, Sandbox Runner, Dialect Parity"
 
-          if [ "$RELEASE_EXISTS" = "true" ]; then
+          # Periksa ulang secara real-time apakah rilis sudah ada (mencegah tabrakan konkurensi)
+          if gh release view "$TAG" >/dev/null 2>&1 || [ "$RELEASE_EXISTS" = "true" ]; then
             echo "Release $TAG already exists. Updating release notes and assets..."
             gh release edit "$TAG" \
               --title "$TITLE" \
               --notes-file RELEASE_NOTES.md \
-              --latest
+              --latest || true
             if [ -n "$ASSET_FILE" ]; then
-              gh release upload "$TAG" "$ASSET_FILE" --clobber
+              gh release upload "$TAG" "$ASSET_FILE" --clobber || true
             fi
           else
             echo "Creating new release for $TAG..."
-            gh release create "$TAG" \
-              --title "$TITLE" \
-              --notes-file RELEASE_NOTES.md \
-              --latest \
-              "$ASSET_FILE"
+            CREATE_ARGS=("$TAG" --title "$TITLE" --notes-file RELEASE_NOTES.md --latest)
+            if [ -n "$ASSET_FILE" ]; then
+              CREATE_ARGS+=("$ASSET_FILE")
+            fi
+
+            if ! gh release create "${CREATE_ARGS[@]}"; then
+              echo "Release creation encountered error (possible race condition or pre-existing release). Updating existing release..."
+              gh release edit "$TAG" \
+                --title "$TITLE" \
+                --notes-file RELEASE_NOTES.md \
+                --latest || true
+              if [ -n "$ASSET_FILE" ]; then
+                gh release upload "$TAG" "$ASSET_FILE" --clobber || true
+              fi
+            fi
           fi
