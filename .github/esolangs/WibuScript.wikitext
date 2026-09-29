@@ -1,0 +1,204 @@
+'''WibuScript''' is an [[esoteric programming language]] and multi-dialect JavaScript transpiler created in 2026 by [[Muhammad Rafli]] (Rafli161102). Designed to bridge Japanese anime tropes, otaku culture, and Indonesian internet meme culture into modern software development, WibuScript translates stylized pseudo-Japanese and Indonesian internet slang into standard, high-performance ECMAScript.
+
+{{infobox proglang
+|name=WibuScript
+|author=[[Muhammad Rafli]]
+|year=[[:Category:2026|2026]]
+|paradigm=Imperative, Object-Oriented, Functional
+|files=<code>.wibu</code>
+|refimpl=[https://github.com/Rafli161102/wibuscript GitHub repository]
+|turing=Yes
+}}
+
+== Overview ==
+Unlike many joke languages that are intentionally unusable or limited to stack machines, WibuScript is Turing-complete, feature-rich, and compiles directly to modern JavaScript. It includes a complete Lexer, Parser (AST generator), Transpiler, and interactive REPL, with runtime support for standard data structures, asynchronous operations, file I/O, error handling, and object-oriented programming.
+
+WibuScript features four canonical dialects with 100% syntactic and semantic parity. A program written in any dialect executes with identical behavior, and code written across different dialects can even be mixed within the same source file.
+
+== Dialects ==
+The four official dialects of WibuScript are:
+# '''Jepang Murni (Pure Japanese)''': Romanized Japanese keywords providing a formal anime/manga atmosphere.
+# '''Jepang Singkat (Short Japanese)''': Compact, abbreviated keywords optimized for concise typing and competitive coding.
+# '''Wibu Absurd (Absurd Weeb)''': Highly expressive dialect based on contemporary Indonesian anime community slang and otaku expressions.
+# '''Meme Rongawi (Rongawi Meme)''': Humorous and satirical dialect drawing from Indonesian surreal internet humor and Rongawi subculture.
+
+=== Keyword Comparison Table ===
+{| class="wikitable"
+! Meaning / Construct !! Pure Japanese !! Short Japanese !! Absurd Weeb !! Meme Rongawi
+|-
+| Variable declaration (var/let) || <code>kore</code> || <code>ko</code> || <code>iniDesu</code> || <code>pokmipokmi</code>
+|-
+| Constant declaration (const) || <code>zettai</code> || <code>ze</code> || <code>zettaiDa</code> || <code>bundarahma</code>
+|-
+| Function definition || <code>jutsu</code> || <code>ju</code> || <code>mybini</code> || <code>fufufafa</code>
+|-
+| Return statement || <code>kaesu</code> || <code>kae</code> || <code>haiBeri</code> || <code>kandabahlil</code>
+|-
+| Conditional: If || <code>moshi</code> || <code>mo</code> || <code>moShiKalo</code> || <code>izintampil</code>
+|-
+| Conditional: Else If || <code>soretomo</code> || <code>sore</code> || <code>soredemoNe</code> || <code>wowok</code>
+|-
+| Conditional: Else || <code>hoka</code> || <code>ho</code> || <code>shoganaiNe</code> || <code>woijawa</code>
+|-
+| While loop || <code>zutto</code> || <code>zu</code> || <code>zuttoLoop</code> || <code>nyawit</code>
+|-
+| Loop break || <code>yame</code> || <code>ya</code> || <code>yameteKure</code> || <code>bijisatu</code>
+|-
+| Loop continue || <code>tsugi</code> || <code>tsu</code> || <code>tsugiNe</code> || <code>ambatukam</code>
+|-
+| Await (Async) || <code>matte</code> || <code>mat</code> || <code>matteNe</code> || <code>admindatang</code>
+|-
+| Try block || <code>kokoromi</code> || <code>koko</code> || <code>yatteMiyo</code> || <code>ragnamok</code>
+|-
+| Catch block || <code>yurusu</code> || <code>yuru</code> || <code>gomennasai</code> || <code>amanBos</code>
+|-
+| Finally block || <code>subete</code> || <code>sube</code> || <code>zenbuNe</code> || <code>thugshaker</code>
+|-
+| Class declaration || <code>sekte</code> || <code>sek</code> || <code>nakama</code> || <code>sektejomok</code>
+|-
+| Constructor || <code>tanjou</code> || <code>tan</code> || <code>umareta</code> || <code>ambatunat</code>
+|-
+| Instantiation (new) || <code>atarashii</code> || <code>ata</code> || <code>atarashiiNe</code> || <code>ambatumbas</code>
+|-
+| Inheritance (extends) || <code>keishou</code> || <code>kei</code> || <code>kouhaiDesu</code> || <code>jalurhukum</code>
+|-
+| Self-reference (this) || <code>jibun</code> || <code>ji</code> || <code>oreSama</code> || <code>lanangmas</code>
+|-
+| Print / Output || <code>mite</code> || <code>mi</code> || <code>iuYo</code> || <code>salamkenal</code>
+|-
+| Print Line || <code>kuchiMite</code> || <code>km</code> || <code>omaeWaIu</code> || <code>cawapresin</code>
+|-
+| Boolean: True || <code>hontou</code> || <code>hon</code> || <code>hontouNi</code> || <code>unjukkebolehan</code>
+|-
+| Boolean: False || <code>uso</code> || <code>uso</code> || <code>chigauYo</code> || <code>keracunanmbg</code>
+|-
+| Null / Nil || <code>munashi</code> || <code>mu</code> || <code>naniKore</code> || <code>blukutuk</code>
+|}
+
+== Examples ==
+
+=== [[Hello, world!]] ===
+All four dialects support printing output to standard output:
+
+; Pure Japanese
+<pre>
+mite("Konnichiwa Sekai!")
+</pre>
+
+; Short Japanese
+<pre>
+mi("Konnichiwa Sekai!")
+</pre>
+
+; Absurd Weeb
+<pre>
+iuYo("Halo Dunia Wibu!")
+</pre>
+
+; Meme Rongawi
+<pre>
+salamkenal("Sugeng Rawuh ing Donya Rongawi!")
+</pre>
+
+=== [[Truth-machine]] ===
+A standard esolang benchmark Truth-machine implementation:
+
+; Pure Japanese
+<pre>
+kore inputVal = 1
+
+moshi (inputVal == 0) {
+  mite(0)
+} soretomo (inputVal == 1) {
+  zutto (hontou) {
+    mite(1)
+  }
+}
+</pre>
+
+; Absurd Weeb
+<pre>
+iniDesu inputVal = 1
+
+moShiKalo (inputVal == 0) {
+  iuYo(0)
+} soredemoNe (inputVal == 1) {
+  zuttoLoop (hontouNi) {
+    iuYo(1)
+  }
+}
+</pre>
+
+=== FizzBuzz ===
+FizzBuzz implemented in Pure Japanese:
+<pre>
+kore i = 1
+zutto (i <= 100) {
+  moshi (i % 15 == 0) {
+    mite("FizzBuzz")
+  } soretomo (i % 3 == 0) {
+    mite("Fizz")
+  } soretomo (i % 5 == 0) {
+    mite("Buzz")
+  } hoka {
+    mite(i)
+  }
+  i = i + 1
+}
+</pre>
+
+=== Object-Oriented Programming ===
+Demonstrating classes, constructors, methods, and inheritance:
+<pre>
+sekte Pendekar {
+  tanjou(nama, klan) {
+    jibun.nama = nama
+    jibun.klan = klan
+    jibun.chakra = 100
+  }
+
+  status() {
+    kaesu "[Pendekar: " + jibun.nama + " | Klan: " + jibun.klan + "]"
+  }
+
+  latihan(jam) {
+    jibun.chakra = jibun.chakra + (jam * 10)
+    mite(jibun.nama + " berlatih. Chakra: " + jibun.chakra)
+  }
+}
+
+sekte Kage keishou Pendekar {
+  tanjou(nama, klan, gelar) {
+    jibun.nama = nama
+    jibun.klan = klan
+    jibun.chakra = 500
+    jibun.gelar = gelar
+  }
+
+  jurusPemberantas() {
+    jibun.chakra = jibun.chakra - 50
+    mite(jibun.gelar + " " + jibun.nama + " Rasengan! Chakra: " + jibun.chakra)
+  }
+}
+
+kore naruto = atarashii Kage("Naruto", "Uzumaki", "Hokage")
+mite(naruto.status())
+naruto.jurusPemberantas()
+naruto.latihan(2)
+</pre>
+
+== Computational Class ==
+WibuScript is [[Turing complete]]. It provides arbitrary mutable variables, arithmetic operations, conditional branching, recursion, unbounded while-loops, dynamic arrays, and first-class functions. Any program expressible in JavaScript can be directly modeled and executed in WibuScript.
+
+== External Resources ==
+* [https://github.com/Rafli161102/wibuscript WibuScript Official GitHub Repository]
+* [https://www.npmjs.com/package/@rafli-dev/wibuscript WibuScript on npm]
+* [https://github.com/github-linguist/linguist/pull/8236 GitHub Linguist Registration PR]
+
+[[Category:Languages]]
+[[Category:2026]]
+[[Category:Thematic]]
+[[Category:Pseudonatural]]
+[[Category:Implemented]]
+[[Category:Joke languages]]
+[[Category:Turing complete]]
