@@ -143,6 +143,10 @@ export class WibuServer {
             }
           });
         });
+
+        this.rawServer.on("error", (_err: any) => {
+          // Mencegah uncaught exception bila terjadi kegagalan socket atau port bentrok
+        });
       } catch {
         // Fallback untuk runtime non-Node
       }

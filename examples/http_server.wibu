@@ -20,7 +20,7 @@ kore server = sabahTsukuru((req, res) => {
       status: "sukses",
       pesan: "WibuScript Server berjalan dengan normal",
       waktu: imaJikan(),
-      versi: "2.5.0"
+      versi: "2.6.1"
     }, 200);
   } hoka moshi (req.url == "/api/wibu") {
     res.json({
@@ -33,10 +33,10 @@ kore server = sabahTsukuru((req, res) => {
   }
 });
 
-// 3. Jalankan server pada port tertentu
-kore PORT = 3000;
+// 3. Jalankan server pada port tertentu (menggunakan port 0 untuk alokasi dinamis bebas bentrok)
+kore PORT = 0;
 server.listen(PORT, () => {
-  mite(`WibuScript HTTP Server mendengarkan pada http://localhost:${PORT}`);
+  mite("WibuScript HTTP Server mendengarkan secara aktif.");
   mite("Tekan Ctrl+C untuk menghentikan server.");
 });
 

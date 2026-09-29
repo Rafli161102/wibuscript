@@ -4,6 +4,25 @@ Semua pembaruan penting dan catatan rilis untuk proyek **WibuScript** didokument
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan mematuhi [Semantic Versioning](https://semver.org/).
 
+## [v2.6.1] - 2026-09-29
+
+### Added
+- **Pendaftaran GitHub Linguist & Pewarnaan Sintaks Repositori**:
+  - Penambahan berkas `.gitattributes` di root repositori untuk memetakan seluruh berkas `*.wibu` ke penyorot sintaks GitHub Linguist (`linguist-language=JavaScript`, `linguist-detectable=true`). Seluruh berkas kode WibuScript kini memiliki penyorotan sintaks berwarna yang rapi dan nyaman dipandang pada UI GitHub.
+  - Penambahan manifes spesifikasi bahasa `.github/linguist/wibuscript.yml` untuk pendaftaran upstream ke repositori `github-linguist/linguist`.
+- **Suite Pengujian Otomatis Seluruh Berkas Contoh (`tests/examples.test.ts`)**:
+  - Penambahan 10 skenario pengujian baru yang menguji eksekusi seluruh contoh kode (`examples/kalkulator.wibu`, `examples/utama.wibu`, `examples/oop_sekte.wibu`, `examples/rongawi_meme.wibu`, `examples/interop_npm.wibu`, `examples/http_server.wibu`, `examples/web_fetch_dom.wibu`, `contoh.wibu`, `uji.wibu`) dan kompatibilitas sintaks historis v1.0.
+  - Total pengujian unit naik menjadi 189 lulus dari 11 berkas uji tanpa galat.
+
+### Fixed
+- **Kompatibilitas Penuh Sintaks Historis v1.0**:
+  - Penambahan kembali alias kata kunci historis pada Lexer (`src/lexer.ts`): `koreWa` (`Var`), `bikinJutsu` (`Function`), `balikinDesu` (`Return`), `chigau` (`Else`), dan `kasihMite` (`Print`). Menjamin kompatibilitas mundur penuh untuk kode versi awal.
+- **Ketahanan Jaringan Modul Server**:
+  - Pemasangan listener galat `on('error')` pada instance `http.Server` (`src/modules/server.ts`) guna meredam crash socket seperti `EADDRINUSE`.
+  - Pembaruan port dinamis di `examples/http_server.wibu` untuk mencegah bentrok port saat eksekusi pengujian konkuren.
+
+---
+
 ## [v2.6.0] - 2026-09-29
 
 ### Added

@@ -16,8 +16,8 @@
 [![npm monthly downloads](https://img.shields.io/npm/dm/wibuscript.svg?style=for-the-badge&logo=npm&logoColor=white&color=007ACC&label=downloads%2Fbulan)](https://www.npmjs.com/package/wibuscript)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-Passing%20179%2F179-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v2.6.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Vitest](https://img.shields.io/badge/Vitest-Passing%20189%2F189-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.6.1-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
@@ -266,6 +266,12 @@ wibu lsp
 ---
 
 ## Log Pembaruan
+
+### v2.6.1
+- **Pendaftaran GitHub Linguist & Pewarnaan Sintaks Repositori**: Penambahan `.gitattributes` di root repositori untuk memetakan seluruh berkas `*.wibu` ke penyorot sintaks GitHub Linguist (`linguist-language=JavaScript`, `linguist-detectable=true`), sehingga seluruh berkas WibuScript tampil dengan pewarnaan sintaks yang memukau dan nyaman dipandang pada GitHub UI. Disertai manifes spesifikasi bahasa `.github/linguist/wibuscript.yml`.
+- **Stabilisasi Kode & Suite Pengujian Berkas Contoh (`tests/examples.test.ts`)**: Penambahan 10 pengujian integrasi otomatis baru untuk memverifikasi seluruh skrip contoh (`examples/kalkulator.wibu`, `examples/utama.wibu`, `examples/oop_sekte.wibu`, `examples/rongawi_meme.wibu`, `examples/interop_npm.wibu`, `examples/http_server.wibu`, `examples/web_fetch_dom.wibu`, `contoh.wibu`, `uji.wibu`) berjalan sukses tanpa satupun galat. Total pengujian unit naik menjadi 189/189 pengujian lulus 100%.
+- **Kompatibilitas Penuh Sintaks Historis v1.0**: Restorasi kata kunci warisan pada Lexer (`koreWa`, `bikinJutsu`, `balikinDesu`, `chigau`, `kasihMite`) guna menjamin kompatibilitas mundur mutlak bagi skrip versi awal.
+- **Ketahanan Jaringan Modul Server**: Penanganan galat soket (`rawServer.on('error')`) pada `WibuServer` (`src/modules/server.ts`) dan alokasi port dinamis pada `examples/http_server.wibu` untuk mencegah tabrakan port pada eksekusi konkuren.
 
 ### v2.6.0
 - **Dokumentasi Internasional (`README.en.md`)**: Penyediaan dokumentasi lengkap berbahasa Inggris yang mencakup seluruh konsep WibuScript, Sistem 4 Dialek Mutlak, tabel pemetaan kata kunci, pustaka standar, tipe fungsional modern (Result & Option), modul domain (web & server), serta panduan CLI dan instalasi.

@@ -1,0 +1,19 @@
+# ============================================================================
+# WIBUSCRIPT GITHUB LINGUIST LANGUAGE DEFINITION
+# Format resmi untuk upstream registration ke github-linguist/linguist
+# Repository: https://github.com/github-linguist/linguist
+# ============================================================================
+
+WibuScript:
+  type: programming
+  color: "#ff79c6"
+  aliases:
+    - wibu
+    - wibuscript
+  extensions:
+    - .wibu
+  tm_scope: source.wibuscript
+  ace_mode: text
+  codemirror_mode: javascript
+  codemirror_mime_type: text/javascript
+  language_id: 894521

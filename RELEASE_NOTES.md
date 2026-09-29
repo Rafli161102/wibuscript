@@ -1,7 +1,26 @@
 # WibuScript Official Release Notes
-Dokumen Catatan Rilis Resmi WibuScript (v1.0.0 - v2.6.0)
+Dokumen Catatan Rilis Resmi WibuScript (v1.0.0 - v2.6.1)
 
 Semua riwayat pembaruan, evolusi arsitektur, dan catatan rilis resmi untuk ekosistem bahasa pemrograman WibuScript didokumentasikan di sini secara kronologis dari versi awal hingga versi terbaru.
+
+---
+
+## [v2.6.1] - 2026-09-29
+
+### Added
+- **Pendaftaran GitHub Linguist & Pewarnaan Sintaks Repositori**:
+  - Konfigurasi .gitattributes di root repositori untuk memetakan seluruh berkas *.wibu ke penyorot sintaks GitHub Linguist (linguist-language=JavaScript, linguist-detectable=true). Seluruh berkas WibuScript kini tampil berwarna rapi dan nyaman dipandang pada UI GitHub.
+  - Pembuatan manifes pendaftaran resmi .github/linguist/wibuscript.yml untuk pendaftaran bahasa upstream ke github-linguist/linguist.
+- **Suite Pengujian Otomatis Berkas Contoh (tests/examples.test.ts)**:
+  - 10 pengujian integrasi baru yang memverifikasi seluruh berkas contoh (examples/kalkulator.wibu, examples/utama.wibu, examples/oop_sekte.wibu, examples/rongawi_meme.wibu, examples/interop_npm.wibu, examples/http_server.wibu, examples/web_fetch_dom.wibu, contoh.wibu, uji.wibu) serta kompatibilitas sintaks historis berjalan dengan sukses 100% tanpa galat.
+  - Jumlah pengujian unit terverifikasi meningkat dari 179 menjadi 189 pengujian di 11 berkas uji tanpa satupun kegagalan.
+
+### Fixed
+- **Kompatibilitas Penuh Sintaks Historis v1.0**:
+  - Restorasi alias kata kunci warisan pada Lexer (src/lexer.ts): koreWa (Var), bikinJutsu (Function), balikinDesu (Return), chigau (Else), dan kasihMite (Print). Memperbaiki kegagalan penguraian pada modul kalkulator dan berkas berbasis sintaks lama tanpa mengubah kesetaraan kanonikal 4 dialek utama.
+- **Ketahanan Socket & Port Server**:
+  - Penambahan penangan event galat (rawServer.on('error')) pada WibuServer di src/modules/server.ts guna menangani pengecualian level socket seperti EADDRINUSE secara anggun tanpa mematikan proses utama.
+  - Penyesuaian port dinamis bebas bentrok pada berkas examples/http_server.wibu untuk eksekusi paralel yang sepenuhnya stabil.
 
 ---
 

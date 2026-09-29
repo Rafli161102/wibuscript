@@ -1,0 +1,10 @@
+# ============================================================================
+# WIBUSCRIPT GITHUB LINGUIST & REPOSITORY CONFIGURATION
+# ============================================================================
+# Mengaktifkan penyorotan sintaks (syntax highlighting) berwarna penuh untuk
+# seluruh berkas WibuScript (*.wibu) di UI GitHub agar indah dan nyaman dibaca.
+*.wibu linguist-language=JavaScript
+*.wibu linguist-detectable=true
+
+# Penandaan berkas dokumentasi
+*.md linguist-documentation=true

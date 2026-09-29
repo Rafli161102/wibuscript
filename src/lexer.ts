@@ -106,6 +106,7 @@ export const KEYWORDS: Record<string, TokenType> = {
     "ko": TokenType.Var,
     "iniDesu": TokenType.Var,
     "pokmipokmi": TokenType.Var,
+    "koreWa": TokenType.Var, // alias v1.0
     "siImut": TokenType.Var, // deprecated
 
     // Tetapan (CONST)
@@ -154,6 +155,7 @@ export const KEYWORDS: Record<string, TokenType> = {
     "ho": TokenType.Else,
     "shoganaiNe": TokenType.Else,
     "woijawa": TokenType.Else,
+    "chigau": TokenType.Else, // alias v1.0
     "yaudahlahYa": TokenType.Else, // deprecated
 
     // Perulangan (WHILE)
@@ -183,12 +185,14 @@ export const KEYWORDS: Record<string, TokenType> = {
     "watashiJutsu": TokenType.Function,
     "mybini": TokenType.Function,
     "fufufafa": TokenType.Function,
+    "bikinJutsu": TokenType.Function, // alias v1.0
 
     // Kembalikan (RETURN)
     "kaesu": TokenType.Return,
     "kae": TokenType.Return,
     "haiBeri": TokenType.Return,
     "kandabahlil": TokenType.Return,
+    "balikinDesu": TokenType.Return, // alias v1.0
     "kasihPaham": TokenType.Return, // deprecated
 
     // Tampilkan (PRINT)
@@ -196,6 +200,7 @@ export const KEYWORDS: Record<string, TokenType> = {
     "mi": TokenType.Print,
     "iuYo": TokenType.Print,
     "salamkenal": TokenType.Print,
+    "kasihMite": TokenType.Print, // alias v1.0
     "teriakAmba": TokenType.Print, // deprecated
 
     // Tunggu (AWAIT)
