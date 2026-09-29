@@ -9,14 +9,26 @@ const path = require("path");
 
 const distDir = path.resolve(__dirname, "..", "dist");
 
-const jsFiles = fs
-  .readdirSync(distDir)
-  .filter((file) => file.endsWith(".js"));
+function getAllJsFiles(dir) {
+  let results = [];
+  const list = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of list) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results = results.concat(getAllJsFiles(fullPath));
+    } else if (entry.isFile() && entry.name.endsWith(".js")) {
+      results.push(fullPath);
+    }
+  }
+  return results;
+}
+
+const jsFiles = getAllJsFiles(distDir);
 
 let totalPatched = 0;
 
-for (const file of jsFiles) {
-  const filePath = path.join(distDir, file);
+for (const filePath of jsFiles) {
+  const file = path.basename(filePath);
   let content = fs.readFileSync(filePath, "utf8");
   const original = content;
 

@@ -559,6 +559,21 @@ export class Transpiler {
 
   private transpileImportStatement(node: ImportStatement): string {
     const rawSource = node.source;
+
+    if (rawSource === "web" || rawSource === "wibu:web") {
+      if (node.importedNames.length === 1 && node.importedNames[0] === "*") {
+        return `${this.indent()}import * as _mod_web from "wibuscript/web";\n${this.indent()}Object.assign(globalThis, _mod_web.default || _mod_web);`;
+      }
+      return `${this.indent()}import { ${node.importedNames.join(", ")} } from "wibuscript/web";`;
+    }
+
+    if (rawSource === "server" || rawSource === "wibu:server") {
+      if (node.importedNames.length === 1 && node.importedNames[0] === "*") {
+        return `${this.indent()}import * as _mod_server from "wibuscript/server";\n${this.indent()}Object.assign(globalThis, _mod_server.default || _mod_server);`;
+      }
+      return `${this.indent()}import { ${node.importedNames.join(", ")} } from "wibuscript/server";`;
+    }
+
     const isNpm = rawSource.startsWith("npm:");
     const targetSource = isNpm ? rawSource.slice(4) : rawSource;
 

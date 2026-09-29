@@ -1,6 +1,6 @@
 {
   "name": "wibuscript",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Bahasa Pemrograman Esoterik WibuScript dengan Web Playground",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -8,6 +8,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./web": {
+      "types": "./dist/modules/web.d.ts",
+      "import": "./dist/modules/web.js"
+    },
+    "./server": {
+      "types": "./dist/modules/server.d.ts",
+      "import": "./dist/modules/server.js"
     }
   },
   "type": "module",

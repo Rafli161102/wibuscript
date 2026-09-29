@@ -16,8 +16,8 @@
 [![npm monthly downloads](https://img.shields.io/npm/dm/wibuscript.svg?style=for-the-badge&logo=npm&logoColor=white&color=007ACC&label=downloads%2Fbulan)](https://www.npmjs.com/package/wibuscript)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-Passing%20161%2F161-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v2.4.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Vitest](https://img.shields.io/badge/Vitest-Passing%20179%2F179-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.5.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
@@ -148,6 +148,30 @@ Perbedaan antardialek hanya ada pada penamaan fungsi, sementara hasil eksekusiny
 > [!NOTE]
 > Fungsi lain yang tersedia mencakup pengurai JSON, pemotongan teks, perhitungan akar, pembulatan angka, dan pembacaan berkas lokal pada mode CLI.
 
+### Modul Domain Dasar (web & server)
+
+WibuScript menyediakan modul domain dasar tipis dan konsisten di seluruh 4 Dialek Mutlak:
+- **`web` (`wibuscript/web`)**: Pengambilan data (`fetchData` / `tsunagari` / `tsu` / `tarikData` / `sedotdata`) dan manipulasi DOM isomorfik berbasis DOM asli (peramban) atau Virtual DOM (Node.js/CLI).
+- **`server` (`wibuscript/server`)**: Pembuatan server HTTP mandiri (`createServer` / `sabahTsukuru` / `saaTsu` / `bikinServer` / `pabrikserver`) dengan penanganan request, routing bersyarat, respons JSON, dan simulasi in-memory.
+
+```javascript
+// Contoh Web:
+toriyoseru { youso, yousoTsukuru, yousoTsukeru, mojiOkikae } kara "web";
+kore wadah = youso("body");
+kore judul = yousoTsukuru("h1");
+mojiOkikae(judul, "WibuScript Web");
+yousoTsukeru(wadah, judul);
+
+// Contoh Server:
+toriyoseru { sabahTsukuru } kara "server";
+kore server = sabahTsukuru((req, res) => {
+  res.json({ pesan: "Server Berjalan", status: 200 }, 200);
+});
+server.listen(3000, () => {
+  mite("Server aktif pada http://localhost:3000");
+});
+```
+
 ## Contoh Kode
 
 <img align="right" width="160" src="https://raw.githubusercontent.com/Rafli161102/wibuscript/main/assets/images/cat-coding.gif" alt="Cat Coding" />
@@ -238,6 +262,13 @@ wibu lsp
 ---
 
 ## Log Pembaruan
+
+### v2.5.0
+- **Modul Domain Dasar Web (`wibuscript/web`)**: Implementasi wrapper tipis untuk pengambilan data HTTP via Fetch API dan manipulasi DOM isomorfik (DOM peramban asli atau Virtual DOM untuk Node.js/CLI/SSR) dengan kesetaraan 100% pada 4 Dialek Mutlak (`tsunagari`/`tarikData`/`sedotdata`, `yousoTsukuru`/`bikinElemen`/`cetakunsur`, dsb.).
+- **Modul Domain Dasar Server (`wibuscript/server`)**: Implementasi HTTP Server mandiri tipis berbasis modul `http` standar Node.js dengan abstraksi request/response, perutean fleksibel, respons JSON, siklus soket (`listen`/`close`), simulasi permintaan in-memory (`simulate`), dan kesetaraan 4 dialek (`sabahTsukuru`/`saaTsu`/`bikinServer`/`pabrikserver`).
+- **Skrip Contoh Program**: Penambahan `examples/web_fetch_dom.wibu` (fetch & perakitan DOM) dan `examples/http_server.wibu` (server HTTP sederhana dengan penanganan respons).
+- **Ekspor Subpath Paket**: Registrasi subpath `"./web"` dan `"./server"` pada `package.json`, pembaruan skrip kompilasi ESM rekursif, pelindung referensi sirkular pohon DOM, dan eksekusi callback function native.
+- **Suite Pengujian Unit & Paritas 4 Dialek**: Penambahan berkas tes `tests/domain_modules.test.ts` (16 skenario) dan Kasus Logika 6 pada `tests/dialect_snapshot.test.ts` dengan total 179/179 pengujian otomatis Vitest lulus 100%.
 
 ### v2.4.0
 - Penyempurnaan Language Server Protocol mandiri (src/lsp.ts) dengan diagnostik real-time berpresisi tinggi yang menandai lokasi baris dan rentang token untuk galat Lexer dan Parser.

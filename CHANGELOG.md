@@ -4,6 +4,47 @@ Semua pembaruan penting dan catatan rilis untuk proyek **WibuScript** didokument
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan mematuhi [Semantic Versioning](https://semver.org/).
 
+## [v2.5.0] - 2026-09-29
+
+### Added
+- **Modul Domain Web Dasar (`src/modules/web.ts`, `wibuscript/web`)**:
+  - Wrapper fungsi tipis untuk pengambilan data HTTP via Fetch API (`fetchData` / `fetch`) dengan parsing teks dan JSON.
+  - Abstraksi manipulasi DOM isomorfik: menggunakan DOM peramban asli jika dijalankan di Web Browser, atau Virtual DOM (`VirtualDOMElement` dan `virtualDocument`) jika dijalankan di Node.js, CLI, atau SSR tanpa peramban.
+  - Fungsi bantuan elemen DOM: `selectElement` (pencarian tag, #id, .class), `createElement` (pembuatan elemen dengan atribut), `appendElement` (penyusunan hierarki induk-anak), `setText`/`getText` (pengaturan dan pembacaan teks elemen), `setHtml` (pengaturan HTML internal), dan `onEvent` (pemasangan listener aksi peristiwa).
+  - Kesetaraan 100% pada 4 Dialek Mutlak:
+    - Pengambilan Data: `tsunagari` (Murni), `tsu` (Singkat), `tarikData` (Wibu), `sedotdata` (Rongawi).
+    - Pencarian Elemen: `youso` (Murni), `you` (Singkat), `comotElemen` (Wibu), `cidukunsur` (Rongawi).
+    - Pembuatan Elemen: `yousoTsukuru` (Murni), `youTsu` (Singkat), `bikinElemen` (Wibu), `cetakunsur` (Rongawi).
+    - Penempelan Elemen: `yousoTsukeru` (Murni), `youTsuke` (Singkat), `tempelElemen` (Wibu), `tempelunsur` (Rongawi).
+    - Manipulasi Teks: `mojiOkikae`/`mojiToru` (Murni), `moOki`/`moTo` (Singkat), `gantiTeks`/`ambilTeks` (Wibu), `salintulisan`/`bacatulisan` (Rongawi).
+    - Manipulasi HTML: `htmlOkikae` (Murni), `htOki` (Singkat), `gantiHtml` (Wibu), `salinhtml` (Rongawi).
+    - Penanganan Event: `dekigoto` (Murni), `deki` (Singkat), `pasangEvent` (Wibu), `tunggukenak` (Rongawi).
+- **Modul Domain Server Dasar (`src/modules/server.ts`, `wibuscript/server`)**:
+  - Wrapper HTTP Server mandiri tipis berbasis modul `http` standar Node.js (`createServer` / `WibuServer`).
+  - Abstraksi objek request `WibuRequest` (`url`, `method`, `headers`, `query`, `body`, `rawRequest`).
+  - Abstraksi objek response `WibuResponse` dengan fungsi berantai `status()`, `setHeader()`, serta metode pengiriman respons:
+    - Respons umum: `send()` dengan alias 4 dialek: `kaesu` (Murni), `kae` (Singkat), `kirimBalik` (Wibu), `balasmas` (Rongawi).
+    - Respons JSON: `json()` dengan alias 4 dialek: `kanjiKaesu` (Murni), `kjKae` (Singkat), `kirimJson` (Wibu), `balasjson` (Rongawi).
+  - Metode siklus hidup server dengan alias 4 dialek:
+    - Listen: `listen()` (`kiku`, `ki`, `dengerin`, `pasangkuping`).
+    - Close: `close()` (`yame`, `ya`, `tutupBanh`, `kelarngawi`).
+    - Alias fungsi pembuat server: `sabahTsukuru` (Murni), `saaTsu` (Singkat), `bikinServer` (Wibu), `pabrikserver` (Rongawi).
+  - Fungsi pengujian simulasi permintaan in-memory (`simulate`) untuk eksekusi cepat di unit test atau sandbox peramban tanpa alokasi port soket jaringan.
+- **Ekspor dan Integrasi Runtime (`package.json`, `src/runtime.ts`, `src/transpiler.ts`, `scripts/fix-esm-imports.cjs`)**:
+  - Ekspor subpath paket: `"./web"` dan `"./server"` pada `package.json`.
+  - Dukungan pelindung referensi sirkular (circular reference guard) dan preservasi identitas objek native (`nativeRef`) pada runtime WibuScript saat memanipulasi hierarki pohon DOM.
+  - Pemanggilan fungsi callback WibuScript dari sisi native JavaScript (`runtimeValueToJsValue` meneruskan eksekusi ke `invokeFunction`).
+  - Pembaruan skrip kompilasi ESM `scripts/fix-esm-imports.cjs` dengan penelusuran rekursif direktori `dist/modules/`.
+- **Skrip Contoh Program**:
+  - `examples/web_fetch_dom.wibu`: Demonstrasi pengambilan data dan perakitan komponen kartu DOM.
+  - `examples/http_server.wibu`: Demonstrasi pembuatan HTTP server, routing bersyarat, dan pengembalian respons JSON.
+- **Suite Pengujian Unit & Kesetaraan Dialek**:
+  - Berkas pengujian unit `tests/domain_modules.test.ts` (16 skenario pengujian) mencakup modul web, modul server, alias 4 dialek, siklus soket, dan eksekusi runtime.
+  - Kasus Logika 6 pada `tests/dialect_snapshot.test.ts` memvalidasi 100% AST Parity dan output kesetaraan di seluruh 4 dialek.
+  - Total pengujian unit otomatis meningkat menjadi 179/179 tes lulus 100%.
+
+---
+
 ## [v2.4.0] - 2026-09-29
 
 ### Added

@@ -142,6 +142,8 @@ export {
 };
 
 export * from "./ast";
+export * as web from "./modules/web";
+export * as server from "./modules/server";
 
 /**
  * Menjalankan kode sumber WibuScript langsung di memori secara asinkronus.

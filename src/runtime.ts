@@ -101,6 +101,7 @@ export interface ArrayValue extends RuntimeValue {
 export interface ObjectValue extends RuntimeValue {
   type: "object";
   properties: Map<string, RuntimeValue>;
+  nativeRef?: any;
 }
 
 export type NativeFnCall = (
@@ -181,9 +182,10 @@ export function MK_ARRAY(elements: RuntimeValue[] = []): ArrayValue {
 }
 
 export function MK_OBJECT(
-  properties = new Map<string, RuntimeValue>()
+  properties = new Map<string, RuntimeValue>(),
+  nativeRef?: any
 ): ObjectValue {
-  return { type: "object", properties };
+  return { type: "object", properties, nativeRef };
 }
 
 export function MK_NATIVE_FN(call: NativeFnCall): NativeFnValue {
@@ -216,7 +218,19 @@ export function MK_INSTANCE(classVal: ClassValue): InstanceValue {
   };
 }
 
-export function formatRuntimeValue(val: RuntimeValue): string {
+export function formatRuntimeValue(
+  val: RuntimeValue,
+  seen = new Set<RuntimeValue>()
+): string {
+  if (
+    val &&
+    typeof val === "object" &&
+    (val.type === "object" || val.type === "array" || val.type === "instance")
+  ) {
+    if (seen.has(val)) return "[Circular]";
+    seen.add(val);
+  }
+
   switch (val.type) {
     case "string":
       return (val as StringValue).value;
@@ -228,14 +242,29 @@ export function formatRuntimeValue(val: RuntimeValue): string {
       return "null";
     case "array": {
       const formattedItems = (val as ArrayValue).elements
-        .map((el) => formatRuntimeValue(el))
+        .map((el) => formatRuntimeValue(el, seen))
         .join(", ");
       return `[${formattedItems}]`;
     }
     case "object": {
+      const objVal = val as ObjectValue;
+      if (objVal.nativeRef !== undefined) {
+        if (
+          typeof objVal.nativeRef.toString === "function" &&
+          objVal.nativeRef.toString !== Object.prototype.toString
+        ) {
+          return objVal.nativeRef.toString();
+        }
+        if (
+          objVal.nativeRef.constructor &&
+          objVal.nativeRef.constructor.name !== "Object"
+        ) {
+          return `[${objVal.nativeRef.constructor.name}]`;
+        }
+      }
       const entries: string[] = [];
-      (val as ObjectValue).properties.forEach((v, k) => {
-        entries.push(`${k}: ${formatRuntimeValue(v)}`);
+      objVal.properties.forEach((v, k) => {
+        entries.push(`${k}: ${formatRuntimeValue(v, seen)}`);
       });
       return entries.length === 0 ? "{}" : `{ ${entries.join(", ")} }`;
     }
@@ -249,7 +278,7 @@ export function formatRuntimeValue(val: RuntimeValue): string {
       const inst = val as InstanceValue;
       const entries: string[] = [];
       inst.fields.forEach((v, k) => {
-        entries.push(`${k}: ${formatRuntimeValue(v)}`);
+        entries.push(`${k}: ${formatRuntimeValue(v, seen)}`);
       });
       return entries.length === 0
         ? `<${inst.className}>`
@@ -260,7 +289,10 @@ export function formatRuntimeValue(val: RuntimeValue): string {
   }
 }
 
-export function jsValueToRuntimeValue(val: unknown): RuntimeValue {
+export function jsValueToRuntimeValue(
+  val: unknown,
+  seen = new Map<any, RuntimeValue>()
+): RuntimeValue {
   if (val === null || val === undefined) return MK_NULL();
   if (typeof val === "boolean") return MK_BOOL(val);
   if (typeof val === "number") return MK_NUMBER(val);
@@ -268,25 +300,70 @@ export function jsValueToRuntimeValue(val: unknown): RuntimeValue {
   if (typeof val === "function") {
     const fn = val as (...args: unknown[]) => unknown;
     return MK_NATIVE_FN((args: RuntimeValue[]) => {
-      const jsArgs = args.map(runtimeValueToJsValue);
+      const jsArgs = args.map((arg) => runtimeValueToJsValue(arg));
       const res = fn(...jsArgs);
+      if (res instanceof Promise) {
+        return res.then((r) => jsValueToRuntimeValue(r));
+      }
       return jsValueToRuntimeValue(res);
     });
   }
   if (Array.isArray(val)) {
-    return MK_ARRAY(val.map(jsValueToRuntimeValue));
+    if (seen.has(val)) return seen.get(val)!;
+    const elements: RuntimeValue[] = [];
+    const arrVal = MK_ARRAY(elements);
+    seen.set(val, arrVal);
+    for (const item of val) {
+      elements.push(jsValueToRuntimeValue(item, seen));
+    }
+    return arrVal;
   }
   if (typeof val === "object") {
+    if (seen.has(val)) return seen.get(val)!;
     const map = new Map<string, RuntimeValue>();
-    for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
-      map.set(k, jsValueToRuntimeValue(v));
+    const targetObj = val as any;
+    const objVal = MK_OBJECT(map, targetObj);
+    seen.set(val, objVal);
+
+    const propNames = new Set<string>();
+    let curr = targetObj;
+    while (curr && curr !== Object.prototype) {
+      Object.getOwnPropertyNames(curr).forEach((p) => propNames.add(p));
+      curr = Object.getPrototypeOf(curr);
     }
-    return MK_OBJECT(map);
+
+    for (const k of propNames) {
+      if (k === "constructor") continue;
+      try {
+        const propVal = targetObj[k];
+        if (typeof propVal === "function") {
+          map.set(
+            k,
+            MK_NATIVE_FN((args: RuntimeValue[]) => {
+              const jsArgs = args.map((arg) => runtimeValueToJsValue(arg));
+              const res = propVal.apply(targetObj, jsArgs);
+              if (res instanceof Promise) {
+                return res.then((r) => jsValueToRuntimeValue(r));
+              }
+              return jsValueToRuntimeValue(res);
+            })
+          );
+        } else if (propVal !== undefined) {
+          map.set(k, jsValueToRuntimeValue(propVal, seen));
+        }
+      } catch {
+        // Abaikan getter yang gagal
+      }
+    }
+    return objVal;
   }
   return MK_STRING(String(val));
 }
 
-export function runtimeValueToJsValue(val: RuntimeValue): unknown {
+export function runtimeValueToJsValue(
+  val: RuntimeValue,
+  seen = new Map<RuntimeValue, unknown>()
+): unknown {
   switch (val.type) {
     case "null":
       return null;
@@ -296,22 +373,43 @@ export function runtimeValueToJsValue(val: RuntimeValue): unknown {
       return (val as NumberValue).value;
     case "string":
       return (val as StringValue).value;
-    case "array":
-      return (val as ArrayValue).elements.map(runtimeValueToJsValue);
+    case "array": {
+      if (seen.has(val)) return seen.get(val);
+      const arr: unknown[] = [];
+      seen.set(val, arr);
+      for (const el of (val as ArrayValue).elements) {
+        arr.push(runtimeValueToJsValue(el, seen));
+      }
+      return arr;
+    }
     case "object": {
+      const objVal = val as ObjectValue;
+      if (objVal.nativeRef !== undefined) {
+        return objVal.nativeRef;
+      }
+      if (seen.has(val)) return seen.get(val);
       const obj: Record<string, unknown> = {};
-      for (const [k, v] of (val as ObjectValue).properties.entries()) {
-        obj[k] = runtimeValueToJsValue(v);
+      seen.set(val, obj);
+      for (const [k, v] of objVal.properties.entries()) {
+        obj[k] = runtimeValueToJsValue(v, seen);
       }
       return obj;
     }
     case "native-fn":
     case "function": {
       return (...jsArgs: unknown[]) => {
-        const wibuArgs = jsArgs.map(jsValueToRuntimeValue);
+        const wibuArgs = jsArgs.map((arg) => jsValueToRuntimeValue(arg));
         if (val.type === "native-fn") {
           const res = (val as NativeFnValue).call(wibuArgs, new Environment());
-          return runtimeValueToJsValue(res as RuntimeValue);
+          return res instanceof Promise
+            ? res.then((r) => runtimeValueToJsValue(r as RuntimeValue, seen))
+            : runtimeValueToJsValue(res as RuntimeValue, seen);
+        }
+        if (val.type === "function") {
+          const fn = val as FunctionValue;
+          return invokeFunction(fn, wibuArgs, fn.declarationEnv).then((r) =>
+            runtimeValueToJsValue(r, seen)
+          );
         }
         return formatRuntimeValue(val);
       };
@@ -2929,12 +3027,83 @@ async function evalExportStatement(
   return MK_NULL();
 }
 
+function bindNativeJsModule(
+  targetModule: any,
+  stmt: ImportStatement,
+  env: Environment,
+  moduleName: string
+): RuntimeValue {
+  const isObjectLike = (v: any): boolean =>
+    (typeof v === "object" || typeof v === "function") && v !== null;
+
+  const resolved =
+    targetModule && targetModule.default
+      ? { ...targetModule, ...targetModule.default }
+      : targetModule;
+
+  if (stmt.importedNames.includes("*")) {
+    const alias = moduleName.replace(/[^a-zA-Z0-9_]/g, "_");
+    try {
+      env.declareVar(alias, jsValueToRuntimeValue(resolved));
+    } catch {
+      env.assignVar(alias, jsValueToRuntimeValue(resolved));
+    }
+
+    if (isObjectLike(resolved)) {
+      for (const [key, val] of Object.entries(resolved)) {
+        const runtimeVal = jsValueToRuntimeValue(val);
+        try {
+          env.declareVar(key, runtimeVal);
+        } catch {
+          env.assignVar(key, runtimeVal);
+        }
+      }
+    }
+  } else {
+    for (const name of stmt.importedNames) {
+      let foundVal =
+        isObjectLike(resolved) && name in resolved
+          ? (resolved as any)[name]
+          : undefined;
+
+      if (foundVal === undefined && isObjectLike(targetModule) && name in targetModule) {
+        foundVal = (targetModule as any)[name];
+      }
+
+      if (foundVal === undefined) {
+        throw new Error(
+          `[Runtime Error] Simbol '${name}' tidak ditemukan pada modul domain '${moduleName}'.`
+        );
+      }
+
+      const runtimeVal = jsValueToRuntimeValue(foundVal);
+      try {
+        env.declareVar(name, runtimeVal);
+      } catch {
+        env.assignVar(name, runtimeVal);
+      }
+    }
+  }
+
+  return MK_NULL();
+}
+
 async function evalImportStatement(
   stmt: ImportStatement,
   env: Environment
 ): Promise<RuntimeValue> {
   const source = stmt.source;
   let moduleCode: string | undefined = undefined;
+
+  // 0. Cek Modul Domain Bawaan WibuScript (web dan server)
+  if (source === "web" || source === "wibu:web") {
+    const webModule = await import("./modules/web");
+    return bindNativeJsModule(webModule, stmt, env, "web");
+  }
+  if (source === "server" || source === "wibu:server") {
+    const serverModule = await import("./modules/server");
+    return bindNativeJsModule(serverModule, stmt, env, "server");
+  }
 
   // 1. Cek Virtual Modules Registry (Kompatibel Playground Browser & Testing)
   if (VIRTUAL_MODULES.has(source)) {

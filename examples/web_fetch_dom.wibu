@@ -1,0 +1,53 @@
+// Berkas: examples/web_fetch_dom.wibu
+// ============================================================================
+// Contoh Penggunaan Modul Domain Web (wibuscript/web)
+// Mendemonstrasikan pengambilan data (fetch) dan manipulasi DOM dasar
+// menggunakan sintaks WibuScript di seluruh 4 Dialek Mutlak.
+// ============================================================================
+
+// 1. Impor modul domain 'web' menggunakan sintaks resmi
+toriyoseru {
+  tsunagari,
+  youso,
+  yousoTsukuru,
+  yousoTsukeru,
+  mojiOkikae,
+  mojiToru,
+  dekigoto
+} kara "web";
+
+mite("=== DEMO MODUL WEB WIBUSCRIPT ===");
+
+// 2. Manipulasi Elemen DOM: Membuat komponen kartu
+kore wadah = youso("body");
+kore kartu = yousoTsukuru("div", { id: "kartu-info", class: "card primary" });
+kore judul = yousoTsukuru("h1");
+kore deskripsi = yousoTsukuru("p");
+kore tombol = yousoTsukuru("button");
+
+mojiOkikae(judul, "WibuScript Web Framework");
+mojiOkikae(deskripsi, "Bahasa fungsional modern berbasis 4 Dialek Mutlak.");
+mojiOkikae(tombol, "Klik Untuk Mengambil Data");
+
+// Pasang pendengar aksi (event listener)
+kore jumlahKlik = 0;
+dekigoto(tombol, "click", (e) => {
+  jumlahKlik = jumlahKlik + 1;
+  mite(`Tombol ditekan! Total klik: ${jumlahKlik}`);
+});
+
+// Gabungkan hierarki elemen (Append Child)
+yousoTsukeru(kartu, judul);
+yousoTsukeru(kartu, deskripsi);
+yousoTsukeru(kartu, tombol);
+yousoTsukeru(wadah, kartu);
+
+mite("Elemen berhasil dibuat dan ditambahkan ke Document:");
+mite(`- Tag Judul: ${mojiToru(judul)}`);
+mite(`- Tag Deskripsi: ${mojiToru(deskripsi)}`);
+mite(`- Tombol: ${mojiToru(tombol)}`);
+
+// Simulasikan pemicuan event klik
+tombol.dispatchEvent("click", { detail: 1 });
+
+mite("=== MANIPULASI DOM SELESAI ===");

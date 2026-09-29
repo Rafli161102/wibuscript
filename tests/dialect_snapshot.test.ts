@@ -16,6 +16,7 @@ import { tokenize } from "../src/lexer";
 import { Parser } from "../src/parser";
 import { transpileToJS, transpileWithSourceMap } from "../src/transpiler";
 import { WibuSandbox, runInSandbox } from "../src/sandbox";
+import { runWibuScriptAsync } from "../src/index";
 import type { Program } from "../src/ast";
 
 function parseCode(code: string): Program {
@@ -484,6 +485,68 @@ describe("WibuScript v2.0 - Dialect Parity & Snapshot Verification", () => {
       expect(resSingkat.output).toEqual(expectedOutput);
       expect(resWibu.output).toEqual(expectedOutput);
       expect(resRongawi.output).toEqual(expectedOutput);
+    });
+  });
+
+  // --------------------------------------------------------------------------
+  // PROGRAM 6: MODUL DOMAIN DASAR (web & server)
+  // --------------------------------------------------------------------------
+  describe("Kasus Logika 6: Modul Domain Dasar (web & server) Kesetaraan 4 Dialek Mutlak", () => {
+    const codeMurni = `
+      toriyoseru { yousoTsukuru, mojiOkikae, mojiToru } kara "web";
+      kore el = yousoTsukuru("h1");
+      mojiOkikae(el, "Halo Modul Web");
+      kore teks = mojiToru(el);
+    `;
+
+    const codeSingkat = `
+      tori { yousoTsukuru, mojiOkikae, mojiToru } kra "web";
+      ko el = yousoTsukuru("h1");
+      mojiOkikae(el, "Halo Modul Web");
+      ko teks = mojiToru(el);
+    `;
+
+    const codeWibu = `
+      summonJutsu { yousoTsukuru, mojiOkikae, mojiToru } dari "web";
+      iniDesu el = yousoTsukuru("h1");
+      mojiOkikae(el, "Halo Modul Web");
+      iniDesu teks = mojiToru(el);
+    `;
+
+    const codeRongawi = `
+      begalbaju { yousoTsukuru, mojiOkikae, mojiToru } ngawiland "web";
+      pokmipokmi el = yousoTsukuru("h1");
+      mojiOkikae(el, "Halo Modul Web");
+      pokmipokmi teks = mojiToru(el);
+    `;
+
+    it("menghasilkan struktur AST yang 100% identik di seluruh 4 dialek", () => {
+      const astMurni = parseCode(codeMurni);
+      const astSingkat = parseCode(codeSingkat);
+      const astWibu = parseCode(codeWibu);
+      const astRongawi = parseCode(codeRongawi);
+
+      expect(astSingkat).toEqual(astMurni);
+      expect(astWibu).toEqual(astMurni);
+      expect(astRongawi).toEqual(astMurni);
+    });
+
+    it("menghasilkan eksekusi nilai yang 100% identik di seluruh 4 dialek", async () => {
+      const resMurni = await runWibuScriptAsync(`${codeMurni}\nmite(teks);`);
+      const resSingkat = await runWibuScriptAsync(`${codeSingkat}\nmi(teks);`);
+      const resWibu = await runWibuScriptAsync(`${codeWibu}\niuYo(teks);`);
+      const resRongawi = await runWibuScriptAsync(`${codeRongawi}\nsalamkenal(teks);`);
+
+      expect(resMurni.error).toBeUndefined();
+      expect(resSingkat.error).toBeUndefined();
+      expect(resWibu.error).toBeUndefined();
+      expect(resRongawi.error).toBeUndefined();
+
+      const expectedOutput = ["Halo Modul Web"];
+      expect(resMurni.outputLog).toEqual(expectedOutput);
+      expect(resSingkat.outputLog).toEqual(expectedOutput);
+      expect(resWibu.outputLog).toEqual(expectedOutput);
+      expect(resRongawi.outputLog).toEqual(expectedOutput);
     });
   });
 

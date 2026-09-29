@@ -1,0 +1,46 @@
+// Berkas: examples/http_server.wibu
+// ============================================================================
+// Contoh Penggunaan Modul Domain Server (wibuscript/server)
+// Mendemonstrasikan pembuatan HTTP Server sederhana berbasis Node.js http
+// menggunakan sintaks WibuScript di seluruh 4 Dialek Mutlak.
+// ============================================================================
+
+// 1. Impor fungsi pembuat server dari modul 'server'
+toriyoseru { sabahTsukuru } kara "server";
+
+mite("=== DEMO MODUL SERVER WIBUSCRIPT ===");
+
+// 2. Buat server HTTP dengan routing sederhana
+kore server = sabahTsukuru((req, res) => {
+  mite(`[Request Masuk] ${req.method} ${req.url}`);
+
+  // Routing percabangan menggunakan kontrol alur moshi
+  moshi (req.url == "/api/status") {
+    res.json({
+      status: "sukses",
+      pesan: "WibuScript Server berjalan dengan normal",
+      waktu: imaJikan(),
+      versi: "2.5.0"
+    }, 200);
+  } hoka moshi (req.url == "/api/wibu") {
+    res.json({
+      dialek: ["Jepang Murni", "Jepang Singkat", "Wibu Absurd", "Meme Rongawi"],
+      pencipta: "Komunitas Pengembang WibuScript"
+    }, 200);
+  } hoka {
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.send("<h1>Selamat Datang di WibuScript Server!</h1><p>Gunakan endpoint /api/status untuk data JSON.</p>", 200);
+  }
+});
+
+// 3. Jalankan server pada port tertentu
+kore PORT = 3000;
+server.listen(PORT, () => {
+  mite(`WibuScript HTTP Server mendengarkan pada http://localhost:${PORT}`);
+  mite("Tekan Ctrl+C untuk menghentikan server.");
+});
+
+// 4. Pengujian simulasi internal
+server.simulate("/api/status", "GET");
+mite("=== SERVER BERHASIL DIKONFIGURASI ===");
+server.close();
