@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WibuScript Web DOM Showcase</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .header-box {
+      border-bottom: 2px solid #334155;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .kartu-wibu {
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+    .tombol-utama {
+      background: #ff79c6;
+      color: #0f172a;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+    .tombol-utama:hover {
+      background: #bd93f9;
+      transform: translateY(-2px);
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      background: #22c55e;
+      color: #0f172a;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-box">
+    <h1>WibuScript Frontend DOM Playground</h1>
+    <p>Mendemonstrasikan eksekusi langsung dialek Wibu/Cringe Indonesia ke Web API.</p>
+    <div id="app-root"></div>
+  </div>
+
+  <div class="error-log"></div>
+
+  <!-- Script Transpiler Sederhana untuk Peramban -->
+  <script type="text/javascript">
+    function transpileWibuDOM(wibuCode) {
+      const pool = [];
+      const LITERAL_REGEX = /(?:\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)/g;
+
+      let masked = wibuCode.replace(LITERAL_REGEX, (m) => {
+        pool.push(m);
+        return `__STR_${pool.length - 1}__`;
+      });
+
+      // Kamus Wibu-DOM
+      masked = masked.replace(/\bculikId\b/g, "document.getElementById");
+      masked = masked.replace(/\bpantauSatu\b/g, "document.querySelector");
+      masked = masked.replace(/\bbikinWujud\b/g, "document.createElement");
+      masked = masked.replace(/\bisiHati\b/g, "innerHTML");
+      masked = masked.replace(/\bkaloDisentuh\b/g, "addEventListener");
+      masked = masked.replace(/([a-zA-Z0-9_$]+)\.masukinKeDunia\s*\(([^)]*)\)/g, "$1.appendChild($2)");
+      masked = masked.replace(/\bmasukinKeDunia\s*\(([^)]*)\)/g, "document.body.appendChild($1)");
+      masked = masked.replace(/\bgantiBaju\b/g, "className");
+      masked = masked.replace(/\bpindahIsekai\s*\(([^)]*)\)/g, "window.location.href = $1");
+      masked = masked.replace(/\bperingatanSepuh\b/g, "alert");
+      masked = masked.replace(/\btungguBentar\b/g, "setTimeout");
+      masked = masked.replace(/\bloopingMaut\b/g, "setInterval");
+
+      // Sintaks Dasar WibuScript
+      masked = masked.replace(/\bhargaMati\b/g, "const");
+      masked = masked.replace(/\bsiImut\b/g, "let");
+      masked = masked.replace(/\bkaloGakGitu\b/g, "else if");
+      masked = masked.replace(/\byaudahlahYa\b/g, "else");
+      masked = masked.replace(/\bwhenYh\b/g, "if");
+      masked = masked.replace(/\bmybini\b/g, "function");
+      masked = masked.replace(/\bkasihPaham\b/g, "return");
+      masked = masked.replace(/\bmenyalaAbkuh\b/g, "true");
+      masked = masked.replace(/\bmaafLancang\b/g, "false");
+      masked = masked.replace(/\bteriakAmba\b/g, "console.log");
+
+      // Restorasi
+      return masked.replace(/__STR_(\d+)__/g, (_, idx) => pool[Number(idx)]);
+    }
+
+    // Auto-Runner: Jalankan tag script berkategori text/wibuscript
+    document.addEventListener("DOMContentLoaded", () => {
+      const scriptTags = document.querySelectorAll('script[type="text/wibuscript"]');
+      scriptTags.forEach((tag) => {
+        const js = transpileWibuDOM(tag.textContent);
+        const el = document.createElement("script");
+        el.type = "text/javascript";
+        el.textContent = js;
+        document.body.appendChild(el);
+      });
+    });
+  </script>
+
+  <!-- Tag Skrip WibuScript -->
+  <script type="text/wibuscript">
+    hargaMati judulText = "Aplikasi Web WibuScript Aktif!";
+    siImut root = culikId("app-root");
+
+    whenYh (root) {
+      siImut box = bikinWujud("div");
+      box.gantiBaju = "kartu-wibu";
+
+      siImut badge = bikinWujud("span");
+      badge.gantiBaju = "status-badge";
+      badge.isiHati = "STATUS: MENYALA";
+      box.masukinKeDunia(badge);
+
+      siImut desc = bikinWujud("p");
+      desc.isiHati = "Kode ini ditulis dalam WibuScript dan ditranspilasikan ke DOM murni!";
+      box.masukinKeDunia(desc);
+
+      siImut btn = bikinWujud("button");
+      btn.gantiBaju = "tombol-utama";
+      btn.isiHati = "Picu Peringatan Sepuh";
+
+      btn.kaloDisentuh("click", mybini() {
+        peringatanSepuh("Koneksi berhasil! WibuScript DOM siap digunakan di browser!");
+        teriakAmba("Aksi tombol berhasil dicatat di konsol.");
+      });
+
+      box.masukinKeDunia(btn);
+      root.masukinKeDunia(box);
+    }
+  </script>
+</body>
+</html>

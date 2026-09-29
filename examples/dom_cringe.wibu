@@ -1,0 +1,45 @@
+// Berkas: examples/dom_cringe.wibu
+// ============================================================================
+// DEMO WIBU-DOM & WEB API (WIBUSCRIPT FRONTEND)
+// Mendemonstrasikan penggunaan Kamus Wibu-DOM untuk manipulasi elemen web,
+// penanganan event aksi, modifikasi atribut, dan timer di browser.
+// ============================================================================
+
+hargaMati namaAplikasi = "Portal Petualangan Wibu"
+teriakAmba("Memulai aplikasi: " + namaAplikasi)
+
+// 1. Mencari elemen kontainer via ID (culikId)
+siImut kontainer = culikId("app-root")
+
+// 2. Percabangan kondisi (whenYh / yaudahlahYa)
+whenYh (kontainer) {
+  // 3. Membuat elemen baru (bikinWujud)
+  siImut kartu = bikinWujud("div")
+  kartu.gantiBaju = "kartu-wibu"
+
+  siImut judul = bikinWujud("h2")
+  judul.isiHati = "Selamat Datang di Dunia Web WibuScript!"
+  kartu.masukinKeDunia(judul)
+
+  siImut tombol = bikinWujud("button")
+  tombol.isiHati = "Klik Untuk Berangkat ke Isekai!"
+  tombol.gantiBaju = "tombol-utama"
+
+  // 4. Memasang event listener (kaloDisentuh)
+  tombol.kaloDisentuh("click", mybini() {
+    peringatanSepuh("Gerbang isekai sedang diinisialisasi...")
+    teriakAmba("Tombol berhasil disentuh!")
+
+    tungguBentar(mybini() {
+      pindahIsekai("https://github.com/Rafli161102/wibuscript")
+    }, 1500)
+  })
+
+  kartu.masukinKeDunia(tombol)
+
+  // 5. Memasukkan kartu ke dalam halaman tubuh (masukinKeDunia)
+  masukinKeDunia(kartu)
+} yaudahlahYa {
+  siImut logError = pantauSatu(".error-log")
+  logError.isiHati = "Kontainer tidak ditemukan!"
+}

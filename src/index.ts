@@ -142,6 +142,8 @@ export {
 };
 
 export * from "./ast";
+export * from "./dom-transpiler";
+export { transpile as transpileDOM, transpile as transpileWibuWeb } from "./dom-transpiler";
 export * as web from "./modules/web";
 export * as server from "./modules/server";
 
