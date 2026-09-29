@@ -4,6 +4,27 @@ Semua pembaruan penting dan catatan rilis untuk proyek **WibuScript** didokument
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan mematuhi [Semantic Versioning](https://semver.org/).
 
+## [v2.4.0] - 2026-09-29
+
+### Added
+- **Penyempurnaan Language Server Protocol (`src/lsp.ts`)**:
+  - Mesin diagnostik real-time berpresisi tinggi (`validateWibuScript`): mendeteksi galat Lexer (karakter ilegal, string tidak tertutup) dan Parser (token tidak diharapkan, kurung tidak seimbang, konstruksi tidak lengkap) dengan penentuan baris dan kolom 0-indexed yang akurat serta perluasan rentang token bermasalah.
+  - Penyelesaian otomatis (autocomplete) terintegrasi (`buildDialectCompletionItems`): mengekstraksi seluruh 341+ kata kunci dari 4 Dialek Mutlak langsung dari `src/dialect-definitions.ts`, fungsi pustaka standar dengan format snippet parameter otomatis (`insertTextFormat: 2`), seluruh alias historis, konstruktor dan metode berantai tipe modern `Hasil`/`Opsional`, properti status, serta template snippet blok kontrol alur untuk keempat dialek.
+  - Penyedia hover interaktif (`textDocument/hover`): menyajikan dokumentasi Markdown berbahasa Indonesia lengkap untuk setiap kata kunci atau simbol saat kursor diarahkan ke kode.
+  - Navigasi simbol dokumen (`textDocument/documentSymbol`): mengekstraksi hierarki AST untuk fungsi, kelas, konstruktor, metode, dan variabel/konstanta agar terindeks di panel Outline editor.
+  - Struktur kelas mandiri `WibuLanguageServer` yang memisahkan logika penanganan JSON-RPC dan mendukung pengujian unit tanpa proses I/O fisik.
+- **Klien Visual Studio Code Mandiri (`vscode-extension/extension.js`)**:
+  - Klien ekstensi native tanpa dependensi eksternal (zero-dependency) yang menghubungkan editor VS Code ke proses `wibu lsp` melalui Standard I/O (stdin/stdout).
+  - Sinkronisasi dokumen otomatis (`textDocument/didOpen`, `textDocument/didChange`, `textDocument/didClose`) dan penerjemahan diagnostik ke `vscode.DiagnosticCollection`.
+  - Registrasi provider VS Code untuk Completion, Hover, dan Document Symbols.
+  - Dukungan konfigurasi opsi `wibuscript.lsp.executablePath` pada `settings.json` dan pelacakan fallback CLI otomatis.
+- **Dokumentasi & Pengujian**:
+  - Panduan lengkap arsitektur LSP, koneksi editor, dan langkah pengujian manual sederhana di terminal dan Extension Development Host pada `vscode-extension/README.md`.
+  - Suite pengujian unit komprehensif `tests/lsp.test.ts` (19 skenario pengujian) mencakup validasi kode, autocomplete 4 dialek, ekstraksi outline simbol, dan siklus hidup pesan JSON-RPC.
+  - Total pengujian otomatis meningkat menjadi 161/161 tes Vitest lulus 100%.
+
+---
+
 ## [v2.3.0] - 2026-09-29
 
 ### Added

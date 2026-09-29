@@ -1,12 +1,16 @@
 {
   "name": "wibuscript-lang",
   "displayName": "WibuScript Language Support",
-  "description": "Syntax Highlighting resmi untuk bahasa pemrograman WibuScript",
-  "version": "2.3.0",
+  "description": "Language Server Protocol dan Syntax Highlighting resmi untuk bahasa pemrograman WibuScript",
+  "version": "2.4.0",
   "publisher": "wibuscript-opensource",
   "engines": {
     "vscode": "^1.80.0"
   },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:wibuscript"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Rafli161102/wibuscript.git"
@@ -34,6 +38,17 @@
         "scopeName": "source.wibuscript",
         "path": "./syntaxes/wibuscript.tmLanguage.json"
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "WibuScript",
+      "properties": {
+        "wibuscript.lsp.executablePath": {
+          "type": "string",
+          "default": "",
+          "description": "Lokasi absolut atau perintah eksekutor CLI WibuScript (default: 'wibu' dari PATH sistem)."
+        }
+      }
+    }
   }
 }

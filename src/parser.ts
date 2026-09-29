@@ -573,7 +573,7 @@ export class Parser {
       }
 
       throw new Error(
-        `[Parser Error] Simbol tidak dikenal dalam definisi kelas '${nameToken.value}': '${this.at().value}'.`
+        `[Parser Error] Simbol tidak dikenal dalam definisi kelas '${nameToken.value}': '${this.at().value}' pada baris ${this.at().line}, kolom ${this.at().column}.`
       );
     }
 
@@ -775,11 +775,15 @@ export class Parser {
           } else if ((el as any).kind === "SpreadElement") {
             const spread = (el as any) as SpreadElement;
             if (spread.argument.kind !== "Identifier") {
-              throw new Error("[Parser Error] Target spread '...' dalam assignment destructuring harus berupa identifier.");
+              throw new Error(
+                `[Parser Error] Target spread '...' dalam assignment destructuring harus berupa identifier pada baris ${this.at().line}, kolom ${this.at().column}.`
+              );
             }
             elements.push({ kind: "RestElement", argument: (spread.argument as Identifier).symbol });
           } else {
-            throw new Error("[Parser Error] Elemen dalam array assignment destructuring harus berupa identifier.");
+            throw new Error(
+              `[Parser Error] Elemen dalam array assignment destructuring harus berupa identifier pada baris ${this.at().line}, kolom ${this.at().column}.`
+            );
           }
         }
         return {
@@ -814,7 +818,7 @@ export class Parser {
       }
 
       throw new Error(
-        "[Parser Error] Sisi kiri dari tanda penugasan '=' harus berupa identifier variabel, akses anggota, atau pola destructuring."
+        `[Parser Error] Sisi kiri dari tanda penugasan '=' harus berupa identifier variabel, akses anggota, atau pola destructuring pada baris ${this.at().line}, kolom ${this.at().column}.`
       );
     }
 
@@ -1423,7 +1427,7 @@ export class Parser {
         });
       } else {
         throw new Error(
-          `[Parser Error] Diharapkan kata kunci 'baai' atau 'hyoujun' di dalam blok 'shougo', tetapi ditemukan '${this.at().value}'.`
+          `[Parser Error] Diharapkan kata kunci 'baai' atau 'hyoujun' di dalam blok 'shougo', tetapi ditemukan '${this.at().value}' pada baris ${this.at().line}, kolom ${this.at().column}.`
         );
       }
     }

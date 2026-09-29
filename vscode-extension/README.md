@@ -65,23 +65,93 @@ Ekstensi ini mendukung penyorotan sintaksis untuk **Sistem 4 Dialek Mutlak**:
 
 ---
 
-## Panduan Instalasi
+---
+
+## Fitur Language Server Protocol (LSP)
+
+Ekstensi WibuScript kini dilengkapi dengan klien LSP bawaan mandiri yang terhubung langsung ke `wibu lsp`:
+
+1. **Diagnostik Galat Real-Time (*Real-Time Diagnostics*)**:
+   - Menampilkan garis bawah merah dan daftar galat sintaksis langsung di tab **Problems** saat Anda mengetik, baik galat Lexer (karakter asing, string tidak ditutup) maupun galat Parser (token hilang, tanda kurung tidak berpasangan).
+2. **Penyelesaian Otomatis 4 Dialek Mutlak (*IntelliSense / Autocomplete*)**:
+   - Mendukung seluruh 341+ kata kunci dari 4 Dialek Mutlak (Jepang Murni, Jepang Singkat, Wibu Absurd, Meme Rongawi).
+   - Saran otomatis untuk fungsi bawaan, konstruktor tipe modern (`seikou`, `shippai`, `aru`, `nai`, `ok`, `error`, dll.), serta metode berantai (`unwrap`, `unwrapOr`, `map`, `andThen`).
+   - Dilengkapi template snippet cerdas untuk blok kontrol alur dan deklarasi kelas/fungsi.
+3. **Dokumentasi Sorot (*Hover Documentation*)**:
+   - Menampilkan penjelasan detail berbahasa Indonesia dan dokumentasi fungsi/kata kunci saat kursor didekatkan ke simbol kode.
+4. **Navigasi Simbol Dokumen (*Document Symbols / Outline*)**:
+   - Mendukung panel Outline VS Code serta pintasan <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd> (<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd> pada macOS) untuk melompat langsung ke deklarasi fungsi, kelas, metode, atau variabel.
+
+---
+
+## Panduan Menyambungkan LSP ke Visual Studio Code
+
+Ekstensi ini menyertakan `extension.js` tanpa dependensi eksternal yang secara otomatis meluncurkan proses latar belakang `wibu lsp` melalui Standard I/O (stdin/stdout).
+
+### 1. Prasyarat Sistem
+
+Pastikan CLI WibuScript terpasang secara global di sistem:
+```bash
+npm install -g wibuscript
+```
+Atau jika berada di repositori lokal pengembangan:
+```bash
+npm run core:build
+```
+
+### 2. Opsi Konfigurasi (Opsional)
+
+Jika perintah `wibu` berada di lokasi khusus di luar PATH sistem, Anda dapat mengaturnya di berkas `settings.json` VS Code:
+```json
+{
+  "wibuscript.lsp.executablePath": "/usr/local/bin/wibu"
+}
+```
+
+---
+
+## Pengujian Manual Sederhana
+
+Untuk memverifikasi integrasi Language Server berjalan dengan benar:
+
+### Uji 1: Uji Komunikasi Terminal (JSON-RPC)
+
+Jalankan perintah pengujian inisialisasi berikut di terminal:
+```bash
+printf "Content-Length: 64\r\n\r\n{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{}}" | wibu lsp
+```
+Hasil yang diharapkan: LSP mengembalikan JSON respons dengan `capabilities` (`textDocumentSync`, `completionProvider`, `hoverProvider`, `documentSymbolProvider`).
+
+### Uji 2: Uji Interaktif di VS Code (Extension Development Host)
+
+1. Buka folder `wibuscript` atau `vscode-extension` di Visual Studio Code.
+2. Buka berkas `vscode-extension/extension.js`.
+3. Tekan <kbd>F5</kbd> untuk membuka jendela baru **[Extension Development Host]**.
+4. Di jendela baru tersebut, buat berkas baru dengan nama `coba.wibu`.
+5. **Uji Diagnostik Real-Time**:
+   - Ketik `kore nilai = ;`
+   - Perhatikan bahwa garis bawah merah bergelombang langsung muncul di bawah tanda titik koma, dan pesan kesalahan muncul di panel **Problems** (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>M</kbd>).
+   - Ubah baris tersebut menjadi `kore nilai = 42;`. Garis bawah merah akan langsung hilang secara otomatis.
+6. **Uji Autocomplete**:
+   - Ketik `mo` lalu tekan <kbd>Ctrl</kbd> + <kbd>Space</kbd>. Daftar saran akan menampilkan `moshi`, `mo`, `moShiKalo`, dan snippet terkait.
+   - Ketik `sei` lalu tekan <kbd>Enter</kbd>. Editor akan otomatis menyisipkan konstruktor `seikou()` dengan kursor di dalam tanda kurung.
+7. **Uji Hover Documentation**:
+   - Arahkan kursor tetikus ke atas kata `moshi` atau `seikou`. Jendela sembulan kecil (*popup*) akan menampilkan dokumentasi Markdown resmi WibuScript.
+
+---
+
+## Panduan Instalasi Ekstensi
 
 ### Opsi 1: Pasang via Berkas VSIX
-
-1. Unduh berkas `wibuscript-lang-1.0.0.vsix` dari folder `vscode-extension/`.
-2. Buka Visual Studio Code.
-3. Tekan pintasan papan ketik:
+1. Buka Visual Studio Code.
+2. Tekan pintasan papan ketik:
    - **macOS**: <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>
    - **Windows / Linux**: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>
-4. Ketik dan pilih: **`Extensions: Install from VSIX...`**
-5. Pilih berkas `.vsix` yang telah diunduh.
-6. Selesai! VS Code akan langsung memuat penyorotan sintaksis WibuScript.
+3. Ketik dan pilih: **`Extensions: Install from VSIX...`**
+4. Pilih berkas `.vsix` dari folder `vscode-extension/`.
 
-### Opsi 2: Instalasi Manual *(Development Mode)*
-
-Tautkan atau salin direktori `vscode-extension` ke direktori ekstensi pengguna VS Code:
-
+### Opsi 2: Instalasi Manual (Development Mode / Symlink)
+Tautkan direktori `vscode-extension` ke folder ekstensi pengguna VS Code:
 - **macOS / Linux**:
   ```bash
   ln -s "$(pwd)/vscode-extension" ~/.vscode/extensions/wibuscript-lang

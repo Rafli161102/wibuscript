@@ -16,8 +16,8 @@
 [![npm monthly downloads](https://img.shields.io/npm/dm/wibuscript.svg?style=for-the-badge&logo=npm&logoColor=white&color=007ACC&label=downloads%2Fbulan)](https://www.npmjs.com/package/wibuscript)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-Passing%20142%2F142-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v2.3.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Vitest](https://img.shields.io/badge/Vitest-Passing%20161%2F161-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.4.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
@@ -238,6 +238,14 @@ wibu lsp
 ---
 
 ## Log Pembaruan
+
+### v2.4.0
+- Penyempurnaan Language Server Protocol mandiri (src/lsp.ts) dengan diagnostik real-time berpresisi tinggi yang menandai lokasi baris dan rentang token untuk galat Lexer dan Parser.
+- Penyelesaian otomatis (autocomplete) lengkap mencakup seluruh 341+ kata kunci dari 4 Dialek Mutlak, fungsi pustaka standar, konstruktor dan metode tipe modern Hasil/Opsional, serta template snippet cerdas.
+- Penyedia hover documentation dalam format Markdown interaktif berbahasa Indonesia dan outline document symbols untuk ekstraksi hierarki fungsi, kelas, metode, dan variabel.
+- Integrasi klien Visual Studio Code tanpa dependensi pihak ketiga (vscode-extension/extension.js) yang terhubung ke 'wibu lsp' melalui standard I/O (stdin/stdout).
+- Panduan koneksi editor dan pengujian interaktif manual pada berkas dokumentasi vscode-extension/README.md.
+- Pengujian unit komprehensif (tests/lsp.test.ts) dengan total 161/161 pengujian otomatis Vitest lulus 100%.
 
 ### v2.3.0
 - Implementasi tipe data modern Hasil<T, E> (Result) dan Opsional<T> (Option) pada pustaka standar WibuScript di seluruh 4 Dialek Mutlak.

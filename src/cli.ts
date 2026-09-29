@@ -13,7 +13,7 @@ import { startREPL } from "./repl";
 import { installPackage } from "./pm";
 import { startLanguageServer } from "./lsp";
 
-const WIBU_VERSION = "2.3.0";
+const WIBU_VERSION = "2.4.0";
 
 function printUsage(): void {
   console.log(`WibuScript CLI v${WIBU_VERSION}`);
