@@ -53,6 +53,26 @@ import { TokenType, type Token } from "./lexer";
 export class Parser {
   private tokens: Token[] = [];
   private cursor: number = 0;
+  private recursionDepth: number = 0;
+  private readonly maxRecursionDepth: number;
+
+  constructor(maxRecursionDepth: number = 500) {
+    this.maxRecursionDepth = maxRecursionDepth;
+  }
+
+  private enterRecursion(): void {
+    this.recursionDepth++;
+    if (this.recursionDepth > this.maxRecursionDepth) {
+      const tok = this.at();
+      throw new Error(
+        `[Parser Error] Batas kedalaman penguraian terlampaui (Maksimum ${this.maxRecursionDepth}) pada baris ${tok.line}, kolom ${tok.column}.`
+      );
+    }
+  }
+
+  private leaveRecursion(): void {
+    this.recursionDepth--;
+  }
 
   /**
    * Menghasilkan pohon sintaksis program (Program AST) dari daftar token.
@@ -60,6 +80,7 @@ export class Parser {
   public produceAST(tokens: Token[]): Program {
     this.tokens = tokens;
     this.cursor = 0;
+    this.recursionDepth = 0;
 
     const program: Program = {
       kind: "Program",
@@ -111,63 +132,68 @@ export class Parser {
   // --------------------------------------------------------------------------
 
   private parseStatement(): Statement {
-    switch (this.at().type) {
-      case TokenType.Var:
-        return this.parseVariableDeclaration();
+    this.enterRecursion();
+    try {
+      switch (this.at().type) {
+        case TokenType.Var:
+          return this.parseVariableDeclaration();
 
-      case TokenType.If:
-        return this.parseIfStatement();
+        case TokenType.If:
+          return this.parseIfStatement();
 
-      case TokenType.Loop:
-        return this.parseLoopStatement();
+        case TokenType.Loop:
+          return this.parseLoopStatement();
 
-      case TokenType.ForEach:
-        return this.parseForEachStatement();
+        case TokenType.ForEach:
+          return this.parseForEachStatement();
 
-      case TokenType.Break:
-        this.advance(); // Konsumsi 'tomare' atau 'berhentiDuluKudasai'
-        if (this.at().type === TokenType.Semicolon) {
+        case TokenType.Break:
+          this.advance(); // Konsumsi 'tomare' atau 'berhentiDuluKudasai'
+          if (this.at().type === TokenType.Semicolon) {
+            this.advance();
+          }
+          return { kind: "BreakStatement" } as BreakStatement;
+
+        case TokenType.Continue:
+          this.advance(); // Konsumsi 'tsugi' atau 'lanjutAksiSugi'
+          if (this.at().type === TokenType.Semicolon) {
+            this.advance();
+          }
+          return { kind: "ContinueStatement" } as ContinueStatement;
+
+        case TokenType.Function:
+          return this.parseFunctionDeclaration();
+
+        case TokenType.Return:
+          return this.parseReturnStatement();
+
+        case TokenType.Try:
+          return this.parseTryCatchStatement();
+
+        case TokenType.Class:
+          return this.parseClassDeclaration();
+
+        case TokenType.Export:
+          return this.parseExportStatement();
+
+        case TokenType.Import:
+          return this.parseImportStatement();
+
+        case TokenType.OpenBrace:
+          return this.parseBlockStatement();
+
+        case TokenType.Match:
+          return this.parseMatchStatement();
+
+        case TokenType.Semicolon:
           this.advance();
-        }
-        return { kind: "BreakStatement" } as BreakStatement;
+          return { kind: "BlockStatement", body: [] } as BlockStatement;
 
-      case TokenType.Continue:
-        this.advance(); // Konsumsi 'tsugi' atau 'lanjutAksiSugi'
-        if (this.at().type === TokenType.Semicolon) {
-          this.advance();
-        }
-        return { kind: "ContinueStatement" } as ContinueStatement;
-
-      case TokenType.Function:
-        return this.parseFunctionDeclaration();
-
-      case TokenType.Return:
-        return this.parseReturnStatement();
-
-      case TokenType.Try:
-        return this.parseTryCatchStatement();
-
-      case TokenType.Class:
-        return this.parseClassDeclaration();
-
-      case TokenType.Export:
-        return this.parseExportStatement();
-
-      case TokenType.Import:
-        return this.parseImportStatement();
-
-      case TokenType.OpenBrace:
-        return this.parseBlockStatement();
-
-      case TokenType.Match:
-        return this.parseMatchStatement();
-
-      case TokenType.Semicolon:
-        this.advance();
-        return { kind: "BlockStatement", body: [] } as BlockStatement;
-
-      default:
-        return this.parseExpressionStatement();
+        default:
+          return this.parseExpressionStatement();
+      }
+    } finally {
+      this.leaveRecursion();
     }
   }
 
@@ -744,7 +770,12 @@ export class Parser {
   // --------------------------------------------------------------------------
 
   private parseExpression(): Expression {
-    return this.parseAssignmentExpression();
+    this.enterRecursion();
+    try {
+      return this.parseAssignmentExpression();
+    } finally {
+      this.leaveRecursion();
+    }
   }
 
   /**

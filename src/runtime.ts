@@ -434,7 +434,7 @@ export async function invokeFunction(
 
   if (callee.type === "function") {
     if (root.callStackDepth >= root.maxCallStackDepth) {
-      throw new Error(
+      throw new RuntimeSystemError(
         `[Runtime Error] Batas kedalaman tumpukan panggilan (${root.maxCallStackDepth}) terlampaui. Terdeteksi rekursi tanpa batas (Infinite Recursion)!`
       );
     }
@@ -474,6 +474,17 @@ export async function invokeFunction(
 }
 
 // ----------------------------------------------------------------------------
+// SISTEM ERROR RUNTIME KHUSUS (UNCATCHABLE SYSTEM ERRORS)
+// ----------------------------------------------------------------------------
+
+export class RuntimeSystemError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RuntimeSystemError";
+  }
+}
+
+// ----------------------------------------------------------------------------
 // ENVIRONMENT (LINGKUP VARIABEL & FUNGSI)
 // ----------------------------------------------------------------------------
 
@@ -484,6 +495,7 @@ export interface EnvironmentOptions {
   maxCallStackDepth?: number;
   timeoutMs?: number;
   isCancelledRef?: { current: boolean };
+  allowFs?: boolean;
 }
 
 // Virtual Modules Registry (berguna untuk lingkungan Web Playground & Browser)
@@ -507,6 +519,7 @@ export class Environment {
   public maxCallStackDepth: number = 1000;
   public timeoutMs?: number | undefined;
   public isCancelledRef?: { current: boolean } | undefined;
+  public allowFs: boolean = true;
   public executionStartTime: number;
   public loopIterationCount: number = 0;
   public callStackDepth: number = 0;
@@ -521,6 +534,7 @@ export class Environment {
       this.maxCallStackDepth = parentEnv.maxCallStackDepth;
       this.timeoutMs = parentEnv.timeoutMs;
       this.isCancelledRef = parentEnv.isCancelledRef;
+      this.allowFs = parentEnv.allowFs;
     }
   }
 
@@ -535,10 +549,10 @@ export class Environment {
   public checkLimits(): void {
     const root = this.getRoot();
     if (root.isCancelledRef?.current) {
-      throw new Error("[Runtime Error] Eksekusi dihentikan oleh pengguna (Cancelled).");
+      throw new RuntimeSystemError("[Runtime Error] Eksekusi dihentikan oleh pengguna (Cancelled).");
     }
     if (root.timeoutMs && Date.now() - root.executionStartTime > root.timeoutMs) {
-      throw new Error(
+      throw new RuntimeSystemError(
         `[Runtime Error] Batas waktu eksekusi (${root.timeoutMs}ms) terlampaui. Eksekusi dihentikan demi keamanan!`
       );
     }
@@ -622,6 +636,9 @@ export function createGlobalEnvironment(
     }
     if (optionsOrHandler.isCancelledRef !== undefined) {
       env.isCancelledRef = optionsOrHandler.isCancelledRef;
+    }
+    if (optionsOrHandler.allowFs !== undefined) {
+      env.allowFs = optionsOrHandler.allowFs;
     }
   }
   env.executionStartTime = Date.now();
@@ -812,7 +829,11 @@ export function createGlobalEnvironment(
     const target = args[0];
     const item = args[1] ?? MK_NULL();
     if (target && target.type === "array") {
-      (target as ArrayValue).elements.push(item);
+      const arr = target as ArrayValue;
+      if (arr.elements.length >= 100_000) {
+        throw new Error("[Runtime Error] Batas maksimum elemen barisan (100.000 elemen) terlampaui.");
+      }
+      arr.elements.push(item);
       return target;
     }
     return MK_NULL();
@@ -1028,6 +1049,9 @@ export function createGlobalEnvironment(
   // 18. Baca Berkas: tolongBacaBerkas(path) vs yomu(path)
   const bacaBerkasFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     checkNodeEnvironment();
+    if (!env.getRoot().allowFs) {
+      throw new Error("[Runtime Error] Operasi sistem berkas dilarang oleh konfigurasi lingkungan (allowFs = false).");
+    }
 
     const pathArg = args[0];
     if (!pathArg) {
@@ -1063,6 +1087,9 @@ export function createGlobalEnvironment(
   // 19. Tulis Berkas: kaku (Murni) / ka (Singkat) / tulisinBerkas (Wibu) / teksusang (Rongawi)
   const tulisBerkasFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
     checkNodeEnvironment();
+    if (!env.getRoot().allowFs) {
+      throw new Error("[Runtime Error] Operasi sistem berkas dilarang oleh konfigurasi lingkungan (allowFs = false).");
+    }
 
     const pathArg = args[0];
     const contentArg = args[1];
@@ -1106,8 +1133,6 @@ export function createGlobalEnvironment(
   // 20. Impor Modul: yobu (Murni) / yoB (Singkat) / panggilBerkas (Wibu) / sikatBanh (Rongawi)
   const imporModulFn = MK_NATIVE_FN(
     async (args: RuntimeValue[]): Promise<RuntimeValue> => {
-      checkNodeEnvironment();
-
       const pathArg = args[0];
       if (!pathArg) {
         throw new Error("[Runtime Error] Argumen path modul diperlukan.");
@@ -1117,6 +1142,21 @@ export function createGlobalEnvironment(
         pathArg.type === "string"
           ? (pathArg as StringValue).value
           : formatRuntimeValue(pathArg);
+
+      // Dukungan Virtual Modules (berguna untuk lingkungan Web Playground & Browser)
+      if (VIRTUAL_MODULES.has(rawPath)) {
+        const fileContent = VIRTUAL_MODULES.get(rawPath)!;
+        const tokens = tokenize(fileContent);
+        const parser = new Parser();
+        const program = parser.produceAST(tokens);
+        const result = await evaluate(program, env);
+        return unwrapSignal(result);
+      }
+
+      checkNodeEnvironment();
+      if (!env.getRoot().allowFs) {
+        throw new Error("[Runtime Error] Operasi sistem berkas dilarang oleh konfigurasi lingkungan (allowFs = false).");
+      }
 
       let resolvedPath = path.resolve(/*turbopackIgnore: true*/ process.cwd(), rawPath);
 
@@ -2080,7 +2120,7 @@ async function evalLoopStatement(
     root.checkLimits();
     root.loopIterationCount++;
     if (root.loopIterationCount > root.maxLoopIterations) {
-      throw new Error(
+      throw new RuntimeSystemError(
         `[Runtime Error] Batas iterasi perulangan terlampaui (${root.maxLoopIterations} putaran). Terdeteksi potensi perulangan tak hingga (Infinite Loop)!`
       );
     }
@@ -2150,7 +2190,7 @@ async function evalForEachStatement(
     root.checkLimits();
     root.loopIterationCount++;
     if (root.loopIterationCount > root.maxLoopIterations) {
-      throw new Error(
+      throw new RuntimeSystemError(
         `[Runtime Error] Batas iterasi perulangan terlampaui (${root.maxLoopIterations} putaran). Terdeteksi potensi perulangan tak hingga (Infinite Loop)!`
       );
     }
@@ -2451,13 +2491,24 @@ async function evalArrayLiteral(
 ): Promise<RuntimeValue> {
   const elements: RuntimeValue[] = [];
   for (const el of node.elements) {
+    if (elements.length >= 100_000) {
+      throw new Error("[Runtime Error] Batas maksimum elemen barisan (100.000 elemen) terlampaui.");
+    }
     if (el.kind === "SpreadElement") {
       const spread = el as SpreadElement;
       const spreadVal = unwrapSignal(await evaluate(spread.argument, env));
       if (spreadVal.type === "array") {
-        elements.push(...(spreadVal as ArrayValue).elements);
+        const arr = (spreadVal as ArrayValue).elements;
+        if (elements.length + arr.length > 100_000) {
+          throw new Error("[Runtime Error] Batas maksimum elemen barisan (100.000 elemen) terlampaui.");
+        }
+        elements.push(...arr);
       } else if (spreadVal.type === "string") {
-        for (const char of (spreadVal as StringValue).value) {
+        const str = (spreadVal as StringValue).value;
+        if (elements.length + str.length > 100_000) {
+          throw new Error("[Runtime Error] Batas maksimum elemen barisan (100.000 elemen) terlampaui.");
+        }
+        for (const char of str) {
           elements.push(MK_STRING(char));
         }
       } else {
@@ -2536,7 +2587,7 @@ async function evalMemberExpr(
             const root = (callEnv ?? env).getRoot();
             root.checkLimits();
             if (root.callStackDepth >= root.maxCallStackDepth) {
-              throw new Error(
+              throw new RuntimeSystemError(
                 `[Runtime Error] Batas kedalaman tumpukan panggilan (${root.maxCallStackDepth}) terlampaui. Terdeteksi rekursi tanpa batas (Infinite Recursion)!`
               );
             }
@@ -2864,6 +2915,9 @@ async function evalTryCatchStatement(
     }
     return lastVal;
   } catch (err: unknown) {
+    if (err instanceof RuntimeSystemError) {
+      throw err;
+    }
     const catchScope = new Environment(env);
     if (stmt.catchVariable) {
       const errMsg = err instanceof Error ? err.message : String(err);
@@ -2945,7 +2999,7 @@ async function evalNewExpression(
     const root = env.getRoot();
     root.checkLimits();
     if (root.callStackDepth >= root.maxCallStackDepth) {
-      throw new Error(
+      throw new RuntimeSystemError(
         `[Runtime Error] Batas kedalaman tumpukan panggilan (${root.maxCallStackDepth}) terlampaui. Terdeteksi rekursi tanpa batas (Infinite Recursion)!`
       );
     }
@@ -3200,6 +3254,11 @@ async function evalImportStatement(
         return MK_NULL();
       }
     } else {
+      if (!env.getRoot().allowFs) {
+        throw new Error(
+          "[Runtime Error] Operasi sistem berkas dilarang oleh konfigurasi lingkungan (allowFs = false)."
+        );
+      }
       try {
         const directPath = path.isAbsolute(source)
           ? source
@@ -3210,7 +3269,8 @@ async function evalImportStatement(
         } else if (fs.existsSync(`${directPath}.wibu`)) {
           moduleCode = fs.readFileSync(`${directPath}.wibu`, "utf-8");
         }
-      } catch {
+      } catch (err: unknown) {
+        if (err instanceof Error && err.message.includes("allowFs = false")) throw err;
         // Abaikan error fs
       }
     }

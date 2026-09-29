@@ -359,6 +359,7 @@ export function tokenize(sourceCode: string): Token[] {
                 src.shift() as string; // '/'
                 src.shift() as string; // '*'
                 column += 2;
+                let closed = false;
                 while (src.length > 0) {
                     const c = src.shift() as string;
                     if (c === "\n") {
@@ -367,10 +368,14 @@ export function tokenize(sourceCode: string): Token[] {
                     } else if (c === "*" && src[0] === "/") {
                         src.shift() as string; // '/'
                         column++;
+                        closed = true;
                         break;
                     } else {
                         column++;
                     }
+                }
+                if (!closed) {
+                    throw new Error(`[Lexer Error] Komentar multi-baris belum ditutup sebelum akhir berkas pada baris ${currentLine}, kolom ${currentCol}.`);
                 }
                 continue;
             }

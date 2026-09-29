@@ -43,6 +43,7 @@ import {
   type ExecutionResult,
   type EnvironmentOptions,
   type RunWibuScriptOptions,
+  RuntimeSystemError,
 } from "./runtime";
 import { convertDialect, type Dialect, DIALECT_TABLE } from "./converter";
 import {
@@ -115,6 +116,7 @@ export {
   type ExecutionResult,
   type EnvironmentOptions,
   type RunWibuScriptOptions,
+  RuntimeSystemError,
   convertDialect,
   type Dialect,
   DIALECT_TABLE,

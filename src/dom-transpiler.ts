@@ -69,16 +69,49 @@ export function transpile(wibuCode: string, options: WibuDomTranspileOptions = {
   output = output.replace(/\bkaloDisentuh\b/g, "addEventListener");
 
   // 6. masukinKeDunia(elemen) -> document.body.appendChild(elemen)
-  //    Dukungan fleksibel: wadah.masukinKeDunia(el) -> wadah.appendChild(el)
-  //    atau jika dipanggil tanpa objek: masukinKeDunia(el) -> document.body.appendChild(el)
-  output = output.replace(/([a-zA-Z0-9_$]+)\.masukinKeDunia\s*\(([^)]*)\)/g, "$1.appendChild($2)");
-  output = output.replace(/\bmasukinKeDunia\s*\(([^)]*)\)/g, "document.body.appendChild($1)");
+  //    wadah.masukinKeDunia(elemen) -> wadah.appendChild(elemen)
+  //    Dukungan tingkat lanjut: menggantikan metode dan pemanggilan fungsi global
+  //    secara presisi tanpa terpotong oleh tanda kurung bersarang
+  output = output.replace(/\.masukinKeDunia\b/g, ".appendChild");
+  output = output.replace(/\bmasukinKeDunia\b/g, "document.body.appendChild");
 
   // 7. gantiBaju -> className (elemen.gantiBaju = "..." -> elemen.className = "...")
   output = output.replace(/\bgantiBaju\b/g, "className");
 
   // 8. pindahIsekai("url") -> window.location.href = "url"
-  output = output.replace(/\bpindahIsekai\s*\(([^)]*)\)/g, "window.location.href = $1");
+  //    Mendukung argumen ekspresi bersarang dengan pelacakan tanda kurung seimbang (balanced parentheses)
+  let pindahIdx = 0;
+  while ((pindahIdx = output.indexOf("pindahIsekai", pindahIdx)) !== -1) {
+    if (pindahIdx > 0 && /[a-zA-Z0-9_$]/.test(output[pindahIdx - 1]!)) {
+      pindahIdx += "pindahIsekai".length;
+      continue;
+    }
+    const afterKeyword = output.slice(pindahIdx + "pindahIsekai".length);
+    const matchOpen = afterKeyword.match(/^\s*\(/);
+    if (matchOpen) {
+      const openParen = pindahIdx + "pindahIsekai".length + (matchOpen[0].length - 1);
+      let depth = 0;
+      let closeParen = -1;
+      for (let i = openParen; i < output.length; i++) {
+        if (output[i] === "(") depth++;
+        else if (output[i] === ")") {
+          depth--;
+          if (depth === 0) {
+            closeParen = i;
+            break;
+          }
+        }
+      }
+      if (closeParen !== -1) {
+        const innerArgs = output.slice(openParen + 1, closeParen).trim();
+        const replacement = `window.location.href = ${innerArgs}`;
+        output = output.slice(0, pindahIdx) + replacement + output.slice(closeParen + 1);
+        pindahIdx += replacement.length;
+        continue;
+      }
+    }
+    pindahIdx += "pindahIsekai".length;
+  }
 
   // 9. peringatanSepuh("teks") -> alert("teks")
   output = output.replace(/\bperingatanSepuh\b/g, "alert");
