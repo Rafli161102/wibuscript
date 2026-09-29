@@ -4,6 +4,31 @@ Semua pembaruan penting dan catatan rilis untuk proyek **WibuScript** didokument
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan mematuhi [Semantic Versioning](https://semver.org/).
 
+## [v2.3.0] - 2026-09-29
+
+### Added
+- **Tipe Data Fungsional Modern Hasil<T, E> & Opsional<T> (`src/runtime.ts`, `src/transpiler.ts`, `src/dialect-definitions.ts`, `src/converter.ts`)**:
+  - Implementasi tipe data modern `Hasil` (Result) dengan varian `ok` dan `error`, serta `Opsional` (Option) dengan varian `some` dan `none` pada runtime WibuScript dan transpiler ES2022.
+  - Konstruktor tipe 4 Dialek Mutlak:
+    - `Hasil`: `seikou`/`shippai` (Jepang Murni), `sei`/`sip` (Jepang Singkat), `hokiBanh`/`zonkBanh` (Wibu Absurd), `menyalaAbangku`/`rugidong` (Meme Rongawi), serta alias universal `ok`/`error`.
+    - `Opsional`: `aru`/`nai` (Jepang Murni), `ar`/`na` (Jepang Singkat), `adaBanh`/`gaadaBanh` (Wibu Absurd), `adamas`/`habismas` (Meme Rongawi), serta alias universal `some`/`none`.
+  - Metode berantai fungsional (chainable helper methods):
+    - `unwrap()` (alias 4 dialek: `hiraku`, `hira`, `bukaBanh`, `jebolmas`).
+    - `unwrapOr(defaultValue)`.
+    - `map(fn)` (alias 4 dialek: `utsusu`, `utu`, `henshinSuru`, `predikbola`).
+    - `andThen(fn)` (alias 4 dialek: `tsugiSuru`, `tsuSuru`, `lanjutBanh`, `gaspolmas`).
+    - Properti pemeriksa status: `isOk`, `isError`, `isSome`, `isNone`, `value`, `error`.
+  - Integrasi pencocokan pola (Pattern Matching):
+    - Dukungan pencocokan nilai `Hasil` dan `Opsional` di blok `shougo` / `sho` / `cocokkan` / `persimpangan` menggunakan tag string (`"ok"`, `"error"`, `"some"`, `"none"`, dan varian dialek) maupun simbol fungsi konstruktor langsung.
+    - Penanganan cerdas di `src/transpiler.ts` melalui inspeksi `isModernTypeMatch` sehingga sintaks `switch` standar tetap dipertahankan untuk kasus ekspresi non-modern demi menjaga kompatibilitas mundur 100%.
+- **Dialect Converter & Grammar Definitions (`src/converter.ts`, `src/dialect-definitions.ts`)**:
+  - Pendaftaran konstruktor `seikou`, `shippai`, `aru`, `nai` ke dalam kamus `CANONICAL_SUPPORT_FUNCTIONS`, `HISTORICAL_ALIASES.supportFunctions`, dan `DIALECT_TABLE`.
+  - Dukungan penuh konversi kode otomatis lintas 4 dialek untuk konstruktor `Hasil` dan `Opsional`.
+- **Pengujian & Verifikasi**:
+  - Berkas pengujian unit komprehensif `tests/result_option.test.ts` (19 skenario pengujian) yang mencakup konstruksi, eksekusi metode fungsional, dan pencocokan pola.
+  - Penambahan Kasus Logika 5 pada `tests/dialect_snapshot.test.ts` yang memvalidasi AST parity 100% dan kesetaraan output eksekusi di seluruh 4 dialek.
+  - Peningkatan total pengujian unit otomatis menjadi 142/142 tes lulus 100%.
+
 ---
 
 ## [v2.2.0] - 2026-09-29

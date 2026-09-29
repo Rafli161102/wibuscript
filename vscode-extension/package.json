@@ -2,7 +2,7 @@
   "name": "wibuscript-lang",
   "displayName": "WibuScript Language Support",
   "description": "Syntax Highlighting resmi untuk bahasa pemrograman WibuScript",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "publisher": "wibuscript-opensource",
   "engines": {
     "vscode": "^1.80.0"

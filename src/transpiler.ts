@@ -204,6 +204,38 @@ const STDLIB_MAP: Record<string, string> = {
   uke: "fetch",
   tottekiteNe: "fetch",
   SepongMas: "fetch",
+
+  // Tipe Data Modern: Hasil<T,E> (Result)
+  seikou: "__ok",
+  sei: "__ok",
+  hokiBanh: "__ok",
+  berhasilBanh: "__ok",
+  menyalaAbangku: "__ok",
+  untungmas: "__ok",
+  ok: "__ok",
+
+  shippai: "__err",
+  sip: "__err",
+  zonkBanh: "__err",
+  gagalBanh: "__err",
+  rugidong: "__err",
+  hancurmas: "__err",
+  error: "__err",
+
+  // Tipe Data Modern: Opsional<T> (Option)
+  aru: "__some",
+  ar: "__some",
+  adaBanh: "__some",
+  adamas: "__some",
+  some: "__some",
+
+  nai: "__none",
+  na: "__none",
+  gaadaBanh: "__none",
+  kosongBanh: "__none",
+  habismas: "__none",
+  zonktolol: "__none",
+  none: "__none",
 };
 
 export class Transpiler {
@@ -256,6 +288,16 @@ export class Transpiler {
       "  }",
       "  return items[items.length - 1];",
       "};",
+      "const __ok = (val) => ({ tag: 'ok', isOk: true, isError: false, value: val, error: null, unwrap: () => val, hiraku: () => val, hira: () => val, bukaBanh: () => val, jebolmas: () => val, unwrapOr: () => val, hirakuKa: () => val, hiraKa: () => val, bukaKaloGak: () => val, cadanganmas: () => val, map: (fn) => __ok(fn(val)), utsusu: (fn) => __ok(fn(val)), utu: (fn) => __ok(fn(val)), henshinSuru: (fn) => __ok(fn(val)), predikbola: (fn) => __ok(fn(val)), andThen: (fn) => fn(val), tsugiSuru: (fn) => fn(val), tsuSuru: (fn) => fn(val), lanjutBanh: (fn) => fn(val), gaspolmas: (fn) => fn(val) });",
+      "const __err = (err) => { const self = { tag: 'error', isOk: false, isError: true, value: null, error: err, unwrap: () => { throw new Error(`[Runtime Error] Result is Error: ${err}`); }, hiraku: () => { throw new Error(`[Runtime Error] Result is Error: ${err}`); }, hira: () => { throw new Error(`[Runtime Error] Result is Error: ${err}`); }, bukaBanh: () => { throw new Error(`[Runtime Error] Result is Error: ${err}`); }, jebolmas: () => { throw new Error(`[Runtime Error] Result is Error: ${err}`); }, unwrapOr: (def) => def, hirakuKa: (def) => def, hiraKa: (def) => def, bukaKaloGak: (def) => def, cadanganmas: (def) => def, map: () => self, utsusu: () => self, utu: () => self, henshinSuru: () => self, predikbola: () => self, andThen: () => self, tsugiSuru: () => self, tsuSuru: () => self, lanjutBanh: () => self, gaspolmas: () => self }; return self; };",
+      "const __some = (val) => ({ tag: 'some', isSome: true, isNone: false, value: val, unwrap: () => val, hiraku: () => val, hira: () => val, bukaBanh: () => val, jebolmas: () => val, unwrapOr: () => val, hirakuKa: () => val, hiraKa: () => val, bukaKaloGak: () => val, cadanganmas: () => val, map: (fn) => __some(fn(val)), utsusu: (fn) => __some(fn(val)), utu: (fn) => __some(fn(val)), henshinSuru: (fn) => __some(fn(val)), predikbola: (fn) => __some(fn(val)), andThen: (fn) => fn(val), tsugiSuru: (fn) => fn(val), tsuSuru: (fn) => fn(val), lanjutBanh: (fn) => fn(val), gaspolmas: (fn) => fn(val) });",
+      "const __none = () => { const self = { tag: 'none', isSome: false, isNone: true, value: null, unwrap: () => { throw new Error('[Runtime Error] Option is None'); }, hiraku: () => { throw new Error('[Runtime Error] Option is None'); }, hira: () => { throw new Error('[Runtime Error] Option is None'); }, bukaBanh: () => { throw new Error('[Runtime Error] Option is None'); }, jebolmas: () => { throw new Error('[Runtime Error] Option is None'); }, unwrapOr: (def) => def, hirakuKa: (def) => def, hiraKa: (def) => def, bukaKaloGak: (def) => def, cadanganmas: (def) => def, map: () => self, utsusu: () => self, utu: () => self, henshinSuru: () => self, predikbola: () => self, andThen: () => self, tsugiSuru: () => self, tsuSuru: () => self, lanjutBanh: () => self, gaspolmas: () => self }; return self; };",
+      "const __matchVal = (v) => { if (v != null && typeof v === 'object' && typeof v.tag === 'string') return v.tag; if (typeof v === 'function' && typeof v.tag === 'string') return v.tag; return v; };",
+      "__ok.tag = 'ok'; __err.tag = 'error'; __some.tag = 'some'; __none.tag = 'none';",
+      "const seikou = __ok, sei = __ok, hokiBanh = __ok, menyalaAbangku = __ok, ok = __ok;",
+      "const shippai = __err, sip = __err, zonkBanh = __err, rugidong = __err, error = __err;",
+      "const aru = __some, ar = __some, adaBanh = __some, adamas = __some, some = __some;",
+      "const nai = __none, na = __none, gaadaBanh = __none, habismas = __none, none = __none;",
       "",
     ];
 
@@ -570,14 +612,40 @@ export class Transpiler {
     return out;
   }
 
+  private isModernTypeMatch(node: MatchStatement): boolean {
+    const modernKeywords = new Set([
+      "seikou", "shippai", "aru", "nai",
+      "sei", "sip", "ar", "na",
+      "hokiBanh", "zonkBanh", "adaBanh", "gaadaBanh",
+      "menyalaAbangku", "rugidong", "adamas", "habismas",
+      "ok", "error", "some", "none"
+    ]);
+
+    for (const c of node.cases) {
+      if (!c.value) continue;
+      if (c.value.kind === "Identifier" && modernKeywords.has((c.value as Identifier).symbol)) {
+        return true;
+      }
+      if (c.value.kind === "StringLiteral" && modernKeywords.has((c.value as StringLiteral).value)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private transpileMatchStatement(node: MatchStatement): string {
     const disc = this.transpileExpression(node.discriminant);
-    let out = `${this.indent()}switch (${disc}) {\n`;
+    const isModern = this.isModernTypeMatch(node);
+    let out = isModern
+      ? `${this.indent()}switch (__matchVal(${disc})) {\n`
+      : `${this.indent()}switch (${disc}) {\n`;
     this.indentLevel++;
     for (const c of node.cases) {
       if (c.value) {
         const val = this.transpileExpression(c.value);
-        out += `${this.indent()}case ${val}: {\n`;
+        out += isModern
+          ? `${this.indent()}case __matchVal(${val}): {\n`
+          : `${this.indent()}case ${val}: {\n`;
       } else {
         out += `${this.indent()}default: {\n`;
       }
@@ -717,14 +785,19 @@ export class Transpiler {
         // Ekspresi Pattern Matching (shougo) di dalam ekspresi dieksekusi via IIFE aman
         const matchStmt = expr as MatchStatement;
         const disc = this.transpileExpression(matchStmt.discriminant);
+        const isModern = this.isModernTypeMatch(matchStmt);
         let out = `(() => {\n`;
         this.indentLevel++;
-        out += `${this.indent()}switch (${disc}) {\n`;
+        out += isModern
+          ? `${this.indent()}switch (__matchVal(${disc})) {\n`
+          : `${this.indent()}switch (${disc}) {\n`;
         this.indentLevel++;
 
         for (const c of matchStmt.cases) {
           if (c.value) {
-            out += `${this.indent()}case ${this.transpileExpression(c.value)}: {\n`;
+            out += isModern
+              ? `${this.indent()}case __matchVal(${this.transpileExpression(c.value)}): {\n`
+              : `${this.indent()}case ${this.transpileExpression(c.value)}: {\n`;
           } else {
             out += `${this.indent()}default: {\n`;
           }

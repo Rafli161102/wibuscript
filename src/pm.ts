@@ -400,12 +400,12 @@ export function getInstalledPackages(projectRoot?: string): string[] {
     return [];
   }
   const nodeModulesDir = findNodeModulesDir(projectRoot);
-  if (!nodeModulesDir || !fs.existsSync(nodeModulesDir)) {
+  if (!nodeModulesDir || !fs.existsSync(/*turbopackIgnore: true*/ nodeModulesDir)) {
     return [];
   }
 
   const results: string[] = [];
-  const entries = fs.readdirSync(nodeModulesDir);
+  const entries = fs.readdirSync(/*turbopackIgnore: true*/ nodeModulesDir);
 
   for (const entry of entries) {
     if (entry.startsWith(".")) {
@@ -413,14 +413,14 @@ export function getInstalledPackages(projectRoot?: string): string[] {
     }
 
     const fullPath = path.join(/*turbopackIgnore: true*/ nodeModulesDir, entry);
-    if (!fs.statSync(fullPath).isDirectory()) {
+    if (!fs.statSync(/*turbopackIgnore: true*/ fullPath).isDirectory()) {
       continue;
     }
 
     if (entry.startsWith("@")) {
       // Scoped packages
       try {
-        const subEntries = fs.readdirSync(fullPath);
+        const subEntries = fs.readdirSync(/*turbopackIgnore: true*/ fullPath);
         for (const sub of subEntries) {
           if (!sub.startsWith(".")) {
             results.push(`${entry}/${sub}`);

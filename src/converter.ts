@@ -83,6 +83,10 @@ export interface DialectMapping {
   narabikae: [string, string, string, string];
   kirinuki: [string, string, string, string];
   gacha: [string, string, string, string];
+  seikou: [string, string, string, string];
+  shippai: [string, string, string, string];
+  aru: [string, string, string, string];
+  nai: [string, string, string, string];
 }
 
 // Tabel Indeks: 0 = Murni, 1 = Singkat, 2 = Wibu, 3 = Rongawi
@@ -159,6 +163,10 @@ export const DIALECT_TABLE: Record<string, [string, string, string, string]> = {
   narabikae: ["narabikae", "nara", "narabeteNe", "goyangpantat"],
   kirinuki: ["kirinuki", "kinu", "sukoshiDake", "pedangdaging"],
   gacha: ["gacha", "gac", "tarikGacha", "weeklypass"],
+  seikou: ["seikou", "sei", "hokiBanh", "menyalaAbangku"],
+  shippai: ["shippai", "sip", "zonkBanh", "rugidong"],
+  aru: ["aru", "ar", "adaBanh", "adamas"],
+  nai: ["nai", "na", "gaadaBanh", "habismas"],
 };
 
 // Buat peta terbalik: sembarang token -> grup canonical -> indeks dialek

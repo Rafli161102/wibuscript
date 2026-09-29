@@ -16,8 +16,8 @@
 [![npm monthly downloads](https://img.shields.io/npm/dm/wibuscript.svg?style=for-the-badge&logo=npm&logoColor=white&color=007ACC&label=downloads%2Fbulan)](https://www.npmjs.com/package/wibuscript)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-Passing%20121%2F121-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v2.2.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Vitest](https://img.shields.io/badge/Vitest-Passing%20142%2F142-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.3.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
@@ -238,6 +238,14 @@ wibu lsp
 ---
 
 ## Log Pembaruan
+
+### v2.3.0
+- Implementasi tipe data modern Hasil<T, E> (Result) dan Opsional<T> (Option) pada pustaka standar WibuScript di seluruh 4 Dialek Mutlak.
+- Konstruktor Hasil: seikou/shippai (Jepang Murni), sei/sip (Jepang Singkat), hokiBanh/zonkBanh (Wibu Absurd), menyalaAbangku/rugidong (Meme Rongawi), dan alias universal ok/error.
+- Konstruktor Opsional: aru/nai (Jepang Murni), ar/na (Jepang Singkat), adaBanh/gaadaBanh (Wibu Absurd), adamas/habismas (Meme Rongawi), dan alias universal some/none.
+- Metode bantuan berantai fungsional: unwrap, unwrapOr, map, dan andThen (beserta alias metode 4 dialek: hiraku/hira/bukaBanh/jebolmas, utsusu/utu/henshinSuru/predikbola, tsugiSuru/tsuSuru/lanjutBanh/gaspolmas).
+- Integrasi langsung dengan pencocokan pola (Pattern Matching) berbasis tag diskriminan dan simbol konstruktor.
+- Suite pengujian unit komprehensif (tests/result_option.test.ts) dan Dialect Parity Snapshot Test Kasus Logika 5 dengan 142/142 tes lulus 100%.
 
 ### v2.2.0
 - Penguatan interoperabilitas npm (FFI): kemampuan mengimpor langsung paket JavaScript npm asli (seperti lodash) dan mengeksekusi fungsinya secara mulus di seluruh 4 dialek.

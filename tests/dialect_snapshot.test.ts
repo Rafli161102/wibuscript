@@ -368,6 +368,126 @@ describe("WibuScript v2.0 - Dialect Parity & Snapshot Verification", () => {
   });
 
   // --------------------------------------------------------------------------
+  // PROGRAM 5: TIPE DATA MODERN (Hasil & Opsional dengan Pattern Matching)
+  // --------------------------------------------------------------------------
+  describe("Kasus Logika 5: Tipe Data Modern Hasil & Opsional dengan Pencocokan Pola", () => {
+    const codeMurni = `
+      kore r = seikou(50);
+      kore rMod = r.map(x => x * 2);
+      kore hasilUnwrap = rMod.unwrap();
+
+      kore o = aru("WibuScript");
+      kore hasilOpt = o.unwrapOr("Kosong");
+
+      kore statusHasil = shougo (rMod) {
+        baai "ok": { kaesu "SUKSES_HASIL"; }
+        baai "error": { kaesu "GAGAL_HASIL"; }
+      };
+
+      kore statusOpt = shougo (o) {
+        baai "some": { kaesu "SUKSES_OPSIONAL"; }
+        baai "none": { kaesu "GAGAL_OPSIONAL"; }
+      };
+    `;
+
+    const codeSingkat = `
+      ko r = seikou(50);
+      ko rMod = r.map(x => x * 2);
+      ko hasilUnwrap = rMod.unwrap();
+
+      ko o = aru("WibuScript");
+      ko hasilOpt = o.unwrapOr("Kosong");
+
+      ko statusHasil = sho (rMod) {
+        baa "ok": { kae "SUKSES_HASIL"; }
+        baa "error": { kae "GAGAL_HASIL"; }
+      };
+
+      ko statusOpt = sho (o) {
+        baa "some": { kae "SUKSES_OPSIONAL"; }
+        baa "none": { kae "GAGAL_OPSIONAL"; }
+      };
+    `;
+
+    const codeWibu = `
+      iniDesu r = seikou(50);
+      iniDesu rMod = r.map(x => x * 2);
+      iniDesu hasilUnwrap = rMod.unwrap();
+
+      iniDesu o = aru("WibuScript");
+      iniDesu hasilOpt = o.unwrapOr("Kosong");
+
+      iniDesu statusHasil = cocokkan (rMod) {
+        kaloPas "ok": { haiBeri "SUKSES_HASIL"; }
+        kaloPas "error": { haiBeri "GAGAL_HASIL"; }
+      };
+
+      iniDesu statusOpt = cocokkan (o) {
+        kaloPas "some": { haiBeri "SUKSES_OPSIONAL"; }
+        kaloPas "none": { haiBeri "GAGAL_OPSIONAL"; }
+      };
+    `;
+
+    const codeRongawi = `
+      pokmipokmi r = seikou(50);
+      pokmipokmi rMod = r.map(x => x * 2);
+      pokmipokmi hasilUnwrap = rMod.unwrap();
+
+      pokmipokmi o = aru("WibuScript");
+      pokmipokmi hasilOpt = o.unwrapOr("Kosong");
+
+      pokmipokmi statusHasil = persimpangan (rMod) {
+        kenaben "ok": { kandabahlil "SUKSES_HASIL"; }
+        kenaben "error": { kandabahlil "GAGAL_HASIL"; }
+      };
+
+      pokmipokmi statusOpt = persimpangan (o) {
+        kenaben "some": { kandabahlil "SUKSES_OPSIONAL"; }
+        kenaben "none": { kandabahlil "GAGAL_OPSIONAL"; }
+      };
+    `;
+
+    it("menghasilkan struktur AST yang 100% identik di seluruh 4 dialek", () => {
+      const astMurni = parseCode(codeMurni);
+      const astSingkat = parseCode(codeSingkat);
+      const astWibu = parseCode(codeWibu);
+      const astRongawi = parseCode(codeRongawi);
+
+      expect(astSingkat).toEqual(astMurni);
+      expect(astWibu).toEqual(astMurni);
+      expect(astRongawi).toEqual(astMurni);
+    });
+
+    it("menghasilkan eksekusi nilai yang 100% identik di seluruh 4 dialek", async () => {
+      const sandbox = new WibuSandbox({ timeoutMs: 3000 });
+
+      const resMurni = await sandbox.execute(
+        `${codeMurni}\nmite(hasilUnwrap);\nmite(hasilOpt);\nmite(statusHasil);\nmite(statusOpt);`
+      );
+      const resSingkat = await sandbox.execute(
+        `${codeSingkat}\nmi(hasilUnwrap);\nmi(hasilOpt);\nmi(statusHasil);\nmi(statusOpt);`
+      );
+      const resWibu = await sandbox.execute(
+        `${codeWibu}\niuYo(hasilUnwrap);\niuYo(hasilOpt);\niuYo(statusHasil);\niuYo(statusOpt);`
+      );
+      const resRongawi = await sandbox.execute(
+        `${codeRongawi}\nsalamkenal(hasilUnwrap);\nsalamkenal(hasilOpt);\nsalamkenal(statusHasil);\nsalamkenal(statusOpt);`
+      );
+
+      expect(resMurni.success).toBe(true);
+      expect(resSingkat.success).toBe(true);
+      expect(resWibu.success).toBe(true);
+      expect(resRongawi.success).toBe(true);
+
+      const expectedOutput = ["100", "WibuScript", "SUKSES_HASIL", "SUKSES_OPSIONAL"];
+      expect(resMurni.output).toEqual(expectedOutput);
+      expect(resSingkat.output).toEqual(expectedOutput);
+      expect(resWibu.output).toEqual(expectedOutput);
+      expect(resRongawi.output).toEqual(expectedOutput);
+    });
+  });
+
+  // --------------------------------------------------------------------------
   // PENGUJIAN SOURCE MAP v3 & PROTEKSI SANDBOX
   // --------------------------------------------------------------------------
   describe("Source Map v3 & Proteksi Keamanan Sandbox", () => {

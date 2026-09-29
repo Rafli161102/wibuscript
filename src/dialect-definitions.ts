@@ -173,6 +173,10 @@ export const CANONICAL_SUPPORT_FUNCTIONS: Record<string, [string, string, string
   narabikae: ["narabikae", "nara", "narabeteNe", "goyangpantat"],
   kirinuki: ["kirinuki", "kinu", "sukoshiDake", "pedangdaging"],
   gacha: ["gacha", "gac", "tarikGacha", "weeklypass"],
+  seikou: ["seikou", "sei", "hokiBanh", "menyalaAbangku"],
+  shippai: ["shippai", "sip", "zonkBanh", "rugidong"],
+  aru: ["aru", "ar", "adaBanh", "adamas"],
+  nai: ["nai", "na", "gaadaBanh", "habismas"],
 };
 
 export const OPERATORS: string[] = [
@@ -185,7 +189,7 @@ export const OPERATORS: string[] = [
 export const HISTORICAL_ALIASES: Record<VisualTokenCategory, string[]> = {
   controlKeywords: ["whenYh", "kaloGakGitu", "yaudahlahYa", "gasSampePagi", "ampunSepuh", "lanjutPart2", "sabarBanh", "cobaDuluBanh", "gasTesLur", "santaiAja", "sikatSemua", "karaNe"],
   declarationKeywords: ["siImut", "hargaMati", "watashiJutsu", "kasihPaham", "paguyuban", "lahiran", "bikinBaru", "turunanDari", "siAing"],
-  supportFunctions: ["teriakAmba", "bacotAmba", "matteNeSikit", "jamBerapaBanh", "cekJamLur", "seginiDoang", "tolongCekNagasa", "cekUkuran", "jadiAngkaBanh", "bikinJadiSuji", "akarPangkat", "akarLur", "mutlakBanh", "mutlakLur", "bawahinBanh", "bawahLur", "atasinBanh", "atasLur", "bikinBarisan", "kumpulinBocah", "kumpulinJawa", "uraiJsonLur", "bungkusJsonLur", "petainBanh", "saringBanh", "cariinBanh", "pecahKata", "bedahno", "pecahin", "lemKata", "gandengen", "lemin", "sulapKata", "gantinen", "tumbalkan", "pangkas", "potongen", "cukur", "punyaGak", "onora", "adaGak", "rapihin", "urutno", "barisin", "potongSebagian", "cuplikno", "comot", "mputerNasib", "spinZeus"],
+  supportFunctions: ["teriakAmba", "bacotAmba", "matteNeSikit", "jamBerapaBanh", "cekJamLur", "seginiDoang", "tolongCekNagasa", "cekUkuran", "jadiAngkaBanh", "bikinJadiSuji", "akarPangkat", "akarLur", "mutlakBanh", "mutlakLur", "bawahinBanh", "bawahLur", "atasinBanh", "atasLur", "bikinBarisan", "kumpulinBocah", "kumpulinJawa", "uraiJsonLur", "bungkusJsonLur", "petainBanh", "saringBanh", "cariinBanh", "pecahKata", "bedahno", "pecahin", "lemKata", "gandengen", "lemin", "sulapKata", "gantinen", "tumbalkan", "pangkas", "potongen", "cukur", "punyaGak", "onora", "adaGak", "rapihin", "urutno", "barisin", "potongSebagian", "cuplikno", "comot", "mputerNasib", "spinZeus", "ok", "error", "some", "none", "berhasilBanh", "gagalBanh", "untungmas", "hancurmas", "kosongBanh", "zonktolol"],
   constantLanguage: ["menyalaAbkuh", "ladehBanh", "maafLancang", "maji", "majiBener", "usoBanget", "kosongZannen"],
   operators: [],
 };

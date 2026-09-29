@@ -553,6 +553,7 @@ export function createGlobalEnvironment(
   env.declareVar("km", printFn);
   env.declareVar("bacotAmba", printFn);
   env.declareVar("omaeWaIu", printFn);
+  env.declareVar("iuYo", printFn);
   env.declareVar("cawapresin", printFn);
 
   // 2. Delay: shibaraku (Murni) / siba (Singkat) / santuyDulu (Wibu) / nungguinLu (Rongawi)
@@ -1482,7 +1483,247 @@ export function createGlobalEnvironment(
   env.declareVar("comot", kirinukiFn);
   env.declareVar("pedangdaging", kirinukiFn);
 
+  // 27. Pustaka Standar Tipe Data Modern: Hasil<T,E> (Result) & Opsional<T> (Option)
+  const seikouFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    return createResultOk(args[0] ?? MK_NULL());
+  });
+  (seikouFn as any).tag = "ok";
+
+  const shippaiFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    return createResultError(args[0] ?? MK_NULL());
+  });
+  (shippaiFn as any).tag = "error";
+
+  const aruFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    return createOptionSome(args[0] ?? MK_NULL());
+  });
+  (aruFn as any).tag = "some";
+
+  const naiFn = MK_NATIVE_FN((): RuntimeValue => {
+    return createOptionNone();
+  });
+  (naiFn as any).tag = "none";
+
+  // Hasil Ok (seikou / sei / hokiBanh / menyalaAbangku / ok)
+  env.declareVar("seikou", seikouFn);
+  env.declareVar("sei", seikouFn);
+  env.declareVar("hokiBanh", seikouFn);
+  env.declareVar("berhasilBanh", seikouFn);
+  env.declareVar("menyalaAbangku", seikouFn);
+  env.declareVar("untungmas", seikouFn);
+  env.declareVar("ok", seikouFn);
+
+  // Hasil Error (shippai / sip / zonkBanh / rugidong / error)
+  env.declareVar("shippai", shippaiFn);
+  env.declareVar("sip", shippaiFn);
+  env.declareVar("zonkBanh", shippaiFn);
+  env.declareVar("gagalBanh", shippaiFn);
+  env.declareVar("rugidong", shippaiFn);
+  env.declareVar("hancurmas", shippaiFn);
+  env.declareVar("error", shippaiFn);
+
+  // Opsional Some (aru / ar / adaBanh / adamas / some)
+  env.declareVar("aru", aruFn);
+  env.declareVar("ar", aruFn);
+  env.declareVar("adaBanh", aruFn);
+  env.declareVar("adamas", aruFn);
+  env.declareVar("some", aruFn);
+
+  // Opsional None (nai / na / gaadaBanh / habismas / none)
+  env.declareVar("nai", naiFn);
+  env.declareVar("na", naiFn);
+  env.declareVar("gaadaBanh", naiFn);
+  env.declareVar("kosongBanh", naiFn);
+  env.declareVar("habismas", naiFn);
+  env.declareVar("zonktolol", naiFn);
+  env.declareVar("none", naiFn);
+
   return env;
+}
+
+export function createResultOk(val: RuntimeValue): RuntimeValue {
+  const map = new Map<string, RuntimeValue>();
+  map.set("tag", MK_STRING("ok"));
+  map.set("isOk", MK_BOOL(true));
+  map.set("isError", MK_BOOL(false));
+  map.set("value", val);
+  map.set("error", MK_NULL());
+
+  const unwrapFn = MK_NATIVE_FN((): RuntimeValue => val);
+  const unwrapOrFn = MK_NATIVE_FN((): RuntimeValue => val);
+  const mapFn = MK_NATIVE_FN(async (args: RuntimeValue[], scopeEnv: Environment): Promise<RuntimeValue> => {
+    const fn = args[0];
+    if (!fn) return createResultOk(val);
+    const mapped = await invokeFunction(fn, [val], scopeEnv);
+    return createResultOk(unwrapSignal(mapped));
+  });
+  const andThenFn = MK_NATIVE_FN(async (args: RuntimeValue[], scopeEnv: Environment): Promise<RuntimeValue> => {
+    const fn = args[0];
+    if (!fn) return createResultOk(val);
+    const res = await invokeFunction(fn, [val], scopeEnv);
+    return unwrapSignal(res);
+  });
+
+  map.set("unwrap", unwrapFn);
+  map.set("hiraku", unwrapFn);
+  map.set("hira", unwrapFn);
+  map.set("bukaBanh", unwrapFn);
+  map.set("jebolmas", unwrapFn);
+
+  map.set("unwrapOr", unwrapOrFn);
+  map.set("hirakuKa", unwrapOrFn);
+  map.set("hiraKa", unwrapOrFn);
+  map.set("bukaKaloGak", unwrapOrFn);
+  map.set("cadanganmas", unwrapOrFn);
+
+  map.set("map", mapFn);
+  map.set("utsusu", mapFn);
+  map.set("utu", mapFn);
+  map.set("henshinSuru", mapFn);
+  map.set("predikbola", mapFn);
+
+  map.set("andThen", andThenFn);
+  map.set("tsugiSuru", andThenFn);
+  map.set("tsuSuru", andThenFn);
+  map.set("lanjutBanh", andThenFn);
+  map.set("gaspolmas", andThenFn);
+
+  return MK_OBJECT(map);
+}
+
+export function createResultError(err: RuntimeValue): RuntimeValue {
+  const map = new Map<string, RuntimeValue>();
+  map.set("tag", MK_STRING("error"));
+  map.set("isOk", MK_BOOL(false));
+  map.set("isError", MK_BOOL(true));
+  map.set("value", MK_NULL());
+  map.set("error", err);
+
+  const unwrapFn = MK_NATIVE_FN((): RuntimeValue => {
+    const msg = formatRuntimeValue(err);
+    throw new Error(`[Runtime Error] Gagal membuka Hasil (Result is Error): ${msg}`);
+  });
+  const unwrapOrFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    return args[0] ?? MK_NULL();
+  });
+  const selfFn = MK_NATIVE_FN((): RuntimeValue => createResultError(err));
+
+  map.set("unwrap", unwrapFn);
+  map.set("hiraku", unwrapFn);
+  map.set("hira", unwrapFn);
+  map.set("bukaBanh", unwrapFn);
+  map.set("jebolmas", unwrapFn);
+
+  map.set("unwrapOr", unwrapOrFn);
+  map.set("hirakuKa", unwrapOrFn);
+  map.set("hiraKa", unwrapOrFn);
+  map.set("bukaKaloGak", unwrapOrFn);
+  map.set("cadanganmas", unwrapOrFn);
+
+  map.set("map", selfFn);
+  map.set("utsusu", selfFn);
+  map.set("utu", selfFn);
+  map.set("henshinSuru", selfFn);
+  map.set("predikbola", selfFn);
+
+  map.set("andThen", selfFn);
+  map.set("tsugiSuru", selfFn);
+  map.set("tsuSuru", selfFn);
+  map.set("lanjutBanh", selfFn);
+  map.set("gaspolmas", selfFn);
+
+  return MK_OBJECT(map);
+}
+
+export function createOptionSome(val: RuntimeValue): RuntimeValue {
+  const map = new Map<string, RuntimeValue>();
+  map.set("tag", MK_STRING("some"));
+  map.set("isSome", MK_BOOL(true));
+  map.set("isNone", MK_BOOL(false));
+  map.set("value", val);
+
+  const unwrapFn = MK_NATIVE_FN((): RuntimeValue => val);
+  const unwrapOrFn = MK_NATIVE_FN((): RuntimeValue => val);
+  const mapFn = MK_NATIVE_FN(async (args: RuntimeValue[], scopeEnv: Environment): Promise<RuntimeValue> => {
+    const fn = args[0];
+    if (!fn) return createOptionSome(val);
+    const mapped = await invokeFunction(fn, [val], scopeEnv);
+    return createOptionSome(unwrapSignal(mapped));
+  });
+  const andThenFn = MK_NATIVE_FN(async (args: RuntimeValue[], scopeEnv: Environment): Promise<RuntimeValue> => {
+    const fn = args[0];
+    if (!fn) return createOptionSome(val);
+    const res = await invokeFunction(fn, [val], scopeEnv);
+    return unwrapSignal(res);
+  });
+
+  map.set("unwrap", unwrapFn);
+  map.set("hiraku", unwrapFn);
+  map.set("hira", unwrapFn);
+  map.set("bukaBanh", unwrapFn);
+  map.set("jebolmas", unwrapFn);
+
+  map.set("unwrapOr", unwrapOrFn);
+  map.set("hirakuKa", unwrapOrFn);
+  map.set("hiraKa", unwrapOrFn);
+  map.set("bukaKaloGak", unwrapOrFn);
+  map.set("cadanganmas", unwrapOrFn);
+
+  map.set("map", mapFn);
+  map.set("utsusu", mapFn);
+  map.set("utu", mapFn);
+  map.set("henshinSuru", mapFn);
+  map.set("predikbola", mapFn);
+
+  map.set("andThen", andThenFn);
+  map.set("tsugiSuru", andThenFn);
+  map.set("tsuSuru", andThenFn);
+  map.set("lanjutBanh", andThenFn);
+  map.set("gaspolmas", andThenFn);
+
+  return MK_OBJECT(map);
+}
+
+export function createOptionNone(): RuntimeValue {
+  const map = new Map<string, RuntimeValue>();
+  map.set("tag", MK_STRING("none"));
+  map.set("isSome", MK_BOOL(false));
+  map.set("isNone", MK_BOOL(true));
+  map.set("value", MK_NULL());
+
+  const unwrapFn = MK_NATIVE_FN((): RuntimeValue => {
+    throw new Error("[Runtime Error] Gagal membuka Opsional (Option is None).");
+  });
+  const unwrapOrFn = MK_NATIVE_FN((args: RuntimeValue[]): RuntimeValue => {
+    return args[0] ?? MK_NULL();
+  });
+  const selfFn = MK_NATIVE_FN((): RuntimeValue => createOptionNone());
+
+  map.set("unwrap", unwrapFn);
+  map.set("hiraku", unwrapFn);
+  map.set("hira", unwrapFn);
+  map.set("bukaBanh", unwrapFn);
+  map.set("jebolmas", unwrapFn);
+
+  map.set("unwrapOr", unwrapOrFn);
+  map.set("hirakuKa", unwrapOrFn);
+  map.set("hiraKa", unwrapOrFn);
+  map.set("bukaKaloGak", unwrapOrFn);
+  map.set("cadanganmas", unwrapOrFn);
+
+  map.set("map", selfFn);
+  map.set("utsusu", selfFn);
+  map.set("utu", selfFn);
+  map.set("henshinSuru", selfFn);
+  map.set("predikbola", selfFn);
+
+  map.set("andThen", selfFn);
+  map.set("tsugiSuru", selfFn);
+  map.set("tsuSuru", selfFn);
+  map.set("lanjutBanh", selfFn);
+  map.set("gaspolmas", selfFn);
+
+  return MK_OBJECT(map);
 }
 
 // ----------------------------------------------------------------------------
@@ -2310,6 +2551,78 @@ async function evalMemberExpr(
 }
 
 function checkValuesEqual(left: RuntimeValue, right: RuntimeValue): boolean {
+  // Dukungan pencocokan pola langsung untuk tipe data modern: Hasil<T,E> & Opsional<T>
+  const getTag = (v: RuntimeValue): string | null => {
+    if (v.type === "object") {
+      const tagVal = (v as ObjectValue).properties.get("tag");
+      if (tagVal && tagVal.type === "string") return (tagVal as StringValue).value;
+    }
+    if (v.type === "native-fn") {
+      const tagVal = (v as any).tag;
+      if (typeof tagVal === "string") return tagVal;
+    }
+    return null;
+  };
+
+  const leftTag = getTag(left);
+  const rightTag = getTag(right);
+
+  const TAG_ALIASES: Record<string, string[]> = {
+    ok: [
+      "ok",
+      "seikou",
+      "sei",
+      "hokiBanh",
+      "hoki",
+      "berhasil",
+      "berhasilBanh",
+      "menyalaAbangku",
+      "menyala",
+      "untungmas",
+    ],
+    error: [
+      "error",
+      "shippai",
+      "sip",
+      "zonkBanh",
+      "zonk",
+      "gagal",
+      "gagalBanh",
+      "rugidong",
+      "rugi",
+      "hancurmas",
+    ],
+    some: ["some", "aru", "ar", "adaBanh", "ada", "adamas"],
+    none: [
+      "none",
+      "nai",
+      "na",
+      "gaadaBanh",
+      "gaada",
+      "kosong",
+      "kosongBanh",
+      "habismas",
+      "zonktolol",
+    ],
+  };
+
+  const matchesTag = (tag: string, candidate: RuntimeValue): boolean => {
+    if (candidate.type === "string") {
+      const strVal = (candidate as StringValue).value;
+      const aliases = TAG_ALIASES[tag];
+      return aliases ? aliases.includes(strVal) : tag === strVal;
+    }
+    const candTag = getTag(candidate);
+    return candTag === tag;
+  };
+
+  if (leftTag && matchesTag(leftTag, right)) {
+    return true;
+  }
+  if (rightTag && matchesTag(rightTag, left)) {
+    return true;
+  }
+
   if (left.type !== right.type) {
     return false;
   }
