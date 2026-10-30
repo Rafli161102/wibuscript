@@ -27,7 +27,35 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
+          registry-url: https://registry.npmjs.org
           package-manager-cache: false
+
+      - name: Prepare npm config for OIDC
+        shell: bash
+        run: |
+          npmrc="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
+          mkdir -p "$(dirname "$npmrc")"
+          touch "$npmrc"
+          # setup-node writes a classic token placeholder; remove it so npm
+          # can use the GitHub Actions OIDC exchange for trusted publishing.
+          sed -i '/_authToken/d' "$npmrc"
+          if ! grep -q '^registry=' "$npmrc"; then
+            echo 'registry=https://registry.npmjs.org/' >> "$npmrc"
+          fi
+          echo "npm config prepared for OIDC (no static auth token entry)."
+
+      - name: Verify GitHub OIDC availability
+        shell: bash
+        run: |
+          test -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" || {
+            echo "::error::GitHub OIDC URL is missing. Check job permission id-token: write."
+            exit 1
+          }
+          test -n "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" || {
+            echo "::error::GitHub OIDC request token is missing."
+            exit 1
+          }
+          echo "GitHub Actions OIDC environment is available."
 
       - name: Verify npm Trusted Publishing support
         run: |
