@@ -160,3 +160,5 @@ export async function runWibuScript(sourceCode: string): Promise<void> {
   const environment = createGlobalEnvironment();
   await evaluate(program, environment);
 }
+
+export * from "./container-sandbox";
