@@ -16,6 +16,10 @@
     "./server": {
       "types": "./dist/modules/server.d.ts",
       "import": "./dist/modules/server.js"
+    },
+    "./container": {
+      "types": "./dist/container-sandbox.d.ts",
+      "import": "./dist/container-sandbox.js"
     }
   },
   "type": "module",
