@@ -29,32 +29,10 @@ import {
   TokenType,
   type Token,
   Parser,
-  evaluate,
-  createGlobalEnvironment,
-  unwrapSignal,
   convertDialect,
   type Dialect,
   transpileToJS,
-  registerVirtualModule,
 } from "../src/index";
-
-// Inisialisasi Modul Virtual bawaan untuk Web Playground
-registerVirtualModule(
-  "./ninja.wibu",
-  `// Modul Virtual Ninja (Playground Demo)
-koukai jutsu jurusBayangan(jumlah) {
-  kaesu \`Muncul \${jumlah} kage bunshin!\`
-}
-
-koukai sekte Senjata {
-  tanjou(nama) {
-    jibun.nama = nama
-  }
-  lempar() {
-    kaesu \`Melempar \${jibun.nama} kena sasaran!\`
-  }
-}`
-);
 
 // Kumpulan template kode WibuScript bawaan
 const CODE_PRESETS: Record<string, string> = {
@@ -841,7 +819,8 @@ export default function WibuScriptPlayground() {
   const [tokenFilter, setTokenFilter] = useState<string>("");
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
-  const isCancelledRef = useRef<boolean>(false);
+  const workerRef = useRef<Worker | null>(null);
+  const cancelExecutionRef = useRef<(() => void) | null>(null);
   const logBufferRef = useRef<string[]>([]);
   const flushTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const handleRunCodeRef = useRef<() => void>(() => {});
@@ -933,9 +912,9 @@ export default function WibuScriptPlayground() {
 
   const handleStopExecution = useCallback(() => {
     if (!isRunning) return;
-    isCancelledRef.current = true;
     setStatusMessage("Menghentikan...");
     pushLog("[Sistem] Menghentikan eksekusi atas permintaan pengguna...");
+    cancelExecutionRef.current?.();
     if (flushTimeoutRef.current) {
       clearTimeout(flushTimeoutRef.current);
       flushTimeoutRef.current = null;
@@ -947,7 +926,6 @@ export default function WibuScriptPlayground() {
     if (isRunning) return;
 
     setIsRunning(true);
-    isCancelledRef.current = false;
     if (flushTimeoutRef.current) {
       clearTimeout(flushTimeoutRef.current);
       flushTimeoutRef.current = null;
@@ -955,50 +933,90 @@ export default function WibuScriptPlayground() {
     logBufferRef.current = [];
     setOutputLog([]);
     setStatusMessage("Menjalankan...");
-    const startTime = performance.now();
+    const startedAt = performance.now();
 
+    let worker: Worker | null = null;
     try {
-      // 1. Lexer (Tokenisasi)
-      const tokens = tokenize(code);
-      setTokensList(tokens);
-      setTokenCount(tokens.length);
-
-      // 2. Parser (AST)
-      const parser = new Parser();
-      const program = parser.produceAST(tokens);
-      setAstJson(JSON.stringify(program, null, 2));
-
-      // 3. Transpilasi ke JS
-      try {
-        setTranspiledJs(transpileToJS(code));
-      } catch {
-        setTranspiledJs("// Gagal mengompilasi ke JavaScript");
-      }
-
-      // 4. Runtime & Evaluator dengan pengaman kecepatan dan keamanan
-      const env = createGlobalEnvironment({
-        outputHandler: (lineMessage: string) => {
-          pushLog(lineMessage);
-        },
-        maxLoopIterations: 50_000,
-        maxCallStackDepth: 1000,
-        timeoutMs: 10_000,
-        isCancelledRef: isCancelledRef,
+      worker = new Worker(new URL("../src/playground.worker.ts", import.meta.url), {
+        type: "module",
+        name: "wibuscript-playground",
       });
+      workerRef.current = worker;
 
-      const rawResult = await evaluate(program, env);
-      unwrapSignal(rawResult);
+      await new Promise<void>((resolve) => {
+        let settled = false;
+        let timeoutId: number | null = null;
 
-      const endTime = performance.now();
-      const duration = Math.round(endTime - startTime);
-      setExecutionTime(duration);
-      setStatusMessage("Selesai");
+        const finish = (status: "success" | "error" | "cancelled", message?: string) => {
+          if (settled) return;
+          settled = true;
+          if (timeoutId !== null) window.clearTimeout(timeoutId);
+          worker?.terminate();
+          if (workerRef.current === worker) workerRef.current = null;
+          cancelExecutionRef.current = null;
+
+          if (message) pushLog(`[Sistem Error] ${message}`);
+          setExecutionTime(Math.round(performance.now() - startedAt));
+          setStatusMessage(
+            status === "success" ? "Selesai" :
+            status === "cancelled" ? "Dihentikan" : "Terjadi Kesalahan"
+          );
+          resolve();
+        };
+
+        cancelExecutionRef.current = () => finish("cancelled");
+        timeoutId = window.setTimeout(
+          () => finish("error", "Batas waktu eksekusi (10.000 ms) terlampaui."),
+          10_000
+        );
+
+        worker!.onmessage = (event: MessageEvent) => {
+          const message = event.data;
+          if (!message || typeof message !== "object") return;
+
+          switch (message.type) {
+            case "TOKENS":
+              setTokensList(message.tokens ?? []);
+              setTokenCount(message.tokenCount ?? 0);
+              break;
+            case "AST":
+              setAstJson(message.astJson ?? "");
+              break;
+            case "TRANSPILED":
+              setTranspiledJs(message.code ?? "// Tidak ada hasil transpilasi");
+              break;
+            case "OUTPUT":
+              if (typeof message.line === "string") pushLog(message.line);
+              break;
+            case "SUCCESS":
+              finish("success");
+              break;
+            case "ERROR":
+              finish("error", typeof message.error === "string" ? message.error : "Galat runtime tidak diketahui.");
+              break;
+            default:
+              break;
+          }
+        };
+
+        worker!.onerror = (event: ErrorEvent) => {
+          finish("error", event.message || "Worker Playground mengalami kesalahan.");
+        };
+
+        worker!.postMessage({
+          type: "EXECUTE",
+          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          code,
+        });
+      });
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       pushLog(`[Sistem Error] ${errorMessage}`);
       setStatusMessage("Terjadi Kesalahan");
     } finally {
+      worker?.terminate();
+      if (workerRef.current === worker) workerRef.current = null;
+      cancelExecutionRef.current = null;
       if (flushTimeoutRef.current) {
         clearTimeout(flushTimeoutRef.current);
         flushTimeoutRef.current = null;
