@@ -1,23 +1,26 @@
 import { stdin, stdout } from "node:process";
 import { formatRuntimeValue, runWibuScriptAsync } from "../dist/index.js";
 
-const MAX_INPUT_BYTES = 1_100_000;
+const MAX_INPUT_BYTES = 4_100_000;
 let input = "";
+let inputTooLarge = false;
 stdin.setEncoding("utf8");
 for await (const chunk of stdin) {
   input += chunk;
   if (Buffer.byteLength(input, "utf8") > MAX_INPUT_BYTES) {
-    stdout.write(JSON.stringify({
-      success: false,
-      output: [],
-      error: "Payload runner melebihi batas input container.",
-    }));
-    process.exitCode = 1;
-    process.exit();
+    inputTooLarge = true;
+    break;
   }
 }
 
-try {
+if (inputTooLarge) {
+  stdout.write(JSON.stringify({
+    success: false,
+    output: [],
+    error: "Payload runner melebihi batas input container.",
+  }));
+  process.exitCode = 1;
+} else try {
   const payload = JSON.parse(input);
   if (typeof payload.source !== "string") {
     throw new Error("Field source wajib berupa string.");
