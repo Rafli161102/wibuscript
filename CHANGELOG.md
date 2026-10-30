@@ -6,6 +6,8 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan me
 
 ## [Unreleased]
 
+## [v2.8.0] - 2026-10-31
+
 ### Security
 - Web Playground menjalankan interpreter melalui dedicated Web Worker, bukan pada main thread.
 - Runner Playground menonaktifkan akses filesystem dan API jaringan umum, membatasi input/output, serta mendukung penghentian worker.
