@@ -323,6 +323,32 @@ describe("Wibu Language Server Protocol (src/lsp.ts)", () => {
       expect(publishedMessages[2]!.params.diagnostics).toEqual([]);
     });
 
+    it("mengabaikan notifikasi didChange yang versinya lebih lama", () => {
+      const publishedMessages: JsonRpcMessage[] = [];
+      const server = new WibuLanguageServer((msg) => publishedMessages.push(msg));
+      const uri = "file:///workspace/versioned.wibu";
+
+      server.handleMessage({
+        jsonrpc: "2.0",
+        method: "textDocument/didOpen",
+        params: { textDocument: { uri, version: 4, text: "kore nilai = 10;" } },
+      });
+      const diagnosticsAfterOpen = publishedMessages.length;
+
+      server.handleMessage({
+        jsonrpc: "2.0",
+        method: "textDocument/didChange",
+        params: {
+          textDocument: { uri, version: 3 },
+          contentChanges: [{ text: "kore nilai = ;" }],
+        },
+      });
+
+      expect(publishedMessages).toHaveLength(diagnosticsAfterOpen);
+      expect(server.getDocument(uri)?.version).toBe(4);
+      expect(server.getDocument(uri)?.text).toBe("kore nilai = 10;");
+    });
+
     it("merespons textDocument/completion dengan daftar item", () => {
       const server = new WibuLanguageServer();
       const response = server.handleMessage({
