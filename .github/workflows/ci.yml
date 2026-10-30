@@ -39,3 +39,14 @@ jobs:
 
       - name: Build Core and Playground
         run: npm run build
+
+      - name: Validate VS Code extension and runner scripts
+        run: |
+          node --check vscode-extension/extension.js
+          node --check scripts/container-runner.mjs
+
+      - name: Build Isolated Container Runner
+        run: docker build -f Dockerfile.sandbox -t wibuscript-runner:ci .
+
+      - name: Smoke Test Container Sandbox
+        run: WIBUSCRIPT_DOCKER_TESTS=1 npm test -- tests/container_sandbox.test.ts
