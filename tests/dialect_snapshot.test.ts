@@ -594,5 +594,12 @@ describe("WibuScript v2.0 - Dialect Parity & Snapshot Verification", () => {
       const result = await runInSandbox(js);
       expect(result.output).toContain("DITOLAK_DENGAN_AMAN");
     });
+
+    it("menolak Function constructor escape di konteks Node sandbox", async () => {
+      const exploit = '"use strict"; (() => {}).constructor("return process")().version;';
+      const result = await runInSandbox(exploit);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Code generation from strings disallowed");
+    });
   });
 });
