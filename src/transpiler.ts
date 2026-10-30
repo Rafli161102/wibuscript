@@ -349,7 +349,7 @@ export class Transpiler {
 
       // Account for all emitted nested lines plus the newline separator
       // inserted by the final bodyLines.join("\n").
-      generatedLineOffset += transpiled.split("\n").length + 1;
+      generatedLineOffset += transpiled.split("\n").length;
     }
 
     const fullCode = [...runtimeHelpers, ...bodyLines].join("\n");
