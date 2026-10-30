@@ -4,6 +4,17 @@ Semua pembaruan penting dan catatan rilis untuk proyek **WibuScript** didokument
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan mematuhi [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Security
+- Web Playground menjalankan interpreter melalui dedicated Web Worker, bukan pada main thread.
+- Runner Playground menonaktifkan akses filesystem dan API jaringan umum, membatasi input/output, serta mendukung penghentian worker.
+- Runner Node.js memindahkan evaluasi JavaScript ke konteks `node:vm` dengan dynamic code generation dinonaktifkan sebagai defense-in-depth. Ini bukan pengganti isolasi OS/container untuk kode adversarial.
+
+### Changed
+- CI disatukan ke satu workflow PR/push; pemeriksaan typecheck, test, dan build dijalankan secara eksplisit.
+- Metadata README, package, dan versi dokumentasi disinkronkan.
+
 ## [v2.7.0] - 2026-09-29
 
 ### Added
