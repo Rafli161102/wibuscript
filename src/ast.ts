@@ -50,8 +50,17 @@ export type NodeType =
 /**
  * Antarmuka dasar untuk semua simpul Statement.
  */
+export interface SourceLocation {
+  start: {
+    line: number;
+    column: number;
+  };
+}
+
 export interface Statement {
   kind: NodeType;
+  /** Source position of the statement's first token (1-based line/column). */
+  loc?: SourceLocation;
 }
 
 /**
