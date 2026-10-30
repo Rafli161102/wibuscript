@@ -82,6 +82,7 @@ describe("WibuScript differential compiler verification", () => {
 
     expect(nonEmpty).toHaveLength(2);
     expect(nonEmpty[0]!.generatedLine).toBeGreaterThan(1);
+    expect(nonEmpty[1]!.generatedLine).toBe(nonEmpty[0]!.generatedLine + 1);
 
     let previousOriginalLine = 0;
     let previousOriginalColumn = 0;
