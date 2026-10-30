@@ -14,6 +14,7 @@ type WorkerScope = {
 const scope = self as unknown as WorkerScope;
 const MAX_SOURCE_LENGTH = 1_000_000;
 const MAX_OUTPUT_LINES = 1_000;
+const MAX_OUTPUT_LINE_LENGTH = 10_000;
 
 // Keep the built-in OOP demo available inside the worker's own virtual-module registry.
 registerVirtualModule(
@@ -75,7 +76,10 @@ scope.addEventListener("message", async (event) => {
   const output = (line: string) => {
     if (outputCount < MAX_OUTPUT_LINES) {
       outputCount += 1;
-      send("OUTPUT", { line });
+      const safeLine = line.length > MAX_OUTPUT_LINE_LENGTH
+        ? `${line.slice(0, MAX_OUTPUT_LINE_LENGTH)}… [baris dipotong]`
+        : line;
+      send("OUTPUT", { line: safeLine });
     } else if (!outputTruncated) {
       outputTruncated = true;
       send("OUTPUT", { line: "[Sistem] Output dibatasi hingga 1.000 baris." });
