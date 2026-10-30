@@ -11,9 +11,17 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan me
 - Runner Playground menonaktifkan akses filesystem dan API jaringan umum, membatasi input/output, serta mendukung penghentian worker.
 - Runner Node.js memindahkan evaluasi JavaScript ke konteks `node:vm` dengan dynamic code generation dinonaktifkan sebagai defense-in-depth. Ini bukan pengganti isolasi OS/container untuk kode adversarial.
 
+### Added
+- Docker-backed `ContainerSandbox` adapter and a non-root runner image with no network, read-only root filesystem, dropped capabilities, and CPU/memory/PID limits.
+- Differential tests comparing interpreter and transpiled JavaScript output across all four dialects.
+- Statement-level AST source coordinates and Source Map v3 mappings based on actual source lines and columns.
+- LSP protection against stale, out-of-order document change notifications.
+
 ### Changed
-- CI disatukan ke satu workflow PR/push; pemeriksaan typecheck, test, dan build dijalankan secara eksplisit.
-- Metadata README, package, dan versi dokumentasi disinkronkan.
+- Runtime value definitions and environment/execution-limit primitives moved into `src/runtime/values.ts` and `src/runtime/environment.ts`, while `src/runtime.ts` remains the backwards-compatible entry point.
+- VS Code LSP client now waits for the initialize response, sends the initialized notification, times out pending requests, and bounds incoming protocol buffering.
+- CI is consolidated into one PR/push workflow; typecheck, tests, and production build run explicitly.
+- README, package metadata, and documentation are synchronized.
 
 ## [v2.7.0] - 2026-09-29
 
