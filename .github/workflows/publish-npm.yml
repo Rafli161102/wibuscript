@@ -28,7 +28,7 @@ jobs:
 
       - name: Verify npm Trusted Publishing support
         run: |
-          NPM_VERSION="$(npm --version)"
+          export NPM_VERSION="$(npm --version)"
           echo "Using npm $NPM_VERSION"
           node -e '
             const [major, minor, patch] = process.env.NPM_VERSION.split(".").map(Number);
@@ -37,8 +37,6 @@ jobs:
               process.exit(1);
             }
           '
-        env:
-          NPM_VERSION: ${{ steps.setup-node.outputs.npm-version }}
 
       - name: Install dependencies
         run: npm ci
