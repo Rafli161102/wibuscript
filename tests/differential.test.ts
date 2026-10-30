@@ -102,7 +102,7 @@ describe("WibuScript differential compiler verification", () => {
   });
 
   it("menyimpan posisi baris dan kolom token awal pada AST", () => {
-    const source = "\\n  kore nilai = 42;\\n";
+    const source = "\n  kore nilai = 42;\n";
     const program = new Parser().produceAST(tokenize(source));
     expect(program.body[0]?.loc?.start).toEqual({ line: 2, column: 3 });
   });
