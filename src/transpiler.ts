@@ -262,7 +262,11 @@ const STDLIB_MAP: Record<string, string> = {
 
 export class Transpiler {
   private indentLevel = 0;
-  private lineMap: Array<{ generatedLine: number; originalLine: number }> = [];
+  private lineMap: Array<{
+    generatedLine: number;
+    originalLine: number;
+    originalColumn: number;
+  }> = [];
   private currentGeneratedLine = 1;
 
   private indent(): string {
@@ -327,18 +331,25 @@ export class Transpiler {
     ];
 
     const bodyLines: string[] = [];
-    let approximateSourceLine = 1;
+    // Runtime helpers occupy the leading generated lines. Each top-level
+    // statement is mapped to its actual source token position.
+    let generatedLineOffset = 0;
 
     for (const stmt of program.body) {
       const transpiled = this.transpileStatement(stmt);
       bodyLines.push(transpiled);
 
-      // Catat pemetaan baris untuk Source Map
-      const startLine = runtimeHelpers.length + bodyLines.length;
-      this.lineMap.push({
-        generatedLine: startLine,
-        originalLine: approximateSourceLine++,
-      });
+      if (stmt.loc?.start) {
+        this.lineMap.push({
+          generatedLine: runtimeHelpers.length + generatedLineOffset + 1,
+          originalLine: stmt.loc.start.line,
+          originalColumn: Math.max(0, stmt.loc.start.column - 1),
+        });
+      }
+
+      // Account for all emitted nested lines plus the newline separator
+      // inserted by the final bodyLines.join("\n").
+      generatedLineOffset += transpiled.split("\n").length;
     }
 
     const fullCode = [...runtimeHelpers, ...bodyLines].join("\n");
@@ -359,33 +370,44 @@ export class Transpiler {
    * Menghasilkan struktur data Source Map v3 berdasarkan translasi baris kode.
    */
   public generateSourceMap(filename: string, sourceContent: string): SourceMapV3 {
-    let mappings = "";
-    let prevOriginalLine = 0;
-    let prevOriginalCol = 0;
+    const maxGeneratedLine = this.lineMap.reduce(
+      (max, item) => Math.max(max, item.generatedLine),
+      0
+    );
+    const generatedSegments = Array.from({ length: maxGeneratedLine }, () => "");
+    let previousOriginalLine = 0;
+    let previousOriginalColumn = 0;
 
-    // Setiap baris hasil transpilasi dipisahkan oleh tanda titik koma (;)
-    for (let i = 0; i < this.lineMap.length; i++) {
-      const item = this.lineMap[i];
-      if (!item) continue;
+    // Source Map v3 mappings are indexed by generated line. Keep empty
+    // segments for runtime helper lines so mappings remain aligned with code.
+    for (const item of this.lineMap) {
+      const generatedIndex = item.generatedLine - 1;
+      if (generatedIndex < 0) continue;
 
-      const lineDelta = item.originalLine - 1 - prevOriginalLine;
-      const colDelta = 0 - prevOriginalCol;
+      const originalLine = item.originalLine - 1;
+      const originalColumn = item.originalColumn;
+      const segment = [
+        encodeVLQ(0), // generated column
+        encodeVLQ(0), // source index
+        encodeVLQ(originalLine - previousOriginalLine),
+        encodeVLQ(originalColumn - previousOriginalColumn),
+      ].join("");
 
-      // Segmen: generatedCol (0), sourceFileIndex (0), originalLineDelta, originalColDelta
-      const segment = `${encodeVLQ(0)}${encodeVLQ(0)}${encodeVLQ(lineDelta)}${encodeVLQ(colDelta)}`;
-      mappings += (i === 0 ? "" : ";") + segment;
+      generatedSegments[generatedIndex] = generatedSegments[generatedIndex]
+        ? `${generatedSegments[generatedIndex]},${segment}`
+        : segment;
 
-      prevOriginalLine = item.originalLine - 1;
-      prevOriginalCol = 0;
+      previousOriginalLine = originalLine;
+      previousOriginalColumn = originalColumn;
     }
 
     return {
       version: 3,
-      file: filename.replace(/\.wibu$/, ".js"),
+      file: filename.replace(/\.wibu$/i, ".js"),
       sources: [filename],
       sourcesContent: [sourceContent],
       names: [],
-      mappings,
+      mappings: generatedSegments.join(";"),
     };
   }
 

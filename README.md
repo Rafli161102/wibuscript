@@ -16,7 +16,7 @@
 [![npm monthly downloads](https://img.shields.io/npm/dm/wibuscript.svg?style=for-the-badge&logo=npm&logoColor=white&color=007ACC&label=downloads%2Fbulan)](https://www.npmjs.com/package/wibuscript)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-252%20test%20cases-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-Expanded%20suite-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
 [![Status](https://img.shields.io/badge/Status-Stable%20v2.7.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
@@ -65,7 +65,10 @@ wibuscript/
 |   |-- sandbox.ts              # Best-effort Web Worker / Worker Threads runner
 |   |-- playground.worker.ts    # Dedicated WibuScript interpreter worker
 |   |-- dialect-definitions.ts  # Single Source of Truth Dialect Grammar
-|   |-- runtime.ts              # Tree-Walking Evaluator dan Pustaka Standar
+|   |-- runtime.ts              # Tree-Walking Evaluator dan orkestrasi runtime
+|   |-- runtime/values.ts       # Tipe, factory, dan format nilai runtime
+|   |-- runtime/environment.ts  # Environment, module registry, dan execution limits
+|   |-- container-sandbox.ts   # Docker-backed isolated runner
 |   |-- index.ts                # Entry point inti mesin WibuScript
 |   `-- cli.ts                  # Eksekutor baris perintah Node.js
 |-- scripts/
@@ -83,6 +86,7 @@ wibuscript/
 - **Transpiler (Jalur Utama v2.0)**: Mengompilasi seluruh simpul AST ke JavaScript modern (ES2022+) berkecepatan tinggi dengan pemetaan runtime pustaka standar dan Source Map v3 resmi.
 - **Sandbox Runner (`src/sandbox.ts`)**: Runner browser menggunakan Web Worker dan menolak API jaringan/nested-worker yang umum. Runner Node.js menggunakan Worker Threads serta konteks `node:vm` dengan code generation dinamis dinonaktifkan sebagai defense-in-depth. Implementasi Node `vm` bukan batas keamanan untuk kode adversarial; jalankan kode yang benar-benar tidak dipercaya hanya di isolasi OS/container.
 - **Runtime Interpreter**: Mengeksekusi simpul AST secara asinkronus untuk kebutuhan interaktif REPL dan debugging.
+- **Container Sandbox**: API Node.js opsional untuk eksekusi terisolasi melalui Docker, dengan jaringan dinonaktifkan, filesystem root read-only, user non-root, serta batas CPU, memori, PID, input, output, dan waktu.
 - **Web Playground**: Editor Next.js yang menjalankan lexer, parser, interpreter, dan transpiler di `src/playground.worker.ts`. Runner membatasi sumber hingga 1 MB, waktu eksekusi sekitar 9 detik, 50.000 iterasi loop, dan 1.000 baris output; filesystem serta API jaringan umum dinonaktifkan.
 
 <div style="clear: both;"></div>
@@ -91,7 +95,7 @@ wibuscript/
 
 Playground menjalankan program WibuScript di dedicated Web Worker terpisah dari thread antarmuka. Runtime Playground dibuat dengan `allowFs: false`, membatasi ukuran input dan output, menonaktifkan API jaringan serta pembuatan worker bersarang, dan worker dapat dihentikan dari UI atau saat timeout.
 
-Ini adalah pembatasan kemampuan untuk pengalaman Playground, bukan jaminan isolasi terhadap eksploitasi browser atau konsumsi resource tingkat proses. API `WibuSandbox` untuk Node.js juga bersifat defense-in-depth; dokumentasi resmi Node.js menyatakan bahwa `node:vm` bukan mekanisme keamanan untuk menjalankan kode tidak tepercaya. Untuk eksekusi kode adversarial atau multi-tenant, gunakan container/OS sandbox terpisah dengan kebijakan filesystem, jaringan, proses, CPU, dan memori.
+Ini adalah pembatasan kemampuan untuk pengalaman Playground, bukan jaminan isolasi terhadap eksploitasi browser atau konsumsi resource tingkat proses. API `WibuSandbox` untuk Node.js juga bersifat defense-in-depth; dokumentasi resmi Node.js menyatakan bahwa `node:vm` bukan mekanisme keamanan untuk menjalankan kode tidak tepercaya. Untuk eksekusi kode adversarial atau multi-tenant, gunakan container/OS sandbox terpisah dengan kebijakan filesystem, jaringan, proses, CPU, dan memori. WibuScript menyediakan adapter `ContainerSandbox` yang menggunakan image Docker khusus. Bangun image dengan `npm run build:sandbox-image`, lalu impor `ContainerSandbox` dari subpath Node-only `wibuscript/container` dan gunakan `new ContainerSandbox().execute(source)` dari Node.js. Runner tidak diekspor dari entry point browser utama. Adapter ini membutuhkan Docker daemon dan image `wibuscript-runner:latest`; CI membangun image dan menjalankan smoke test pada runner terisolasi.
 ## Sistem 4 Dialek Mutlak
 
 Di WibuScript, tidak ada sintaks bahasa Inggris bawaan seperti `let`, `if`, atau `while`. Semuanya dipecah ke dalam empat dialek yang bisa dipakai bergantian atau bahkan dicampur dalam satu file:
