@@ -24,6 +24,9 @@ export interface SandboxResult {
   executionTimeMs: number;
 }
 
+const MAX_SANDBOX_OUTPUT_LINES = 1_000;
+const MAX_SANDBOX_OUTPUT_LINE_LENGTH = 10_000;
+
 // Skrip internal yang dieksekusi di dalam Web Worker / Worker Thread
 const WORKER_SCRIPT_SOURCE = `
 const isNodeWorker = typeof process !== "undefined" && process.versions != null && Boolean(process.versions.node);
@@ -68,7 +71,7 @@ if (isNodeWorker) {
             '(async () => { "use strict";\\n' + code + '\\n})()',
             { filename: "<wibuscript-sandbox>" }
           );
-          const res = await script.runInContext(context, { timeout: msg.timeoutMs || 5000 });
+          const res = await script.runInContext(context, { timeout: Math.max(1, (msg.timeoutMs || 5000) + 100) });
           parentPort.postMessage({
             type: "SUCCESS",
             id,
@@ -266,6 +269,26 @@ export class WibuSandbox {
         worker.terminate().catch(() => {});
       };
 
+      const appendOutput = (data: string, handler?: (line: string) => void) => {
+        if (isSettled) return;
+        if (outputBuffer.length >= MAX_SANDBOX_OUTPUT_LINES) {
+          isSettled = true;
+          cleanup();
+          resolve({
+            success: false,
+            output: outputBuffer,
+            error: `Batas output sandbox (${MAX_SANDBOX_OUTPUT_LINES} baris) terlampaui.`,
+            executionTimeMs: Date.now() - startTime,
+          });
+          return;
+        }
+        const line = data.length > MAX_SANDBOX_OUTPUT_LINE_LENGTH
+          ? `${data.slice(0, MAX_SANDBOX_OUTPUT_LINE_LENGTH)}… [baris dipotong]`
+          : data;
+        outputBuffer.push(line);
+        handler?.(line);
+      };
+
       timer = setTimeout(() => {
         if (!isSettled) {
           isSettled = true;
@@ -283,11 +306,9 @@ export class WibuSandbox {
         if (msg.id !== id) return;
 
         if (msg.type === "STDOUT" && msg.data != null) {
-          outputBuffer.push(msg.data);
-          if (options.onStdout) options.onStdout(msg.data);
+          appendOutput(msg.data, options.onStdout);
         } else if (msg.type === "STDERR" && msg.data != null) {
-          outputBuffer.push(msg.data);
-          if (options.onStderr) options.onStderr(msg.data);
+          appendOutput(msg.data, options.onStderr);
         } else if (msg.type === "SUCCESS") {
           if (!isSettled) {
             isSettled = true;
@@ -371,6 +392,26 @@ export class WibuSandbox {
         URL.revokeObjectURL(workerUrl);
       };
 
+      const appendOutput = (data: string, handler?: (line: string) => void) => {
+        if (isSettled) return;
+        if (outputBuffer.length >= MAX_SANDBOX_OUTPUT_LINES) {
+          isSettled = true;
+          cleanup();
+          resolve({
+            success: false,
+            output: outputBuffer,
+            error: `Batas output sandbox (${MAX_SANDBOX_OUTPUT_LINES} baris) terlampaui.`,
+            executionTimeMs: Date.now() - startTime,
+          });
+          return;
+        }
+        const line = data.length > MAX_SANDBOX_OUTPUT_LINE_LENGTH
+          ? `${data.slice(0, MAX_SANDBOX_OUTPUT_LINE_LENGTH)}… [baris dipotong]`
+          : data;
+        outputBuffer.push(line);
+        handler?.(line);
+      };
+
       timer = window.setTimeout(() => {
         if (!isSettled) {
           isSettled = true;
@@ -389,11 +430,9 @@ export class WibuSandbox {
         if (!msg || msg.id !== id) return;
 
         if (msg.type === "STDOUT" && msg.data != null) {
-          outputBuffer.push(msg.data);
-          if (options.onStdout) options.onStdout(msg.data);
+          appendOutput(msg.data, options.onStdout);
         } else if (msg.type === "STDERR" && msg.data != null) {
-          outputBuffer.push(msg.data);
-          if (options.onStderr) options.onStderr(msg.data);
+          appendOutput(msg.data, options.onStderr);
         } else if (msg.type === "SUCCESS") {
           if (!isSettled) {
             isSettled = true;
