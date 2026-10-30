@@ -27,7 +27,6 @@
     "build": "npm run core:build && next build",
     "prepack": "npm run core:build",
     "start": "next start",
-    "lint": "next lint",
     "test": "vitest run",
     "core:test": "tsx src/cli.ts contoh.wibu",
     "core:build": "tsc -p tsconfig.build.json && node scripts/fix-esm-imports.cjs",
@@ -36,7 +35,8 @@
     "convert": "tsx src/cli.ts convert",
     "submit:linguist": "bash scripts/submit-linguist.sh",
     "submit:awesome-esolangs": "bash scripts/submit-awesome-esolangs.sh",
-    "submit:esolangs-wiki": "bash scripts/submit-esolangs-wiki.sh"
+    "submit:esolangs-wiki": "bash scripts/submit-esolangs-wiki.sh",
+    "typecheck": "tsc --noEmit"
   },
   "files": [
     "dist",
@@ -60,7 +60,7 @@
     "programming-language",
     "cli"
   ],
-  "author": "",
+  "author": "Muhammad Rafli Ramadhan",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Rafli161102/wibuscript/issues"
