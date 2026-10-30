@@ -1,6 +1,10 @@
 name: Publish WibuScript to npmjs
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-npm.yml"
   release:
     types: [published]
   workflow_dispatch:
