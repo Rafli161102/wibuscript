@@ -25,13 +25,9 @@ import {
   Square,
 } from "lucide-react";
 import {
-  tokenize,
-  TokenType,
   type Token,
-  Parser,
   convertDialect,
   type Dialect,
-  transpileToJS,
 } from "../src/index";
 
 // Kumpulan template kode WibuScript bawaan
@@ -936,6 +932,7 @@ export default function WibuScriptPlayground() {
     const startedAt = performance.now();
 
     let worker: Worker | null = null;
+    const executionId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     try {
       worker = new Worker(new URL("../src/playground.worker.ts", import.meta.url), {
         type: "module",
@@ -972,7 +969,7 @@ export default function WibuScriptPlayground() {
 
         worker!.onmessage = (event: MessageEvent) => {
           const message = event.data;
-          if (!message || typeof message !== "object") return;
+          if (!message || typeof message !== "object" || message.id !== executionId) return;
 
           switch (message.type) {
             case "TOKENS":
@@ -1005,7 +1002,7 @@ export default function WibuScriptPlayground() {
 
         worker!.postMessage({
           type: "EXECUTE",
-          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          id: executionId,
           code,
         });
       });
