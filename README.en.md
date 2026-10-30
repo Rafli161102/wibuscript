@@ -16,8 +16,8 @@
 [![npm monthly downloads](https://img.shields.io/npm/dm/wibuscript.svg?style=for-the-badge&logo=npm&logoColor=white&color=007ACC&label=downloads%2Fmonth)](https://www.npmjs.com/package/wibuscript)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-Passing%20189%2F189-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v2.6.2-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Vitest](https://img.shields.io/badge/Vitest-251%20test%20cases-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.7.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
@@ -47,7 +47,7 @@
 
 WibuScript is an esoteric programming language built on top of TypeScript featuring a modern v2.0 Compiler Pipeline architecture (JavaScript ES2022+ Target) alongside a built-in Tree-Walking Interpreter for interactive REPL. The core philosophy is straightforward: provide unique programming syntaxes through the **4 Absolute Dialects System**, ranging from neat Japanese Romaji to expressive internet meme culture.
 
-Despite its humorous and unconventional flavor, WibuScript is engineered with rigorous technical standards. Its compiler pipeline is completely modular, safely runs in browser clients inside isolated Web Worker Sandboxes for the Web Playground, and ships with a robust Node.js CLI for local file execution, package management, and Language Server Protocol (LSP) tooling.
+Despite its humorous and unconventional flavor, WibuScript is engineered with rigorous technical standards. Its compiler pipeline is modular, and the Web Playground runs the interpreter in a dedicated Web Worker so execution does not block the interface. The Playground restricts filesystem and common network APIs and can terminate workers that exceed the execution limit.
 
 <img src="https://raw.githubusercontent.com/Rafli161102/wibuscript/main/assets/images/tech-glasses.gif" width="140" align="right" alt="Technical Analysis" />
 
@@ -62,7 +62,8 @@ wibuscript/
 |   |-- lexer.ts                # Token scanner and 4-dialect token mapping
 |   |-- parser.ts               # Recursive Descent Parser producing AST
 |   |-- transpiler.ts           # JS Transpiler (ES2022+) & Source Map v3
-|   |-- sandbox.ts              # Web Worker & Worker Threads Sandbox Runner
+|   |-- sandbox.ts              # Best-effort Web Worker / Worker Threads runner
+|   |-- playground.worker.ts    # Dedicated WibuScript interpreter worker
 |   |-- dialect-definitions.ts  # Single Source of Truth Dialect Grammar
 |   |-- runtime.ts              # Tree-Walking Evaluator & Standard Library
 |   |-- pm.ts                   # Wibu Package Manager (npm interop & FFI)
@@ -89,13 +90,18 @@ wibuscript/
 - **Lexer**: Deterministically breaks source code lines into tokens. Supports string interpolation, floating point numbers, logical operators, and precise line/column tracking.
 - **Parser**: Builds a strongly typed Abstract Syntax Tree using Recursive Descent Parsing independently from runtime execution targets.
 - **Transpiler (Primary v2.0 Pipeline)**: Compiles all AST nodes into optimized modern JavaScript (ES2022+) with runtime standard library bindings and official Source Map v3 support.
-- **Sandbox Runner**: An isolated execution layer utilizing Web Workers (Browser) and Worker Threads (Node.js) featuring strict execution timeouts (5000 ms), memory ceilings, and default-deny security.
+- **Sandbox Runner (`src/sandbox.ts`)**: The browser runner uses a Web Worker and blocks common network/nested-worker APIs. The Node.js runner uses Worker Threads and a `node:vm` context with dynamic code generation disabled as defense-in-depth. Node's `vm` is not a security boundary for adversarial code; execute truly untrusted code only inside OS/container isolation.
 - **Runtime Interpreter**: Evaluates AST nodes asynchronously for interactive REPL and debugging sessions.
 - **Package Manager (`wibu add`)**: Enables seamless Foreign Function Interface (FFI) integration with native npm libraries.
 - **Language Server (`wibu lsp`)**: Standalone JSON-RPC LSP engine providing real-time diagnostics, semantic hover documentation, document symbol outlines, and autocomplete across all 4 dialects.
 
 <div style="clear: both;"></div>
 
+## Security Model
+
+The Playground interprets WibuScript in a dedicated Web Worker, separate from the UI thread. Its runtime uses `allowFs: false`, limits source and output size, disables common network APIs and nested workers, and supports worker termination from the UI or on timeout.
+
+These restrictions improve the Playground's capability boundaries, but they are not a guarantee against browser exploits or process-level resource exhaustion. The Node.js `WibuSandbox` API is also defense-in-depth only: Node.js documents that `node:vm` is not a security mechanism for running untrusted code. For adversarial or multi-tenant execution, use a separately isolated OS/container environment with explicit filesystem, network, process, CPU, and memory policies.
 ## The 4 Absolute Dialects System
 
 In WibuScript, standard English keywords like `let`, `if`, or `while` are absent by design. All control structures and declarations belong to four distinct dialects that can be used interchangeably or mixed within the same file:
