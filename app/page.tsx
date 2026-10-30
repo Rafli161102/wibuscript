@@ -824,8 +824,13 @@ export default function WibuScriptPlayground() {
 
   useEffect(() => {
     return () => {
-      cancelExecutionRef.current?.();
-      workerRef.current?.terminate();
+      cancelExecutionRef.current = null;
+      if (workerRef.current) {
+        workerRef.current.onmessage = null;
+        workerRef.current.onerror = null;
+        workerRef.current.terminate();
+        workerRef.current = null;
+      }
     };
   }, []);
 
