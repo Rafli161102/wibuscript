@@ -660,12 +660,19 @@ export class WibuLanguageServer {
       case "textDocument/didOpen": {
         const item = params?.textDocument;
         if (item && item.uri) {
-          this.documents.set(item.uri, {
-            uri: item.uri,
-            version: item.version || 1,
-            text: item.text || ""
-          });
-          this.validateDocument(item.uri, item.text || "");
+          const current = this.documents.get(item.uri);
+          const incomingVersion = Number.isFinite(item.version)
+            ? Number(item.version)
+            : (current?.version ?? 1);
+          if (!current || incomingVersion > current.version) {
+            const text = typeof item.text === "string" ? item.text : "";
+            this.documents.set(item.uri, {
+              uri: item.uri,
+              version: incomingVersion,
+              text,
+            });
+            this.validateDocument(item.uri, text);
+          }
         }
         return null;
       }
@@ -674,11 +681,24 @@ export class WibuLanguageServer {
         const item = params?.textDocument;
         const changes = params?.contentChanges;
         if (item && item.uri && Array.isArray(changes) && changes.length > 0) {
-          const newText = changes[changes.length - 1].text || "";
+          const current = this.documents.get(item.uri);
+          const incomingVersion = Number.isFinite(item.version)
+            ? Number(item.version)
+            : ((current?.version ?? 0) + 1);
+          // Ignore out-of-order notifications so an older editor snapshot
+          // cannot overwrite newer diagnostics or document contents.
+          if (current && incomingVersion <= current.version) {
+            return null;
+          }
+          const lastChange = changes[changes.length - 1];
+          if (!lastChange || typeof lastChange.text !== "string") {
+            return null;
+          }
+          const newText = lastChange.text;
           this.documents.set(item.uri, {
             uri: item.uri,
-            version: item.version || 1,
-            text: newText
+            version: incomingVersion,
+            text: newText,
           });
           this.validateDocument(item.uri, newText);
         }
