@@ -1,4 +1,4 @@
-name: Stage WibuScript Release to npmjs
+name: Publish WibuScript to npmjs
 
 on:
   release:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   publish-npm:
-    name: Build, Test, and Stage for npmjs approval
+    name: Test, Build, and Publish to npmjs
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -26,20 +26,18 @@ jobs:
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
 
-      - name: Install npm CLI with staged publishing support
+      - name: Verify npm Trusted Publishing support
         run: |
-          npm install --global npm@11.15.0
           export NPM_VERSION="$(npm --version)"
           echo "Using npm $NPM_VERSION"
           node -e '
             const [major, minor, patch] = process.env.NPM_VERSION.split(".").map(Number);
-            const supported = major > 11 || (major === 11 && (minor > 15 || (minor === 15 && patch >= 0)));
-            if (!supported) {
-              console.error("npm staged publishing requires npm >= 11.15.0");
+            if (major < 11 || (major === 11 && minor < 5) || (major === 11 && minor === 5 && patch < 1)) {
+              console.error("npm Trusted Publishing requires npm >= 11.5.1");
               process.exit(1);
             }
           '
- 
+
       - name: Install dependencies
         run: npm ci
 
@@ -59,5 +57,5 @@ jobs:
       - name: Validate package contents
         run: npm pack --dry-run
 
-      - name: Stage package on npmjs with OIDC
-        run: npm stage publish --access public --provenance
+      - name: Publish to npmjs using OIDC Trusted Publishing
+        run: npm publish --access public --provenance
