@@ -16,7 +16,7 @@
 [![npm monthly downloads](https://img.shields.io/npm/dm/wibuscript.svg?style=for-the-badge&logo=npm&logoColor=white&color=007ACC&label=downloads%2Fbulan)](https://www.npmjs.com/package/wibuscript)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-252%20test%20cases-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-Expanded%20suite-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
 [![Status](https://img.shields.io/badge/Status-Stable%20v2.7.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
@@ -95,7 +95,7 @@ wibuscript/
 
 Playground menjalankan program WibuScript di dedicated Web Worker terpisah dari thread antarmuka. Runtime Playground dibuat dengan `allowFs: false`, membatasi ukuran input dan output, menonaktifkan API jaringan serta pembuatan worker bersarang, dan worker dapat dihentikan dari UI atau saat timeout.
 
-Ini adalah pembatasan kemampuan untuk pengalaman Playground, bukan jaminan isolasi terhadap eksploitasi browser atau konsumsi resource tingkat proses. API `WibuSandbox` untuk Node.js juga bersifat defense-in-depth; dokumentasi resmi Node.js menyatakan bahwa `node:vm` bukan mekanisme keamanan untuk menjalankan kode tidak tepercaya. Untuk eksekusi kode adversarial atau multi-tenant, gunakan container/OS sandbox terpisah dengan kebijakan filesystem, jaringan, proses, CPU, dan memori. WibuScript menyediakan adapter `ContainerSandbox` yang menggunakan image Docker khusus. Bangun image dengan `npm run build:sandbox-image`, lalu gunakan `new ContainerSandbox().execute(source)` dari Node.js. Adapter ini membutuhkan Docker daemon dan image `wibuscript-runner:latest`; build image belum dijalankan oleh CI standar.
+Ini adalah pembatasan kemampuan untuk pengalaman Playground, bukan jaminan isolasi terhadap eksploitasi browser atau konsumsi resource tingkat proses. API `WibuSandbox` untuk Node.js juga bersifat defense-in-depth; dokumentasi resmi Node.js menyatakan bahwa `node:vm` bukan mekanisme keamanan untuk menjalankan kode tidak tepercaya. Untuk eksekusi kode adversarial atau multi-tenant, gunakan container/OS sandbox terpisah dengan kebijakan filesystem, jaringan, proses, CPU, dan memori. WibuScript menyediakan adapter `ContainerSandbox` yang menggunakan image Docker khusus. Bangun image dengan `npm run build:sandbox-image`, lalu gunakan `new ContainerSandbox().execute(source)` dari Node.js. Adapter ini membutuhkan Docker daemon dan image `wibuscript-runner:latest`; CI membangun image dan menjalankan smoke test pada runner terisolasi.
 ## Sistem 4 Dialek Mutlak
 
 Di WibuScript, tidak ada sintaks bahasa Inggris bawaan seperti `let`, `if`, atau `while`. Semuanya dipecah ke dalam empat dialek yang bisa dipakai bergantian atau bahkan dicampur dalam satu file:
