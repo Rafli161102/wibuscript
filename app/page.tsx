@@ -25,6 +25,7 @@ import {
   Square,
 } from "lucide-react";
 import {
+  TokenType,
   type Token,
   convertDialect,
   type Dialect,
@@ -820,6 +821,13 @@ export default function WibuScriptPlayground() {
   const logBufferRef = useRef<string[]>([]);
   const flushTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const handleRunCodeRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    return () => {
+      cancelExecutionRef.current?.();
+      workerRef.current?.terminate();
+    };
+  }, []);
 
   const flushLogs = useCallback(() => {
     if (logBufferRef.current.length === 0) return;
