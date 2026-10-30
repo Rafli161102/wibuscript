@@ -133,9 +133,24 @@ export class Parser {
   // --------------------------------------------------------------------------
 
   private parseStatement(): Statement {
+    const startToken = this.at();
     this.enterRecursion();
     try {
-      switch (this.at().type) {
+      const statement = this.parseStatementInner();
+      statement.loc = {
+        start: {
+          line: startToken.line,
+          column: startToken.column,
+        },
+      };
+      return statement;
+    } finally {
+      this.leaveRecursion();
+    }
+  }
+
+  private parseStatementInner(): Statement {
+    switch (this.at().type) {
         case TokenType.Var:
           return this.parseVariableDeclaration();
 
@@ -193,9 +208,6 @@ export class Parser {
         default:
           return this.parseExpressionStatement();
       }
-    } finally {
-      this.leaveRecursion();
-    }
   }
 
   /**
