@@ -140,6 +140,11 @@ function activate(context) {
 
   // Buffer chunk parser JSON-RPC dari stdout LSP
   lspProcess.stdout.on("data", (chunk) => {
+    if (messageBuffer.length + chunk.length > 8 * 1024 * 1024) {
+      messageBuffer = Buffer.alloc(0);
+      console.error("[Wibu LSP] Buffer JSON-RPC melebihi 8 MB; buffer direset.");
+      return;
+    }
     messageBuffer = Buffer.concat([messageBuffer, chunk]);
 
     while (true) {
