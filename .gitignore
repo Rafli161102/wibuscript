@@ -3,3 +3,6 @@ dist/
 *.log
 .next
 dist
+*.tsbuildinfo
+coverage/
+.DS_Store
