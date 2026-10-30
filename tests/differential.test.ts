@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { runInNewContext } from "node:vm";
 import { convertDialect, runWibuScriptAsync, transpileToJS, transpileWithSourceMap } from "../src/index";
+import { tokenize } from "../src/lexer";
+import { Parser } from "../src/parser";
 
 const canonicalProgram = `
 jutsu faktorial(n) {
@@ -100,9 +102,8 @@ describe("WibuScript differential compiler verification", () => {
   });
 
   it("menyimpan posisi baris dan kolom token awal pada AST", () => {
-    const source = "\n  kore nilai = 42;\n";
-    const result = transpileWithSourceMap(source, "ast-loc.wibu");
-    expect(result.map?.sourcesContent?.[0]).toBe(source);
-    // The precise location is also validated through the emitted mapping above.
+    const source = "\\n  kore nilai = 42;\\n";
+    const program = new Parser().produceAST(tokenize(source));
+    expect(program.body[0]?.loc?.start).toEqual({ line: 2, column: 3 });
   });
 });
