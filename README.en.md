@@ -65,7 +65,10 @@ wibuscript/
 |   |-- sandbox.ts              # Best-effort Web Worker / Worker Threads runner
 |   |-- playground.worker.ts    # Dedicated WibuScript interpreter worker
 |   |-- dialect-definitions.ts  # Single Source of Truth Dialect Grammar
-|   |-- runtime.ts              # Tree-Walking Evaluator & Standard Library
+|   |-- runtime.ts              # Tree-Walking Evaluator and runtime orchestration
+|   |-- runtime/values.ts       # Runtime value types, factories, and formatter
+|   |-- runtime/environment.ts  # Environment, module registry, and execution limits
+|   |-- container-sandbox.ts   # Docker-backed isolated runner
 |   |-- pm.ts                   # Wibu Package Manager (npm interop & FFI)
 |   |-- lsp.ts                  # Language Server Protocol engine (JSON-RPC)
 |   |-- modules/
@@ -92,6 +95,7 @@ wibuscript/
 - **Transpiler (Primary v2.0 Pipeline)**: Compiles all AST nodes into optimized modern JavaScript (ES2022+) with runtime standard library bindings and official Source Map v3 support.
 - **Sandbox Runner (`src/sandbox.ts`)**: The browser runner uses a Web Worker and blocks common network/nested-worker APIs. The Node.js runner uses Worker Threads and a `node:vm` context with dynamic code generation disabled as defense-in-depth. Node's `vm` is not a security boundary for adversarial code; execute truly untrusted code only inside OS/container isolation.
 - **Runtime Interpreter**: Evaluates AST nodes asynchronously for interactive REPL and debugging sessions.
+- **Container Sandbox**: Optional Node.js execution adapter using Docker with networking disabled, a read-only root filesystem, a non-root user, and CPU, memory, PID, input, output, and time limits.
 - **Package Manager (`wibu add`)**: Enables seamless Foreign Function Interface (FFI) integration with native npm libraries.
 - **Language Server (`wibu lsp`)**: Standalone JSON-RPC LSP engine providing real-time diagnostics, semantic hover documentation, document symbol outlines, and autocomplete across all 4 dialects.
 
@@ -101,7 +105,7 @@ wibuscript/
 
 The Playground interprets WibuScript in a dedicated Web Worker, separate from the UI thread. Its runtime uses `allowFs: false`, limits source and output size, disables common network APIs and nested workers, and supports worker termination from the UI or on timeout.
 
-These restrictions improve the Playground's capability boundaries, but they are not a guarantee against browser exploits or process-level resource exhaustion. The Node.js `WibuSandbox` API is also defense-in-depth only: Node.js documents that `node:vm` is not a security mechanism for running untrusted code. For adversarial or multi-tenant execution, use a separately isolated OS/container environment with explicit filesystem, network, process, CPU, and memory policies.
+These restrictions improve the Playground's capability boundaries, but they are not a guarantee against browser exploits or process-level resource exhaustion. The Node.js `WibuSandbox` API is also defense-in-depth only: Node.js documents that `node:vm` is not a security mechanism for running untrusted code. For adversarial or multi-tenant execution, use a separately isolated OS/container environment with explicit filesystem, network, process, CPU, and memory policies. WibuScript includes a `ContainerSandbox` adapter backed by a dedicated Docker image. Build it with `npm run build:sandbox-image`, then call `new ContainerSandbox().execute(source)` from Node.js. The adapter requires a running Docker daemon and the `wibuscript-runner:latest` image; building the image is not part of the standard CI job.
 ## The 4 Absolute Dialects System
 
 In WibuScript, standard English keywords like `let`, `if`, or `while` are absent by design. All control structures and declarations belong to four distinct dialects that can be used interchangeably or mixed within the same file:
