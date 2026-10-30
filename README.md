@@ -62,7 +62,8 @@ wibuscript/
 |   |-- lexer.ts                # Scanner token dan resolusi 4 dialek
 |   |-- parser.ts               # Recursive Descent Parser ke bentuk AST
 |   |-- transpiler.ts           # JS Transpiler (ES2022+) & Source Map v3
-|   |-- sandbox.ts              # Web Worker & Worker Threads Sandbox Runner
+|   |-- sandbox.ts              # Best-effort Web Worker / Worker Threads runner
+|   |-- playground.worker.ts    # Dedicated WibuScript interpreter worker
 |   |-- dialect-definitions.ts  # Single Source of Truth Dialect Grammar
 |   |-- runtime.ts              # Tree-Walking Evaluator dan Pustaka Standar
 |   |-- index.ts                # Entry point inti mesin WibuScript
