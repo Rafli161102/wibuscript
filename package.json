@@ -36,7 +36,8 @@
     "submit:linguist": "bash scripts/submit-linguist.sh",
     "submit:awesome-esolangs": "bash scripts/submit-awesome-esolangs.sh",
     "submit:esolangs-wiki": "bash scripts/submit-esolangs-wiki.sh",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:sandbox-image": "docker build -f Dockerfile.sandbox -t wibuscript-runner:latest ."
   },
   "files": [
     "dist",
