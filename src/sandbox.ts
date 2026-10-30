@@ -54,9 +54,21 @@ if (isNodeWorker) {
         };
         const safeLog = (...args) => sendLog("STDOUT", args);
         const safeError = (...args) => sendLog("STDERR", args);
-        // Do not expose host-realm functions/prototypes to the VM context.
-        Object.setPrototypeOf(safeLog, null);
-        Object.setPrototypeOf(safeError, null);
+        const safeSetTimeout = (callback, delay = 0, ...args) => {
+          if (typeof callback !== "function") {
+            throw new TypeError("Callback timer harus berupa fungsi.");
+          }
+          const requestedDelay = Number(delay);
+          const boundedDelay = Number.isFinite(requestedDelay)
+            ? Math.max(0, Math.min(requestedDelay, 10_000))
+            : 0;
+          return Number(setTimeout(() => callback(...args), boundedDelay));
+        };
+        const safeClearTimeout = (timerId) => clearTimeout(timerId);
+        // Do not expose host-realm functions/prototypes or timer objects to the VM.
+        for (const fn of [safeLog, safeError, safeSetTimeout, safeClearTimeout]) {
+          Object.setPrototypeOf(fn, null);
+        }
         safeConsole.log = safeLog;
         safeConsole.info = safeLog;
         safeConsole.warn = safeLog;
@@ -65,7 +77,11 @@ if (isNodeWorker) {
         try {
           // Defense in depth: no process/require/host objects are injected.
           // Disable eval/new Function and WebAssembly compilation inside the context.
-          const context = vm.createContext({ console: safeConsole }, {
+          const context = vm.createContext({
+            console: safeConsole,
+            setTimeout: safeSetTimeout,
+            clearTimeout: safeClearTimeout,
+          }, {
             codeGeneration: { strings: false, wasm: false },
           });
           const script = new vm.Script(
