@@ -1,13 +1,21 @@
-# File: .github/workflows/ci.yml
 name: CI
 
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  enterprise-validation:
-    name: Enterprise Validation
+  validate:
+    name: Typecheck, Test, and Build
     runs-on: ubuntu-latest
 
     steps:
@@ -20,11 +28,14 @@ jobs:
           node-version: 20
           cache: "npm"
 
-      - name: Install Dependencies
+      - name: Install Locked Dependencies
         run: npm ci
 
-      - name: Compile Project
-        run: npm run build
+      - name: Type Check
+        run: npm run typecheck
 
       - name: Run Automated Tests
         run: npm test
+
+      - name: Build Core and Playground
+        run: npm run build

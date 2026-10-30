@@ -16,8 +16,8 @@
 [![npm monthly downloads](https://img.shields.io/npm/dm/wibuscript.svg?style=for-the-badge&logo=npm&logoColor=white&color=007ACC&label=downloads%2Fbulan)](https://www.npmjs.com/package/wibuscript)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-Passing%20189%2F189-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v2.6.2-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Vitest](https://img.shields.io/badge/Vitest-252%20test%20cases-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.7.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
@@ -31,6 +31,7 @@
 <p align="center">
   <a href="#tentang-wibuscript">Tentang</a> |
   <a href="#arsitektur-sistem">Arsitektur</a> |
+  <a href="#model-keamanan">Model Keamanan</a> |
   <a href="#sistem-4-dialek-mutlak">4 Dialek Mutlak</a> |
   <a href="#pustaka-standar">Pustaka Standar</a> |
   <a href="#contoh-kode">Contoh Kode</a> |
@@ -46,7 +47,7 @@
 
 WibuScript adalah bahasa pemrograman esoterik yang dibuat di atas TypeScript dengan arsitektur v2.0 Compiler Pipeline (JS Target ES2022+) dan Tree-Walking Interpreter bawaan untuk REPL interaktif. Konsep utamanya sederhana: menyediakan sintaks pemrograman yang unik lewat Sistem 4 Dialek Mutlak, mulai dari Romaji Jepang rapi sampai meme internet lokal.
 
-Meskipun pembawaannya santai dan absurd, proyek ini dirancang dengan standar teknis yang serius. Mesin kompilasinya modular, aman dijalankan langsung di browser untuk Web Playground dalam lingkungan Web Worker Sandbox terisolasi, dan dilengkapi CLI berbasis Node.js untuk eksekusi file script secara lokal.
+Meskipun pembawaannya santai dan absurd, proyek ini dirancang dengan standar teknis yang serius. Mesin kompilasinya modular, sedangkan Web Playground menjalankan interpreter di dedicated Web Worker agar komputasi tidak memblokir antarmuka. Playground membatasi akses filesystem dan API jaringan umum, serta dapat menghentikan worker yang melewati batas waktu.
 
 <img src="https://raw.githubusercontent.com/Rafli161102/wibuscript/main/assets/images/tech-glasses.gif" width="140" align="right" alt="Analisis Teknis" />
 
@@ -61,7 +62,8 @@ wibuscript/
 |   |-- lexer.ts                # Scanner token dan resolusi 4 dialek
 |   |-- parser.ts               # Recursive Descent Parser ke bentuk AST
 |   |-- transpiler.ts           # JS Transpiler (ES2022+) & Source Map v3
-|   |-- sandbox.ts              # Web Worker & Worker Threads Sandbox Runner
+|   |-- sandbox.ts              # Best-effort Web Worker / Worker Threads runner
+|   |-- playground.worker.ts    # Dedicated WibuScript interpreter worker
 |   |-- dialect-definitions.ts  # Single Source of Truth Dialect Grammar
 |   |-- runtime.ts              # Tree-Walking Evaluator dan Pustaka Standar
 |   |-- index.ts                # Entry point inti mesin WibuScript
@@ -79,12 +81,17 @@ wibuscript/
 - **Lexer**: Mengurai baris teks program menjadi token secara konsisten. Mendukung literal string, angka desimal, ekspresi logika, sampai pelacakan posisi baris dan kolom.
 - **Parser**: Membangun pohon sintaksis bertipe kuat menggunakan metode Recursive Descent Parsing yang murni independen dari target eksekusi.
 - **Transpiler (Jalur Utama v2.0)**: Mengompilasi seluruh simpul AST ke JavaScript modern (ES2022+) berkecepatan tinggi dengan pemetaan runtime pustaka standar dan Source Map v3 resmi.
-- **Sandbox Runner**: Lapisan proteksi terisolasi menggunakan Web Worker (browser) dan Worker Threads (Node.js) dengan batas waktu eksekusi (timeout 5000 ms), limit memori, dan keamanan *default-deny*.
+- **Sandbox Runner (`src/sandbox.ts`)**: Runner browser menggunakan Web Worker dan menolak API jaringan/nested-worker yang umum. Runner Node.js menggunakan Worker Threads serta konteks `node:vm` dengan code generation dinamis dinonaktifkan sebagai defense-in-depth. Implementasi Node `vm` bukan batas keamanan untuk kode adversarial; jalankan kode yang benar-benar tidak dipercaya hanya di isolasi OS/container.
 - **Runtime Interpreter**: Mengeksekusi simpul AST secara asinkronus untuk kebutuhan interaktif REPL dan debugging.
-- **Web Playground**: Editor interaktif berbasis Next.js dan Tailwind CSS yang mengeksekusi kode langsung di browser pengguna dalam sandbox Web Worker tanpa server eksternal.
+- **Web Playground**: Editor Next.js yang menjalankan lexer, parser, interpreter, dan transpiler di `src/playground.worker.ts`. Runner membatasi sumber hingga 1 MB, waktu eksekusi sekitar 9 detik, 50.000 iterasi loop, dan 1.000 baris output; filesystem serta API jaringan umum dinonaktifkan.
 
 <div style="clear: both;"></div>
 
+## Model Keamanan
+
+Playground menjalankan program WibuScript di dedicated Web Worker terpisah dari thread antarmuka. Runtime Playground dibuat dengan `allowFs: false`, membatasi ukuran input dan output, menonaktifkan API jaringan serta pembuatan worker bersarang, dan worker dapat dihentikan dari UI atau saat timeout.
+
+Ini adalah pembatasan kemampuan untuk pengalaman Playground, bukan jaminan isolasi terhadap eksploitasi browser atau konsumsi resource tingkat proses. API `WibuSandbox` untuk Node.js juga bersifat defense-in-depth; dokumentasi resmi Node.js menyatakan bahwa `node:vm` bukan mekanisme keamanan untuk menjalankan kode tidak tepercaya. Untuk eksekusi kode adversarial atau multi-tenant, gunakan container/OS sandbox terpisah dengan kebijakan filesystem, jaringan, proses, CPU, dan memori.
 ## Sistem 4 Dialek Mutlak
 
 Di WibuScript, tidak ada sintaks bahasa Inggris bawaan seperti `let`, `if`, atau `while`. Semuanya dipecah ke dalam empat dialek yang bisa dipakai bergantian atau bahkan dicampur dalam satu file:

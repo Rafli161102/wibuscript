@@ -24,6 +24,10 @@ export interface SandboxResult {
   executionTimeMs: number;
 }
 
+const MAX_SANDBOX_SOURCE_LENGTH = 1_000_000;
+const MAX_SANDBOX_OUTPUT_LINES = 1_000;
+const MAX_SANDBOX_OUTPUT_LINE_LENGTH = 10_000;
+
 // Skrip internal yang dieksekusi di dalam Web Worker / Worker Thread
 const WORKER_SCRIPT_SOURCE = `
 const isNodeWorker = typeof process !== "undefined" && process.versions != null && Boolean(process.versions.node);
@@ -36,62 +40,55 @@ if (isNodeWorker) {
         const { id, code } = msg;
         const startTime = Date.now();
 
-        const originalLog = console.log;
-        const originalError = console.error;
-        const originalWarn = console.warn;
-        const originalInfo = console.info;
-
-        console.log = (...args) => {
-          const str = args.map(a => (typeof a === "object" && a !== null ? JSON.stringify(a) : String(a))).join(" ");
-          parentPort.postMessage({ type: "STDOUT", id, data: str });
+        const vm = require("node:vm");
+        const safeConsole = Object.create(null);
+        const stringify = (value) => {
+          if (typeof value === "string") return value;
+          try { return JSON.stringify(value); } catch {
+            try { return String(value); } catch { return "[unserializable]"; }
+          }
         };
-        console.error = (...args) => {
-          const str = args.map(a => (typeof a === "object" && a !== null ? JSON.stringify(a) : String(a))).join(" ");
-          parentPort.postMessage({ type: "STDERR", id, data: str });
+        const sendLog = (type, args) => {
+          const data = args.map(stringify).join(" ");
+          parentPort.postMessage({ type, id, data });
         };
-        console.warn = console.log;
-        console.info = console.log;
+        const safeLog = (...args) => sendLog("STDOUT", args);
+        const safeError = (...args) => sendLog("STDERR", args);
+        const safeSetTimeout = (callback, delay = 0, ...args) => {
+          if (typeof callback !== "function") {
+            throw new TypeError("Callback timer harus berupa fungsi.");
+          }
+          const requestedDelay = Number(delay);
+          const boundedDelay = Number.isFinite(requestedDelay)
+            ? Math.max(0, Math.min(requestedDelay, 10_000))
+            : 0;
+          return Number(setTimeout(() => callback(...args), boundedDelay));
+        };
+        const safeClearTimeout = (timerId) => clearTimeout(timerId);
+        // Do not expose host-realm functions/prototypes or timer objects to the VM.
+        for (const fn of [safeLog, safeError, safeSetTimeout, safeClearTimeout]) {
+          Object.setPrototypeOf(fn, null);
+        }
+        safeConsole.log = safeLog;
+        safeConsole.info = safeLog;
+        safeConsole.warn = safeLog;
+        safeConsole.error = safeError;
 
         try {
-          // Default-deny kebijakan keamanan: larang akses modul OS berbahaya
-          const deny = (apiName) => () => {
-            throw new Error("Akses API terlarang '" + apiName + "' ditolak oleh sandbox WibuScript.");
-          };
-          const safeRequire = (mod) => {
-            throw new Error("Akses require('" + mod + "') diblokir oleh sandbox isolasi.");
-          };
-          const safeProcess = {
-            env: {},
-            version: "v2.0-wibuscript-sandbox",
-            nextTick: process.nextTick,
-            cwd: () => "/",
-          };
-
-          const runner = new Function(
-            "require",
-            "process",
-            "child_process",
-            "fs",
-            "net",
-            "http",
-            "https",
-            "global",
-            "globalThis",
-            \`"use strict"; return (async () => {\\n\${code}\\n})();\`
+          // Defense in depth: no process/require/host objects are injected.
+          // Disable eval/new Function and WebAssembly compilation inside the context.
+          const context = vm.createContext({
+            console: safeConsole,
+            setTimeout: safeSetTimeout,
+            clearTimeout: safeClearTimeout,
+          }, {
+            codeGeneration: { strings: false, wasm: false },
+          });
+          const script = new vm.Script(
+            '(async () => { "use strict";\\n' + code + '\\n})()',
+            { filename: "<wibuscript-sandbox>" }
           );
-
-          const res = await runner(
-            safeRequire,
-            safeProcess,
-            deny("child_process"),
-            deny("fs"),
-            deny("net"),
-            deny("http"),
-            deny("https"),
-            {},
-            {}
-          );
-
+          const res = await script.runInContext(context, { timeout: Math.max(1, (msg.timeoutMs || 5000) + 100) });
           parentPort.postMessage({
             type: "SUCCESS",
             id,
@@ -105,11 +102,6 @@ if (isNodeWorker) {
             error: err && err.message ? err.message : String(err),
             executionTimeMs: Date.now() - startTime,
           });
-        } finally {
-          console.log = originalLog;
-          console.error = originalError;
-          console.warn = originalWarn;
-          console.info = originalInfo;
         }
       }
     });
@@ -135,9 +127,32 @@ if (isNodeWorker) {
       };
 
       try {
-        const deny = (api) => () => {
-          throw new Error("Akses API browser '" + api + "' ditolak oleh sandbox isolasi.");
+        const deny = (api) => {
+          const blocked = () => {
+            throw new Error("Akses API browser '" + api + "' ditolak oleh sandbox isolasi.");
+          };
+          Object.setPrototypeOf(blocked, null);
+          return blocked;
         };
+
+        // Dedicated workers have no DOM. Also remove common network and
+        // nested-worker entry points before evaluating generated JavaScript.
+        for (const api of [
+          "fetch", "XMLHttpRequest", "WebSocket", "EventSource",
+          "Worker", "SharedWorker", "BroadcastChannel", "WebTransport",
+          "RTCPeerConnection", "importScripts"
+        ]) {
+          try {
+            Object.defineProperty(self, api, {
+              configurable: false,
+              enumerable: false,
+              writable: false,
+              value: deny(api),
+            });
+          } catch {
+            try { self[api] = deny(api); } catch {}
+          }
+        }
 
         const runner = new Function(
           "XMLHttpRequest",
@@ -196,6 +211,15 @@ export class WibuSandbox {
   ): Promise<SandboxResult> {
     const timeoutMs = options.timeoutMs ?? this.defaultTimeoutMs;
     const memoryLimitMb = options.memoryLimitMb ?? this.defaultMemoryLimitMb;
+
+    if (sourceCodeOrTranspiled.length > MAX_SANDBOX_SOURCE_LENGTH) {
+      return {
+        success: false,
+        output: [],
+        error: `Ukuran kode melebihi batas sandbox (${MAX_SANDBOX_SOURCE_LENGTH} karakter).`,
+        executionTimeMs: 0,
+      };
+    }
 
     // Deteksi jika input masih berupa kode sumber WibuScript (belum ditranspilasi)
     let jsCode = sourceCodeOrTranspiled;
@@ -271,6 +295,26 @@ export class WibuSandbox {
         worker.terminate().catch(() => {});
       };
 
+      const appendOutput = (data: string, handler?: (line: string) => void) => {
+        if (isSettled) return;
+        if (outputBuffer.length >= MAX_SANDBOX_OUTPUT_LINES) {
+          isSettled = true;
+          cleanup();
+          resolve({
+            success: false,
+            output: outputBuffer,
+            error: `Batas output sandbox (${MAX_SANDBOX_OUTPUT_LINES} baris) terlampaui.`,
+            executionTimeMs: Date.now() - startTime,
+          });
+          return;
+        }
+        const line = data.length > MAX_SANDBOX_OUTPUT_LINE_LENGTH
+          ? `${data.slice(0, MAX_SANDBOX_OUTPUT_LINE_LENGTH)}… [baris dipotong]`
+          : data;
+        outputBuffer.push(line);
+        handler?.(line);
+      };
+
       timer = setTimeout(() => {
         if (!isSettled) {
           isSettled = true;
@@ -288,11 +332,9 @@ export class WibuSandbox {
         if (msg.id !== id) return;
 
         if (msg.type === "STDOUT" && msg.data != null) {
-          outputBuffer.push(msg.data);
-          if (options.onStdout) options.onStdout(msg.data);
+          appendOutput(msg.data, options.onStdout);
         } else if (msg.type === "STDERR" && msg.data != null) {
-          outputBuffer.push(msg.data);
-          if (options.onStderr) options.onStderr(msg.data);
+          appendOutput(msg.data, options.onStderr);
         } else if (msg.type === "SUCCESS") {
           if (!isSettled) {
             isSettled = true;
@@ -335,19 +377,17 @@ export class WibuSandbox {
         if (!isSettled) {
           isSettled = true;
           if (timer) clearTimeout(timer);
-          if (code !== 0) {
-            resolve({
-              success: false,
-              output: outputBuffer,
-              error: `Worker berhenti tiba-tiba dengan kode keluar: ${code}`,
-              executionTimeMs: Date.now() - startTime,
-            });
-          }
+          resolve({
+            success: false,
+            output: outputBuffer,
+            error: `Worker berhenti sebelum mengirim hasil (kode keluar: ${code}).`,
+            executionTimeMs: Date.now() - startTime,
+          });
         }
       });
 
       // Kirim payload kode sumber ke worker
-      worker.postMessage({ type: "EXECUTE", id, code });
+      worker.postMessage({ type: "EXECUTE", id, code, timeoutMs });
     });
   }
 
@@ -376,6 +416,26 @@ export class WibuSandbox {
         URL.revokeObjectURL(workerUrl);
       };
 
+      const appendOutput = (data: string, handler?: (line: string) => void) => {
+        if (isSettled) return;
+        if (outputBuffer.length >= MAX_SANDBOX_OUTPUT_LINES) {
+          isSettled = true;
+          cleanup();
+          resolve({
+            success: false,
+            output: outputBuffer,
+            error: `Batas output sandbox (${MAX_SANDBOX_OUTPUT_LINES} baris) terlampaui.`,
+            executionTimeMs: Date.now() - startTime,
+          });
+          return;
+        }
+        const line = data.length > MAX_SANDBOX_OUTPUT_LINE_LENGTH
+          ? `${data.slice(0, MAX_SANDBOX_OUTPUT_LINE_LENGTH)}… [baris dipotong]`
+          : data;
+        outputBuffer.push(line);
+        handler?.(line);
+      };
+
       timer = window.setTimeout(() => {
         if (!isSettled) {
           isSettled = true;
@@ -394,11 +454,9 @@ export class WibuSandbox {
         if (!msg || msg.id !== id) return;
 
         if (msg.type === "STDOUT" && msg.data != null) {
-          outputBuffer.push(msg.data);
-          if (options.onStdout) options.onStdout(msg.data);
+          appendOutput(msg.data, options.onStdout);
         } else if (msg.type === "STDERR" && msg.data != null) {
-          outputBuffer.push(msg.data);
-          if (options.onStderr) options.onStderr(msg.data);
+          appendOutput(msg.data, options.onStderr);
         } else if (msg.type === "SUCCESS") {
           if (!isSettled) {
             isSettled = true;
