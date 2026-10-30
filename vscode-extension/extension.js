@@ -53,13 +53,27 @@ function sendJsonRpc(proc, message) {
 /**
  * Mengirim permintaan request dan mengembalikan Promise hasil JSON-RPC.
  */
-function requestLsp(proc, method, params) {
+function rejectPendingRequests(reason) {
+  for (const pending of pendingRequests.values()) {
+    clearTimeout(pending.timer);
+    pending.reject(new Error(reason));
+  }
+  pendingRequests.clear();
+}
+
+function requestLsp(proc, method, params, timeoutMs = 5000) {
   return new Promise((resolve, reject) => {
-    if (!proc || !proc.stdin || proc.stdin.destroyed) {
+    if (!proc || !proc.stdin || proc.stdin.destroyed || proc.killed) {
       return reject(new Error("LSP Process tidak aktif."));
     }
+
     const id = requestId++;
-    pendingRequests.set(id, { resolve, reject });
+    const timer = setTimeout(() => {
+      pendingRequests.delete(id);
+      reject(new Error(`LSP request timed out: ${method}`));
+    }, timeoutMs);
+    pendingRequests.set(id, { resolve, reject, timer });
+
     sendJsonRpc(proc, {
       jsonrpc: "2.0",
       id,
@@ -75,6 +89,7 @@ function handleLspMessage(msg) {
     const pending = pendingRequests.get(msg.id);
     if (pending) {
       pendingRequests.delete(msg.id);
+      clearTimeout(pending.timer);
       if (msg.error) {
         pending.reject(new Error(msg.error.message || "LSP Error"));
       } else {
@@ -160,20 +175,30 @@ function activate(context) {
     console.error(`[Wibu LSP stderr] ${errChunk.toString()}`);
   });
 
+  lspProcess.on("error", (err) => {
+    rejectPendingRequests(`Gagal menjalankan Wibu LSP: ${err.message}`);
+    console.error("[Wibu LSP] Process error:", err);
+  });
+
   lspProcess.on("exit", (code) => {
+    rejectPendingRequests(`Wibu LSP berhenti (kode: ${code}).`);
     console.log(`[Wibu LSP] Server keluar dengan kode: ${code}`);
   });
 
-  // Kirim handshake inisialisasi
-  sendJsonRpc(lspProcess, {
-    jsonrpc: "2.0",
-    id: requestId++,
-    method: "initialize",
-    params: {
-      processId: process.pid,
-      rootUri: null,
-      capabilities: {}
-    }
+  // LSP initialization is a request/response handshake. Send "initialized"
+  // only after the server has replied successfully.
+  requestLsp(lspProcess, "initialize", {
+    processId: process.pid,
+    rootUri: null,
+    capabilities: {}
+  }).then(() => {
+    sendJsonRpc(lspProcess, {
+      jsonrpc: "2.0",
+      method: "initialized",
+      params: {}
+    });
+  }).catch((err) => {
+    console.error("[Wibu LSP] Inisialisasi gagal:", err.message);
   });
 
   // Sinkronisasi dokumen saat dibuka
@@ -338,6 +363,7 @@ function activate(context) {
  * Menonaktifkan ekstensi.
  */
 function deactivate() {
+  rejectPendingRequests("WibuScript extension dinonaktifkan.");
   if (lspProcess) {
     try {
       sendJsonRpc(lspProcess, {
