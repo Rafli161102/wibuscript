@@ -16,7 +16,7 @@
 [![npm monthly downloads](https://img.shields.io/npm/dm/wibuscript.svg?style=for-the-badge&logo=npm&logoColor=white&color=007ACC&label=downloads%2Fmonth)](https://www.npmjs.com/package/wibuscript)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-251%20test%20cases-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-252%20test%20cases-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
 [![Status](https://img.shields.io/badge/Status-Stable%20v2.7.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
