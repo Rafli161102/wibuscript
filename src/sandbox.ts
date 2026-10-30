@@ -24,6 +24,7 @@ export interface SandboxResult {
   executionTimeMs: number;
 }
 
+const MAX_SANDBOX_SOURCE_LENGTH = 1_000_000;
 const MAX_SANDBOX_OUTPUT_LINES = 1_000;
 const MAX_SANDBOX_OUTPUT_LINE_LENGTH = 10_000;
 
@@ -195,6 +196,15 @@ export class WibuSandbox {
     const timeoutMs = options.timeoutMs ?? this.defaultTimeoutMs;
     const memoryLimitMb = options.memoryLimitMb ?? this.defaultMemoryLimitMb;
 
+    if (sourceCodeOrTranspiled.length > MAX_SANDBOX_SOURCE_LENGTH) {
+      return {
+        success: false,
+        output: [],
+        error: `Ukuran kode melebihi batas sandbox (${MAX_SANDBOX_SOURCE_LENGTH} karakter).`,
+        executionTimeMs: 0,
+      };
+    }
+
     // Deteksi jika input masih berupa kode sumber WibuScript (belum ditranspilasi)
     let jsCode = sourceCodeOrTranspiled;
     if (
@@ -351,14 +361,12 @@ export class WibuSandbox {
         if (!isSettled) {
           isSettled = true;
           if (timer) clearTimeout(timer);
-          if (code !== 0) {
-            resolve({
-              success: false,
-              output: outputBuffer,
-              error: `Worker berhenti tiba-tiba dengan kode keluar: ${code}`,
-              executionTimeMs: Date.now() - startTime,
-            });
-          }
+          resolve({
+            success: false,
+            output: outputBuffer,
+            error: `Worker berhenti sebelum mengirim hasil (kode keluar: ${code}).`,
+            executionTimeMs: Date.now() - startTime,
+          });
         }
       });
 
