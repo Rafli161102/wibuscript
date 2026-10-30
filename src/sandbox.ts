@@ -36,62 +36,39 @@ if (isNodeWorker) {
         const { id, code } = msg;
         const startTime = Date.now();
 
-        const originalLog = console.log;
-        const originalError = console.error;
-        const originalWarn = console.warn;
-        const originalInfo = console.info;
-
-        console.log = (...args) => {
-          const str = args.map(a => (typeof a === "object" && a !== null ? JSON.stringify(a) : String(a))).join(" ");
-          parentPort.postMessage({ type: "STDOUT", id, data: str });
+        const vm = require("node:vm");
+        const safeConsole = Object.create(null);
+        const stringify = (value) => {
+          if (typeof value === "string") return value;
+          try { return JSON.stringify(value); } catch {
+            try { return String(value); } catch { return "[unserializable]"; }
+          }
         };
-        console.error = (...args) => {
-          const str = args.map(a => (typeof a === "object" && a !== null ? JSON.stringify(a) : String(a))).join(" ");
-          parentPort.postMessage({ type: "STDERR", id, data: str });
+        const sendLog = (type, args) => {
+          const data = args.map(stringify).join(" ");
+          parentPort.postMessage({ type, id, data });
         };
-        console.warn = console.log;
-        console.info = console.log;
+        const safeLog = (...args) => sendLog("STDOUT", args);
+        const safeError = (...args) => sendLog("STDERR", args);
+        // Do not expose host-realm functions/prototypes to the VM context.
+        Object.setPrototypeOf(safeLog, null);
+        Object.setPrototypeOf(safeError, null);
+        safeConsole.log = safeLog;
+        safeConsole.info = safeLog;
+        safeConsole.warn = safeLog;
+        safeConsole.error = safeError;
 
         try {
-          // Default-deny kebijakan keamanan: larang akses modul OS berbahaya
-          const deny = (apiName) => () => {
-            throw new Error("Akses API terlarang '" + apiName + "' ditolak oleh sandbox WibuScript.");
-          };
-          const safeRequire = (mod) => {
-            throw new Error("Akses require('" + mod + "') diblokir oleh sandbox isolasi.");
-          };
-          const safeProcess = {
-            env: {},
-            version: "v2.0-wibuscript-sandbox",
-            nextTick: process.nextTick,
-            cwd: () => "/",
-          };
-
-          const runner = new Function(
-            "require",
-            "process",
-            "child_process",
-            "fs",
-            "net",
-            "http",
-            "https",
-            "global",
-            "globalThis",
-            \`"use strict"; return (async () => {\\n\${code}\\n})();\`
+          // Defense in depth: no process/require/host objects are injected.
+          // Disable eval/new Function and WebAssembly compilation inside the context.
+          const context = vm.createContext({ console: safeConsole }, {
+            codeGeneration: { strings: false, wasm: false },
+          });
+          const script = new vm.Script(
+            '(async () => { "use strict";\\n' + code + '\\n})()',
+            { filename: "<wibuscript-sandbox>" }
           );
-
-          const res = await runner(
-            safeRequire,
-            safeProcess,
-            deny("child_process"),
-            deny("fs"),
-            deny("net"),
-            deny("http"),
-            deny("https"),
-            {},
-            {}
-          );
-
+          const res = await script.runInContext(context, { timeout: msg.timeoutMs || 5000 });
           parentPort.postMessage({
             type: "SUCCESS",
             id,
@@ -105,11 +82,6 @@ if (isNodeWorker) {
             error: err && err.message ? err.message : String(err),
             executionTimeMs: Date.now() - startTime,
           });
-        } finally {
-          console.log = originalLog;
-          console.error = originalError;
-          console.warn = originalWarn;
-          console.info = originalInfo;
         }
       }
     });
@@ -135,9 +107,32 @@ if (isNodeWorker) {
       };
 
       try {
-        const deny = (api) => () => {
-          throw new Error("Akses API browser '" + api + "' ditolak oleh sandbox isolasi.");
+        const deny = (api) => {
+          const blocked = () => {
+            throw new Error("Akses API browser '" + api + "' ditolak oleh sandbox isolasi.");
+          };
+          Object.setPrototypeOf(blocked, null);
+          return blocked;
         };
+
+        // Dedicated workers have no DOM. Also remove common network and
+        // nested-worker entry points before evaluating generated JavaScript.
+        for (const api of [
+          "fetch", "XMLHttpRequest", "WebSocket", "EventSource",
+          "Worker", "SharedWorker", "BroadcastChannel", "WebTransport",
+          "RTCPeerConnection", "importScripts"
+        ]) {
+          try {
+            Object.defineProperty(self, api, {
+              configurable: false,
+              enumerable: false,
+              writable: false,
+              value: deny(api),
+            });
+          } catch {
+            try { self[api] = deny(api); } catch {}
+          }
+        }
 
         const runner = new Function(
           "XMLHttpRequest",
@@ -347,7 +342,7 @@ export class WibuSandbox {
       });
 
       // Kirim payload kode sumber ke worker
-      worker.postMessage({ type: "EXECUTE", id, code });
+      worker.postMessage({ type: "EXECUTE", id, code, timeoutMs });
     });
   }
 
