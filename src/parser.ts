@@ -137,12 +137,19 @@ export class Parser {
     this.enterRecursion();
     try {
       const statement = this.parseStatementInner();
-      statement.loc = {
-        start: {
-          line: startToken.line,
-          column: startToken.column,
+      // Keep source coordinates out of enumerable AST data so dialect
+      // parity snapshots and the public AST JSON shape remain canonical.
+      Object.defineProperty(statement, "loc", {
+        value: {
+          start: {
+            line: startToken.line,
+            column: startToken.column,
+          },
         },
-      };
+        enumerable: false,
+        configurable: false,
+        writable: false,
+      });
       return statement;
     } finally {
       this.leaveRecursion();
