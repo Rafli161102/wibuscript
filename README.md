@@ -30,7 +30,8 @@
 
 <p align="center">
   <a href="#tentang-wibuscript">Tentang</a> |
-  <a href="#arsitektur-sistem">Arsitektur</a> |\n  <a href="ROADMAP.md">Roadmap</a> |
+  <a href="#arsitektur-sistem">Arsitektur</a> |
+  <a href="ROADMAP.md">Roadmap</a> |
   <a href="#model-keamanan">Model Keamanan</a> |
   <a href="#sistem-4-dialek-mutlak">4 Dialek Mutlak</a> |
   <a href="#pustaka-standar">Pustaka Standar</a> |
@@ -43,7 +44,11 @@
 
 </div>
 
-## Roadmap Pengembangan\n\nLihat [ROADMAP.md](ROADMAP.md) untuk milestone yang sudah selesai, batasan implementasi saat ini, dan acceptance criteria tahapan berikutnya.\n\n## Tentang WibuScript
+## Roadmap Pengembangan
+
+Lihat [ROADMAP.md](ROADMAP.md) untuk milestone yang sudah selesai, batasan implementasi saat ini, dan acceptance criteria tahapan berikutnya.
+
+## Tentang WibuScript
 
 WibuScript adalah bahasa pemrograman esoterik yang dibuat di atas TypeScript dengan arsitektur v2.0 Compiler Pipeline (JS Target ES2022+) dan Tree-Walking Interpreter bawaan untuk REPL interaktif. Konsep utamanya sederhana: menyediakan sintaks pemrograman yang unik lewat Sistem 4 Dialek Mutlak, mulai dari Romaji Jepang rapi sampai meme internet lokal.
 
