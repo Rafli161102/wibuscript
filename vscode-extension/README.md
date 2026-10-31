@@ -9,7 +9,7 @@
 
 <br/>
 
-[![Version](https://img.shields.io/badge/version-1.9.1-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://github.com/Rafli161102/wibuscript)
+[![Version](https://img.shields.io/badge/version-2.8.0-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://github.com/Rafli161102/wibuscript)
 [![NPM Version](https://img.shields.io/npm/v/wibuscript.svg?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/wibuscript)
 [![VS Code Engine](https://img.shields.io/badge/VS%20Code-%3E%3D%201.80.0-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white)](https://code.visualstudio.com/)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)

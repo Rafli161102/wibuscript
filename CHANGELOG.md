@@ -8,6 +8,7 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan me
 
 ### Added
 - Add LSP `textDocument/formatting` support and a VS Code document-formatting provider, reusing the safe indentation formatter.
+- Add `wibu format --check` for CI-friendly formatting verification and sync VS Code extension metadata to core version 2.8.0.
 - Add `validateSource()` diagnostics API and `wibu check <file.wibu>` to validate syntax without executing code, with source locations, caret output, and actionable suggestions.
 - Add `formatSource()` and `wibu format` with configurable indentation, stdout output by default, explicit `-o` output, or opt-in in-place `--write`. The initial formatter normalizes block indentation while preserving comments, multiline literal indentation, and dialect spelling.
 

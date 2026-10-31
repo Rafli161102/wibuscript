@@ -60,6 +60,7 @@ wibu check program.wibu
 wibu format program.wibu                   # print to stdout
 wibu format program.wibu -o formatted.wibu # write to a new file
 wibu format program.wibu --write           # update the input file
+wibu format program.wibu --check           # fail if formatting is needed
 ```
 
 ## System Architecture

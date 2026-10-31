@@ -25,6 +25,17 @@ describe("WibuScript formatter", () => {
     expect(formatSource(source)).toBe("jutsu demo(){\n  /* start\n    keep this } exactly\nend */\n  mite(1);\n}\n");
   });
 
+  it("preserves CRLF line endings", () => {
+    const source = "jutsu x(){\\r\\nmite(1);\\r\\n}\\r\\n";
+    expect(formatSource(source)).toBe("jutsu x(){\\r\\n  mite(1);\\r\\n}\\r\\n");
+  });
+
+  it("preserves multiline template literal content", () => {
+    const source = "jutsu x(){\\nkore teks = `baris satu\\n  } literal\\n`;\\nmite(teks);\\n}\\n";
+    const expected = "jutsu x(){\\n  kore teks = `baris satu\\n  } literal\\n`;\\n  mite(teks);\\n}\\n";
+    expect(formatSource(source)).toBe(expected);
+  });
+
   it("supports configurable spaces, tabs, and rejects invalid sizes", () => {
     expect(formatSource("jutsu x(){\nmite(1);\n}", { indentSize: 4 })).toBe("jutsu x(){\n    mite(1);\n}");
     expect(formatSource("jutsu x(){\nmite(1);\n}", { indentStyle: "tabs" })).toBe("jutsu x(){\n\tmite(1);\n}");

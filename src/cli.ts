@@ -38,7 +38,7 @@ function printUsage(): void {
   console.log("  wibu <berkas.wibu>            Menjalankan berkas WibuScript (pintasan)");
   console.log("  wibu build <berkas.wibu>      Kompilasi berkas ke JavaScript (opsi: -o <output.js>, --dom)");
   console.log("  wibu check <berkas.wibu>      Periksa sintaks tanpa menjalankan program");
-  console.log("  wibu format <berkas.wibu>     Rapikan indentasi (opsi: -o <output.wibu>, --write)");
+  console.log("  wibu format <berkas.wibu>     Rapikan indentasi (opsi: -o <output.wibu>, --write, --check)");
   console.log("  wibu convert <berkas> --to <dialek>  Konversi antar-dialek (murni, singkat, wibu, rongawi)");
   console.log("  wibu add <paket>              Mengunduh pustaka pihak ketiga ke node_modules");
   console.log("  wibu lsp                      Menjalankan Wibu Language Server Protocol (LSP)");
@@ -250,7 +250,7 @@ function handleFormat(args: string[]): void {
   const targetFile = args[0];
   if (!targetFile || targetFile.startsWith("-")) {
     console.error("[Error] Berkas target .wibu diperlukan untuk 'format'.");
-    console.error("Penggunaan: wibu format <berkas.wibu> [-o output.wibu | --write]");
+    console.error("Penggunaan: wibu format <berkas.wibu> [-o output.wibu | --write | --check]");
     process.exit(1);
   }
   const resolvedPath = path.resolve(process.cwd(), targetFile);
@@ -263,9 +263,10 @@ function handleFormat(args: string[]): void {
     process.exit(1);
   }
   const writeInPlace = args.includes("--write");
+  const checkOnly = args.includes("--check");
   const outputIndex = args.indexOf("-o");
-  if (writeInPlace && outputIndex !== -1) {
-    console.error("[Error] Gunakan salah satu --write atau -o, bukan keduanya.");
+  if ((writeInPlace && outputIndex !== -1) || (checkOnly && (writeInPlace || outputIndex !== -1))) {
+    console.error("[Error] Pilih satu mode: --write, --check, atau -o.");
     process.exit(1);
   }
   if (outputIndex !== -1 && !args[outputIndex + 1]) {
@@ -273,8 +274,16 @@ function handleFormat(args: string[]): void {
     process.exit(1);
   }
   try {
-    const formatted = formatSource(fs.readFileSync(resolvedPath, "utf-8"));
-    if (writeInPlace) {
+    const source = fs.readFileSync(resolvedPath, "utf-8");
+    const formatted = formatSource(source);
+    if (checkOnly) {
+      if (formatted === source) {
+        console.log("[Format Check] " + targetFile + " sudah rapi.");
+      } else {
+        console.error("[Format Check] " + targetFile + " belum diformat. Jalankan: wibu format " + targetFile + " --write");
+        process.exitCode = 1;
+      }
+    } else if (writeInPlace) {
       fs.writeFileSync(resolvedPath, formatted, "utf-8");
       console.log("[Format Sukses] " + targetFile + " diperbarui.");
     } else if (outputIndex !== -1) {

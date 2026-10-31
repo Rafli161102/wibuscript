@@ -60,6 +60,7 @@ wibu check kode.wibu
 wibu format kode.wibu                 # hasil ke stdout
 wibu format kode.wibu -o rapi.wibu    # simpan ke berkas baru
 wibu format kode.wibu --write         # ubah berkas langsung
+wibu format kode.wibu --check         # gagal jika indentasi belum rapi
 ```
 
 ## Arsitektur Sistem
