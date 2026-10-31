@@ -294,6 +294,12 @@ describe("Wibu Language Server Protocol (src/lsp.ts)", () => {
       expect(response?.id).toBe(9);
       expect(response?.result).toHaveLength(1);
       expect(response?.result[0].newText).toBe("jutsu demo(){\n    mite(1);\n}\n");
+
+      const tabResponse = server.handleMessage({
+        jsonrpc: "2.0", id: 11, method: "textDocument/formatting",
+        params: { textDocument: { uri }, options: { tabSize: 2, insertSpaces: false } }
+      });
+      expect(tabResponse?.result[0].newText).toBe("jutsu demo(){\n\tmite(1);\n}\n");
     });
 
     it("returns no formatting edits for an unknown document", () => {

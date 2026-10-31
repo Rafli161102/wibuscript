@@ -5,6 +5,7 @@
  */
 export interface FormatOptions {
   indentSize?: number;
+  indentStyle?: "spaces" | "tabs";
 }
 
 interface ScanState {
@@ -77,7 +78,7 @@ export function formatSource(source: string, options: FormatOptions = {}): strin
     const lineDepth = Math.max(0, depth - leadingClosingBraces(line));
     const formatted = preserveIndent
       ? line
-      : " ".repeat(lineDepth * indentSize) + line.trimStart();
+      : indentUnit.repeat(lineDepth) + line.trimStart();
     depth = Math.max(0, depth + scanLine(line, state));
     return formatted;
   });

@@ -25,8 +25,9 @@ describe("WibuScript formatter", () => {
     expect(formatSource(source)).toBe("jutsu demo(){\n  /* start\n    keep this } exactly\nend */\n  mite(1);\n}\n");
   });
 
-  it("supports configurable indentation and rejects invalid sizes", () => {
+  it("supports configurable spaces, tabs, and rejects invalid sizes", () => {
     expect(formatSource("jutsu x(){\nmite(1);\n}", { indentSize: 4 })).toBe("jutsu x(){\n    mite(1);\n}");
+    expect(formatSource("jutsu x(){\nmite(1);\n}", { indentStyle: "tabs" })).toBe("jutsu x(){\n\tmite(1);\n}");
     expect(() => formatSource("x", { indentSize: 9 })).toThrow(RangeError);
   });
 });

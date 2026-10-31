@@ -781,7 +781,8 @@ export class WibuLanguageServer {
         const indentSize = Number.isInteger(requestedTabSize) && requestedTabSize >= 0 && requestedTabSize <= 8
           ? requestedTabSize
           : 2;
-        const formatted = formatSource(doc.text, { indentSize });
+        const indentStyle = params?.options?.insertSpaces === false ? "tabs" : "spaces";
+        const formatted = formatSource(doc.text, { indentSize, indentStyle });
         const lines = doc.text.split(/\r\n|\n|\r/);
         const lastLine = Math.max(0, lines.length - 1);
         return {
