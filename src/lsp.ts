@@ -9,6 +9,7 @@
 
 import { tokenize } from "./lexer";
 import { Parser } from "./parser";
+import { formatSource } from "./formatter";
 import {
   DIALECTS,
   CANONICAL_KEYWORDS_CONTROL,
@@ -642,7 +643,8 @@ export class WibuLanguageServer {
                 triggerCharacters: [".", " ", "(", ":"]
               },
               hoverProvider: true,
-              documentSymbolProvider: true
+              documentSymbolProvider: true,
+              documentFormattingProvider: true
             },
             serverInfo: {
               name: "wibuscript-language-server",
@@ -765,6 +767,33 @@ export class WibuLanguageServer {
                 }
               }
             : null
+        };
+      }
+
+
+      case "textDocument/formatting": {
+        const item = params?.textDocument;
+        const doc = item?.uri ? this.documents.get(item.uri) : undefined;
+        if (!doc) {
+          return { jsonrpc: "2.0", id: id ?? 1, result: [] };
+        }
+        const requestedTabSize = Number(params?.options?.tabSize);
+        const indentSize = Number.isInteger(requestedTabSize) && requestedTabSize >= 0 && requestedTabSize <= 8
+          ? requestedTabSize
+          : 2;
+        const formatted = formatSource(doc.text, { indentSize });
+        const lines = doc.text.split(/\r\n|\n|\r/);
+        const lastLine = Math.max(0, lines.length - 1);
+        return {
+          jsonrpc: "2.0",
+          id: id ?? 1,
+          result: [{
+            range: {
+              start: { line: 0, character: 0 },
+              end: { line: lastLine, character: lines[lastLine]?.length ?? 0 }
+            },
+            newText: formatted
+          }]
         };
       }
 

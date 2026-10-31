@@ -329,6 +329,35 @@ function activate(context) {
     })
   );
 
+
+  // Provider Document Formatting (Format Document)
+  context.subscriptions.push(
+    vscode.languages.registerDocumentFormattingEditProvider("wibuscript", {
+      async provideDocumentFormattingEdits(doc, options) {
+        try {
+          const result = await requestLsp(lspProcess, "textDocument/formatting", {
+            textDocument: { uri: doc.uri.toString() },
+            options: {
+              tabSize: options.tabSize,
+              insertSpaces: options.insertSpaces
+            }
+          });
+          if (!Array.isArray(result)) return [];
+          return result.map((edit) => {
+            const range = new vscode.Range(
+              new vscode.Position(edit.range.start.line, edit.range.start.character),
+              new vscode.Position(edit.range.end.line, edit.range.end.character)
+            );
+            return vscode.TextEdit.replace(range, edit.newText);
+          });
+        } catch (error) {
+          console.error("[Wibu LSP] Formatting request failed:", error);
+          return [];
+        }
+      }
+    })
+  );
+
   // Provider Document Symbols
   context.subscriptions.push(
     vscode.languages.registerDocumentSymbolProvider("wibuscript", {

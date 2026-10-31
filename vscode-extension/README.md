@@ -49,6 +49,7 @@
   - Literal string, template string interpolasi (<code>\`...\${...}\`</code>), angka, dan komentar baris ganda (`//`).
 - **Ringan & Cepat**: Dibangun dengan TextMate Grammar JSON murni tanpa proses background yang memberatkan editor.
 - **Dukungan Bersilang**: Menghighlight kode yang mencampurkan keempat dialek dalam satu berkas secara mulus tanpa konflik.
+- **Format Document**: Perintah format bawaan VS Code memakai LSP formatter WibuScript untuk merapikan indentasi blok; komentar, string, dan penulisan dialek dipertahankan.
 
 ---
 
@@ -79,7 +80,7 @@ Ekstensi WibuScript kini dilengkapi dengan klien LSP bawaan mandiri yang terhubu
    - Dilengkapi template snippet cerdas untuk blok kontrol alur dan deklarasi kelas/fungsi.
 3. **Dokumentasi Sorot (*Hover Documentation*)**:
    - Menampilkan penjelasan detail berbahasa Indonesia dan dokumentasi fungsi/kata kunci saat kursor didekatkan ke simbol kode.
-4. **Navigasi Simbol Dokumen (*Document Symbols / Outline*)**:
+4. **Format Dokumen (*Document Formatting*)**:\n   - Mendukung perintah **Format Document** dan format saat penyimpanan bila `editor.formatOnSave` diaktifkan.\n   - Formatter saat ini menormalkan indentasi blok saja; tidak mengubah operator, literal, komentar, ataupun ejaan keyword.\n5. **Navigasi Simbol Dokumen (*Document Symbols / Outline*)**:
    - Mendukung panel Outline VS Code serta pintasan <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd> (<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd> pada macOS) untuk melompat langsung ke deklarasi fungsi, kelas, metode, atau variabel.
 
 ---

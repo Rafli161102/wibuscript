@@ -268,7 +268,43 @@ describe("Wibu Language Server Protocol (src/lsp.ts)", () => {
       expect(response?.result.capabilities.textDocumentSync).toBe(1);
       expect(response?.result.capabilities.hoverProvider).toBe(true);
       expect(response?.result.capabilities.documentSymbolProvider).toBe(true);
+      expect(response?.result.capabilities.documentFormattingProvider).toBe(true);
       expect(response?.result.serverInfo.name).toBe("wibuscript-language-server");
+    });
+
+
+    it("provides formatting edits for an opened document", () => {
+      const server = new WibuLanguageServer();
+      const uri = "file:///workspace/format.wibu";
+      const source = "jutsu demo(){\nmite(1);\n}\n";
+      server.handleMessage({
+        jsonrpc: "2.0",
+        method: "textDocument/didOpen",
+        params: { textDocument: { uri, version: 1, text: source } }
+      });
+      const response = server.handleMessage({
+        jsonrpc: "2.0",
+        id: 9,
+        method: "textDocument/formatting",
+        params: {
+          textDocument: { uri },
+          options: { tabSize: 4, insertSpaces: true }
+        }
+      });
+      expect(response?.id).toBe(9);
+      expect(response?.result).toHaveLength(1);
+      expect(response?.result[0].newText).toBe("jutsu demo(){\n    mite(1);\n}\n");
+    });
+
+    it("returns no formatting edits for an unknown document", () => {
+      const server = new WibuLanguageServer();
+      const response = server.handleMessage({
+        jsonrpc: "2.0",
+        id: 10,
+        method: "textDocument/formatting",
+        params: { textDocument: { uri: "file:///missing.wibu" }, options: { tabSize: 2 } }
+      });
+      expect(response?.result).toEqual([]);
     });
 
     it("mengirimkan diagnostik otomatis pada event textDocument/didOpen dan didChange", () => {

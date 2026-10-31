@@ -53,7 +53,7 @@ Meskipun pembawaannya santai dan absurd, proyek ini dirancang dengan standar tek
 
 ## Formatter & Syntax Check
 
-WibuScript menyediakan pemeriksaan sintaks tanpa mengeksekusi program dan formatter indentasi yang mempertahankan ejaan keyword/dialek, literal string, serta komentar. Formatter saat ini sengaja hanya menormalkan indentasi blok agar tidak mengubah ekspresi atau perilaku program.
+WibuScript menyediakan pemeriksaan sintaks tanpa mengeksekusi program dan formatter indentasi yang mempertahankan ejaan keyword/dialek, literal string, serta komentar. Formatter saat ini sengaja hanya menormalkan indentasi blok agar tidak mengubah ekspresi atau perilaku program. Formatter yang sama tersedia melalui LSP dan perintah **Format Document** di ekstensi VS Code.
 
 ```bash
 wibu check kode.wibu

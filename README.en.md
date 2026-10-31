@@ -53,7 +53,7 @@ Despite its humorous and unconventional flavor, WibuScript is engineered with ri
 
 ## Formatter & Syntax Check
 
-WibuScript provides syntax validation without executing programs and a conservative indentation formatter. It preserves keyword/dialect spelling, string literals, and comments; the current formatter intentionally changes indentation only to avoid rewriting expressions or program behavior.
+WibuScript provides syntax validation without executing programs and a conservative indentation formatter. It preserves keyword/dialect spelling, string literals, and comments; the current formatter intentionally changes indentation only to avoid rewriting expressions or program behavior. The same formatter is exposed over LSP and the VS Code **Format Document** command.
 
 ```bash
 wibu check program.wibu
