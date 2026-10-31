@@ -57,10 +57,16 @@ jobs:
           }
           echo "GitHub Actions OIDC environment is available."
 
+      - name: Update npm CLI for Trusted Publishing
+        run: npm install --global npm@latest
+
       - name: Verify npm Trusted Publishing support
+        shell: bash
         run: |
           export NPM_VERSION="$(npm --version)"
           echo "Using npm $NPM_VERSION"
+          echo "Registry: $(npm config get registry)"
+          echo "User config: $(npm config get userconfig)"
           node -e '
             const [major, minor, patch] = process.env.NPM_VERSION.split(".").map(Number);
             if (major < 11 || (major === 11 && minor < 5) || (major === 11 && minor === 5 && patch < 1)) {
@@ -68,6 +74,18 @@ jobs:
               process.exit(1);
             }
           '
+
+      - name: Verify OIDC and npm auth configuration
+        shell: bash
+        run: |
+          echo "GitHub OIDC URL present: $([[ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]] && echo yes || echo no)"
+          echo "GitHub OIDC request token present: $([[ -n "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]] && echo yes || echo no)"
+          npmrc="$(npm config get userconfig)"
+          if grep -q '_authToken' "$npmrc" 2>/dev/null; then
+            echo "::error::An _authToken entry remains in npm user config; refusing to publish with ambiguous auth."
+            exit 1
+          fi
+          echo "No static _authToken entry in npm user config."
 
       - name: Install dependencies
         run: npm ci
@@ -89,4 +107,4 @@ jobs:
         run: npm pack --dry-run
 
       - name: Publish to npmjs using OIDC Trusted Publishing
-        run: npm publish --access public --provenance
+        run: npm publish --access public --provenance --loglevel verbose
