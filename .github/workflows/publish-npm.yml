@@ -1,16 +1,17 @@
 name: Publish WibuScript to npmjs
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/publish-npm.yml"
   release:
     types: [published]
   workflow_dispatch:
 
 permissions:
   contents: read
+
+# Prevent simultaneous/repeated publish runs from racing on the same npm package.
+concurrency:
+  group: npm-publish-wibuscript
+  cancel-in-progress: false
 
 jobs:
   publish-npm:
@@ -106,5 +107,34 @@ jobs:
       - name: Validate package contents
         run: npm pack --dry-run
 
+      - name: Check whether this package version is already published
+        id: published_check
+        shell: bash
+        run: |
+          PACKAGE_NAME="$(node -p "require('./package.json').name")"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+
+          set +e
+          npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version --json > /tmp/npm-version-check.txt 2>&1
+          CHECK_STATUS=$?
+          set -e
+
+          if [ "$CHECK_STATUS" -eq 0 ]; then
+            echo "skip_publish=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::${PACKAGE_NAME}@${PACKAGE_VERSION} is already published. Skipping duplicate publish."
+          elif grep -q "E404" /tmp/npm-version-check.txt; then
+            echo "skip_publish=false" >> "$GITHUB_OUTPUT"
+            echo "${PACKAGE_NAME}@${PACKAGE_VERSION} is not yet published; continuing."
+          else
+            cat /tmp/npm-version-check.txt
+            echo "::error::Could not verify the version on npm. Refusing to publish blindly."
+            exit 1
+          fi
+
       - name: Publish to npmjs using OIDC Trusted Publishing
+        if: steps.published_check.outputs.skip_publish != 'true'
         run: npm publish --access public --provenance --loglevel verbose
+
+      - name: Report skipped publish
+        if: steps.published_check.outputs.skip_publish == 'true'
+        run: echo "This version is already live on npm; no duplicate publish was attempted."
