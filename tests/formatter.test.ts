@@ -26,13 +26,30 @@ describe("WibuScript formatter", () => {
   });
 
   it("preserves CRLF line endings", () => {
-    const source = "jutsu x(){\r\nmite(1);\r\n}\r\n";
-    expect(formatSource(source)).toBe("jutsu x(){\r\n  mite(1);\r\n}\r\n");
+    const source = ["jutsu x(){", "mite(1);", "}", ""].join("\r\n");
+    const expected = ["jutsu x(){", "  mite(1);", "}", ""].join("\r\n");
+    expect(formatSource(source)).toBe(expected);
   });
 
   it("preserves multiline template literal content", () => {
-    const source = "jutsu x(){\nkore teks = `baris satu\n  } literal\n`;\nmite(teks);\n}\n";
-    const expected = "jutsu x(){\n  kore teks = `baris satu\n  } literal\n`;\n  mite(teks);\n}\n";
+    const source = [
+      "jutsu x(){",
+      "kore teks = `baris satu",
+      "  } literal",
+      "`;",
+      "mite(teks);",
+      "}",
+      ""
+    ].join("\n");
+    const expected = [
+      "jutsu x(){",
+      "  kore teks = `baris satu",
+      "  } literal",
+      "`;",
+      "  mite(teks);",
+      "}",
+      ""
+    ].join("\n");
     expect(formatSource(source)).toBe(expected);
   });
 
