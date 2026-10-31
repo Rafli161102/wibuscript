@@ -30,7 +30,7 @@
 
 <p align="center">
   <a href="#about-wibuscript">About</a> |
-  <a href="#system-architecture">Architecture</a> |
+  <a href="#system-architecture">Architecture</a> |\n  <a href="ROADMAP.md">Roadmap</a> |
   <a href="#the-4-absolute-dialects-system">4 Absolute Dialects</a> |
   <a href="#standard-library">Standard Library</a> |
   <a href="#domain-modules-web--server">Domain Modules</a> |
@@ -43,7 +43,7 @@
 
 </div>
 
-## About WibuScript
+## Development Roadmap\n\nSee [ROADMAP.md](ROADMAP.md) for completed milestones, current implementation limits, and acceptance criteria for future phases.\n\n## About WibuScript
 
 WibuScript is an esoteric programming language built on top of TypeScript featuring a modern v2.0 Compiler Pipeline architecture (JavaScript ES2022+ Target) alongside a built-in Tree-Walking Interpreter for interactive REPL. The core philosophy is straightforward: provide unique programming syntaxes through the **4 Absolute Dialects System**, ranging from neat Japanese Romaji to expressive internet meme culture.
 
