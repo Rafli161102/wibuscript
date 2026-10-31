@@ -44,10 +44,11 @@ describe("Wibu Language Server Protocol (src/lsp.ts)", () => {
         pokmipokmi hasil = menyalaAbangku(kali(a, 2));
       `;
 
-      expect(validateWibuScript(codeMurni)).toEqual([]);
-      expect(validateWibuScript(codeSingkat)).toEqual([]);
-      expect(validateWibuScript(codeWibu)).toEqual([]);
-      expect(validateWibuScript(codeRongawi)).toEqual([]);
+      for (const code of [codeMurni, codeSingkat, codeWibu, codeRongawi]) {
+        const diagnostics = validateWibuScript(code);
+        expect(diagnostics.every(item => item.severity === DiagnosticSeverity.Warning)).toBe(true);
+        expect(diagnostics.every(item => item.code === "unused-variable")).toBe(true);
+      }
     });
 
 
@@ -365,7 +366,9 @@ describe("Wibu Language Server Protocol (src/lsp.ts)", () => {
       });
 
       expect(publishedMessages.length).toBe(2);
-      expect(publishedMessages[1]!.params.diagnostics.length).toBe(0);
+      expect(publishedMessages[1]!.params.diagnostics).toHaveLength(1);
+      expect(publishedMessages[1]!.params.diagnostics[0].code).toBe("unused-variable");
+      expect(publishedMessages[1]!.params.diagnostics[0].severity).toBe(DiagnosticSeverity.Warning);
 
       // 3. Tutup berkas, memastikan diagnostik dibersihkan
       server.handleMessage({
