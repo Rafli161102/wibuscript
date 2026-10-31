@@ -40,6 +40,14 @@ jobs:
       - name: Build Core and Playground
         run: npm run build
 
+      - name: Smoke Test npm Package Artifact
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/wibuscript-ci-smoke"
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/wibuscript-ci-smoke"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          node scripts/smoke-test-package.mjs "$RUNNER_TEMP/wibuscript-ci-smoke/wibuscript-${PACKAGE_VERSION}.tgz"
+
       - name: Validate VS Code extension and runner scripts
         run: |
           node --check vscode-extension/extension.js
