@@ -19,6 +19,7 @@ import {
 import { startREPL } from "./repl";
 import { installPackage } from "./pm";
 import { startLanguageServer } from "./lsp";
+import { validateSource } from "./diagnostics";
 
 const packageMetadata = JSON.parse(
   fs.readFileSync(new URL("../package.json", import.meta.url), "utf8")
@@ -35,6 +36,7 @@ function printUsage(): void {
   console.log("  wibu web <berkas.wibu>        Kompilasi web browser/DOM (opsi: -o <output.html>, --title <judul>)");
   console.log("  wibu <berkas.wibu>            Menjalankan berkas WibuScript (pintasan)");
   console.log("  wibu build <berkas.wibu>      Kompilasi berkas ke JavaScript (opsi: -o <output.js>, --dom)");
+  console.log("  wibu check <berkas.wibu>      Periksa sintaks tanpa menjalankan program");
   console.log("  wibu convert <berkas> --to <dialek>  Konversi antar-dialek (murni, singkat, wibu, rongawi)");
   console.log("  wibu add <paket>              Mengunduh pustaka pihak ketiga ke node_modules");
   console.log("  wibu lsp                      Menjalankan Wibu Language Server Protocol (LSP)");
@@ -207,6 +209,39 @@ function handleConvert(args: string[]): void {
   }
 }
 
+function handleCheck(args: string[]): void {
+  const targetFile = args[0];
+  if (!targetFile || targetFile.startsWith("-")) {
+    console.error("[Error] Berkas target .wibu diperlukan untuk 'check'.");
+    console.error("Penggunaan: wibu check <berkas.wibu>");
+    process.exit(1);
+  }
+  const resolvedPath = path.resolve(process.cwd(), targetFile);
+  if (!fs.existsSync(resolvedPath)) {
+    console.error(`[Error] Berkas tidak ditemukan: ${resolvedPath}`);
+    process.exit(1);
+  }
+  if (path.extname(resolvedPath).toLowerCase() !== ".wibu") {
+    console.error("[Error] Ekstensi berkas tidak valid. Gunakan ekstensi .wibu");
+    process.exit(1);
+  }
+  const diagnostics = validateSource(fs.readFileSync(resolvedPath, "utf-8"));
+  if (diagnostics.length === 0) {
+    console.log(`[Check Sukses] ${targetFile}: sintaks valid.`);
+    return;
+  }
+  for (const diagnostic of diagnostics) {
+    console.error(`[WibuScript ${diagnostic.phase} Error] ${targetFile}:${diagnostic.line}:${diagnostic.column}`);
+    console.error(`  ${diagnostic.message}`);
+    if (diagnostic.sourceLine) {
+      console.error(`  ${diagnostic.sourceLine}`);
+      console.error(`  ${" ".repeat(Math.max(0, diagnostic.column - 1))}^`);
+    }
+    if (diagnostic.suggestion) console.error(`  Saran: ${diagnostic.suggestion}`);
+  }
+  process.exitCode = 1;
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
@@ -253,6 +288,10 @@ async function main(): Promise<void> {
 
     case "build":
       handleBuild(args.slice(1));
+      return;
+
+    case "check":
+      handleCheck(args.slice(1));
       return;
 
     case "convert":

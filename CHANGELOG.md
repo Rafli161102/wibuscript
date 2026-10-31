@@ -6,6 +6,10 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan me
 
 ## [Unreleased]
 
+### Added
+- Add `validateSource()` diagnostics API and `wibu check <file.wibu>` to validate syntax without executing code, with source locations, caret output, and actionable suggestions.
+
+
 ### Fixed
 - CLI version output now reads the package version instead of a stale hard-coded value.
 - Node.js ESM server module now resolves `node:http` through `createRequire`; a real HTTP listener regression test covers the native path.
