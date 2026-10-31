@@ -22,7 +22,7 @@ function scanLine(line: string, state: ScanState): number {
     if (state.quote) {
       if (state.escaped) state.escaped = false;
       else if (char === "\\") state.escaped = true;
-      else if (char === state.quote) state.quote = null;
+      else if ((state.quote === "single" && char === "'") || (state.quote === "double" && char === '"') || (state.quote === "template" && char === "`")) state.quote = null;
       continue;
     }
     if (state.blockComment) {
@@ -39,7 +39,7 @@ function scanLine(line: string, state: ScanState): number {
       continue;
     }
     if (char === "'" || char === '"' || char === "\`") {
-      state.quote = char;
+      state.quote = char === "'" ? "single" : char === '"' ? "double" : "template";
       continue;
     }
     if (char === "{") delta++;

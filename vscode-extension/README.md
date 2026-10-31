@@ -80,7 +80,10 @@ Ekstensi WibuScript kini dilengkapi dengan klien LSP bawaan mandiri yang terhubu
    - Dilengkapi template snippet cerdas untuk blok kontrol alur dan deklarasi kelas/fungsi.
 3. **Dokumentasi Sorot (*Hover Documentation*)**:
    - Menampilkan penjelasan detail berbahasa Indonesia dan dokumentasi fungsi/kata kunci saat kursor didekatkan ke simbol kode.
-4. **Format Dokumen (*Document Formatting*)**:\n   - Mendukung perintah **Format Document** dan format saat penyimpanan bila `editor.formatOnSave` diaktifkan.\n   - Formatter saat ini menormalkan indentasi blok saja; tidak mengubah operator, literal, komentar, ataupun ejaan keyword.\n5. **Navigasi Simbol Dokumen (*Document Symbols / Outline*)**:
+4. **Format Dokumen (*Document Formatting*)**:
+   - Mendukung perintah **Format Document** dan format saat penyimpanan bila `editor.formatOnSave` diaktifkan.
+   - Mengikuti preferensi spasi/tab editor. Formatter saat ini menormalkan indentasi blok saja; tidak mengubah operator, literal, komentar, ataupun ejaan keyword.
+5. **Navigasi Simbol Dokumen (*Document Symbols / Outline*)**:
    - Mendukung panel Outline VS Code serta pintasan <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd> (<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd> pada macOS) untuk melompat langsung ke deklarasi fungsi, kelas, metode, atau variabel.
 
 ---
