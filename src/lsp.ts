@@ -10,6 +10,7 @@
 import { tokenize } from "./lexer";
 import { Parser } from "./parser";
 import { formatSource } from "./formatter";
+import { analyzeSource } from "./analyzer";
 import {
   DIALECTS,
   CANONICAL_KEYWORDS_CONTROL,
@@ -42,6 +43,7 @@ export interface Diagnostic {
   severity: DiagnosticSeverity;
   source: string;
   message: string;
+  code?: string;
 }
 
 export enum CompletionItemKind {
@@ -448,6 +450,22 @@ export function validateWibuScript(sourceText: string): Diagnostic[] {
       severity: DiagnosticSeverity.Error,
       source: "wibuscript",
       message: errorMessage
+    });
+    return diagnostics;
+  }
+
+  for (const item of analyzeSource(sourceText)) {
+    const line = Math.max(0, item.line - 1);
+    const character = Math.max(0, item.column - 1);
+    diagnostics.push({
+      range: {
+        start: { line, character },
+        end: { line, character: character + 1 }
+      },
+      severity: item.severity === "error" ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning,
+      source: "wibuscript",
+      code: item.code,
+      message: item.message
     });
   }
 

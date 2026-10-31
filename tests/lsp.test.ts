@@ -50,6 +50,21 @@ describe("Wibu Language Server Protocol (src/lsp.ts)", () => {
       expect(validateWibuScript(codeRongawi)).toEqual([]);
     });
 
+
+    it("publishes semantic warnings and errors for valid syntax", () => {
+      const unused = validateWibuScript("kore nilai = 42;");
+      expect(unused.some(item => item.code === "unused-variable" && item.severity === DiagnosticSeverity.Warning)).toBe(true);
+
+      const duplicate = validateWibuScript("kore nilai = 1; kore nilai = 2;");
+      expect(duplicate.some(item => item.code === "duplicate-declaration" && item.severity === DiagnosticSeverity.Error)).toBe(true);
+    });
+
+    it("does not emit semantic diagnostics when syntax is invalid", () => {
+      const diagnostics = validateWibuScript("kore nilai = ;");
+      expect(diagnostics).toHaveLength(1);
+      expect(diagnostics[0]?.message).toContain("Parser Error");
+    });
+
     it("mengembalikan array kosong untuk kode string kosong atau hanya spasi", () => {
       expect(validateWibuScript("")).toEqual([]);
       expect(validateWibuScript("   \n\t  \n")).toEqual([]);
