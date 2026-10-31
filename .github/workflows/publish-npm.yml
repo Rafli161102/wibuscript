@@ -107,6 +107,14 @@ jobs:
       - name: Validate package contents
         run: npm pack --dry-run
 
+      - name: Smoke test packed npm artifact
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/wibuscript-smoke"
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/wibuscript-smoke"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          node scripts/smoke-test-package.mjs "$RUNNER_TEMP/wibuscript-smoke/wibuscript-${PACKAGE_VERSION}.tgz"
+
       - name: Check whether this package version is already published
         id: published_check
         shell: bash

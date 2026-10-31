@@ -17,7 +17,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![Vitest](https://img.shields.io/badge/Vitest-Expanded%20suite-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v2.7.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.8.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
@@ -247,7 +247,7 @@ npx wibuscript --help
 ```
 
 ### Kebutuhan Dasar
-- **Node.js**: Versi 18.0.0 atau yang lebih baru.
+- **Node.js**: Versi 20.9.0 atau yang lebih baru.
 - **npm**: Versi 9.0.0 atau yang lebih baru.
 
 ### Perintah Baris Perintah (CLI)
@@ -283,6 +283,12 @@ wibu lsp
 ---
 
 ## Log Pembaruan
+
+### v2.8.0
+- **Penguatan keamanan eksekusi**: Playground memakai dedicated Web Worker dengan batas input/output dan timeout; dokumentasi menegaskan bahwa Worker dan `node:vm` bukan batas keamanan untuk kode adversarial.
+- **Container Sandbox**: Penambahan adapter Docker dengan jaringan nonaktif, root filesystem read-only, user non-root, dan batas resource.
+- **Kualitas kompilator dan tooling**: Penambahan pengujian diferensial interpreter/transpiler, koordinat sumber AST dan Source Map, serta perlindungan LSP terhadap notifikasi dokumen yang kedaluwarsa.
+- **CI/CD**: Typecheck, test, build, dan smoke test runner container dijalankan melalui workflow otomatis.
 
 ### v2.7.0
 - **Operasi Asinkronus Mutlak (AwaitExpression)**: Implementasi parsing dan evaluasi `matte` (Murni), `mat` (Singkat), `matteNe` (Wibu), dan `admindatang` (Rongawi) untuk eksekusi asinkronus dan transpilasi ke `await` JavaScript ES2022+.

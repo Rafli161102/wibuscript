@@ -1,3 +1,5 @@
+import { createRequire } from "node:module";
+
 // File: src/modules/server.ts
 // ============================================================================
 // MODUL DOMAIN SERVER WIBUSCRIPT (wibuscript/server)
@@ -52,7 +54,7 @@ export class WibuServer {
     if (typeof process !== "undefined" && process.versions?.node) {
       try {
         // Impor http Node.js secara dinamis agar aman di lingkungan bundler browser
-        const http = require("node:http");
+        const http = createRequire(import.meta.url)("node:http");
         this.rawServer = http.createServer(async (req: any, res: any) => {
           let bodyRaw = "";
           req.on("data", (chunk: Buffer) => {

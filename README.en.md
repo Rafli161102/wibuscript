@@ -17,7 +17,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![Vitest](https://img.shields.io/badge/Vitest-Expanded%20suite-729B1B?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Status](https://img.shields.io/badge/Status-Stable%20v2.7.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
+[![Status](https://img.shields.io/badge/Status-Stable%20v2.8.0-brightgreen?style=for-the-badge)](https://github.com/Rafli161102/wibuscript/releases)
 [![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://github.com/Rafli161102/wibuscript/blob/main/LICENSE)
 
 <p align="center">
@@ -105,7 +105,7 @@ wibuscript/
 
 The Playground interprets WibuScript in a dedicated Web Worker, separate from the UI thread. Its runtime uses `allowFs: false`, limits source and output size, disables common network APIs and nested workers, and supports worker termination from the UI or on timeout.
 
-These restrictions improve the Playground's capability boundaries, but they are not a guarantee against browser exploits or process-level resource exhaustion. The Node.js `WibuSandbox` API is also defense-in-depth only: Node.js documents that `node:vm` is not a security mechanism for running untrusted code. For adversarial or multi-tenant execution, use a separately isolated OS/container environment with explicit filesystem, network, process, CPU, and memory policies. WibuScript includes a `ContainerSandbox` adapter backed by a dedicated Docker image. Build it with `npm run build:sandbox-image`, then import `ContainerSandbox` from the Node-only `wibuscript/container` subpath and call `new ContainerSandbox().execute(source)` from Node.js. It is intentionally not exported from the browser entry point. The adapter requires a running Docker daemon and the `wibuscript-runner:latest` image; building the image is not part of the standard CI job.
+These restrictions improve the Playground's capability boundaries, but they are not a guarantee against browser exploits or process-level resource exhaustion. The Node.js `WibuSandbox` API is also defense-in-depth only: Node.js documents that `node:vm` is not a security mechanism for running untrusted code. For adversarial or multi-tenant execution, use a separately isolated OS/container environment with explicit filesystem, network, process, CPU, and memory policies. WibuScript includes a `ContainerSandbox` adapter backed by a dedicated Docker image. Build it with `npm run build:sandbox-image`, then import `ContainerSandbox` from the Node-only `wibuscript/container` subpath and call `new ContainerSandbox().execute(source)` from Node.js. It is intentionally not exported from the browser entry point. The adapter requires a running Docker daemon and the `wibuscript-runner:latest` image; the standard CI workflow builds this image and runs an isolated-runner smoke test.
 ## The 4 Absolute Dialects System
 
 In WibuScript, standard English keywords like `let`, `if`, or `while` are absent by design. All control structures and declarations belong to four distinct dialects that can be used interchangeably or mixed within the same file:
@@ -277,7 +277,7 @@ npx wibuscript --help
 ```
 
 ### Prerequisites
-- **Node.js**: Version 18.0.0 or later.
+- **Node.js**: Version 20.9.0 or later.
 - **npm**: Version 9.0.0 or later.
 
 ### Command-Line Interface (CLI)
@@ -313,6 +313,12 @@ wibu lsp
 ---
 
 ## Changelog
+
+### v2.8.0
+- **Execution security hardening**: The Playground uses a dedicated Web Worker with input/output limits and a timeout. Documentation clarifies that Workers and `node:vm` are not security boundaries for adversarial code.
+- **Container Sandbox**: Added a Docker-backed adapter with networking disabled, a read-only root filesystem, a non-root user, and resource limits.
+- **Compiler and tooling quality**: Added interpreter/transpiler differential tests, AST source coordinates and Source Map mappings, and protection against stale LSP document notifications.
+- **CI/CD**: Automated workflows run typechecking, tests, builds, and an isolated container-runner smoke test.
 
 ### v2.7.0
 - **Asynchronous Await Operations (AwaitExpression)**: Implemented full AST, Parser, Evaluator, and Transpiler support for `matte` (Pure Japanese), `mat` (Short Japanese), `matteNe` (Absurd Weeb), and `admindatang` (Meme Rongawi) compiling to native `await` in JavaScript ES2022+.

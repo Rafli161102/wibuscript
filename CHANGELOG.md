@@ -6,6 +6,15 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan me
 
 ## [Unreleased]
 
+### Fixed
+- CLI version output now reads the package version instead of a stale hard-coded value.
+- Node.js ESM server module now resolves `node:http` through `createRequire`; a real HTTP listener regression test covers the native path.
+
+### Quality
+- Declare the Node.js 20.9.0 minimum required by the locked Next.js 16 dependency.
+- Add an npm tarball installation smoke test to the Trusted Publishing workflow.
+
+
 ## [v2.8.0] - 2026-10-31
 
 ### Security

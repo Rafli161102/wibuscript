@@ -67,6 +67,9 @@
   ],
   "author": "Muhammad Rafli Ramadhan",
   "license": "MIT",
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "bugs": {
     "url": "https://github.com/Rafli161102/wibuscript/issues"
   },

@@ -20,7 +20,10 @@ import { startREPL } from "./repl";
 import { installPackage } from "./pm";
 import { startLanguageServer } from "./lsp";
 
-const WIBU_VERSION = "2.7.0";
+const packageMetadata = JSON.parse(
+  fs.readFileSync(new URL("../package.json", import.meta.url), "utf8")
+) as { version: string };
+const WIBU_VERSION = packageMetadata.version;
 
 function printUsage(): void {
   console.log(`WibuScript CLI v${WIBU_VERSION}`);

@@ -255,6 +255,30 @@ describe("WibuScript v2.5.0 - Prioritas 4: Modul Domain Dasar (web & server)", (
         expect(sim3.body).toBe("Tidak Ditemukan");
       });
 
+      it("membuka server HTTP native di runtime Node.js ESM", async () => {
+        const server = createServer((_req, res) => {
+          res.json({ status: "ok" }, 200);
+        });
+
+        expect(server.rawServer).toBeTruthy();
+        const rawServer = server.rawServer;
+        const listening = new Promise<void>((resolve, reject) => {
+          rawServer.once("error", reject);
+          server.listen(0, "127.0.0.1", resolve);
+        });
+
+        await listening;
+        try {
+          const address = rawServer.address();
+          expect(address).toBeTruthy();
+          const response = await fetch(`http://127.0.0.1:${address.port}/health`);
+          expect(response.status).toBe(200);
+          expect(await response.json()).toEqual({ status: "ok" });
+        } finally {
+          await new Promise<void>((resolve) => server.close(resolve));
+        }
+      });
+
       it("mendukung parsing query params dan body pada request", async () => {
         let capturedQuery: any = null;
         let capturedBody: any = null;
