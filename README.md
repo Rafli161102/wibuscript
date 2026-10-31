@@ -56,6 +56,10 @@ Meskipun pembawaannya santai dan absurd, proyek ini dirancang dengan standar tek
 
 <img src="https://raw.githubusercontent.com/Rafli161102/wibuscript/main/assets/images/tech-glasses.gif" width="140" align="right" alt="Analisis Teknis" />
 
+## Static Analysis
+
+Jalankan `wibu analyze kode.wibu` untuk memeriksa nama yang tidak ditemukan, deklarasi ganda, variabel/fungsi yang tidak digunakan, dan penggunaan `return`/`break`/`continue` di luar konteks yang valid. Analisis bersifat statis dan tidak menjalankan program. Warning tidak membuat proses gagal; diagnostic berlevel error menghasilkan exit code non-zero.
+
 ## Formatter & Syntax Check
 
 WibuScript menyediakan pemeriksaan sintaks tanpa mengeksekusi program dan formatter indentasi yang mempertahankan ejaan keyword/dialek, literal string, serta komentar. Formatter saat ini sengaja hanya menormalkan indentasi blok agar tidak mengubah ekspresi atau perilaku program. Formatter yang sama tersedia melalui LSP dan perintah **Format Document** di ekstensi VS Code.

@@ -20,6 +20,7 @@ import { startREPL } from "./repl";
 import { installPackage } from "./pm";
 import { startLanguageServer } from "./lsp";
 import { validateSource } from "./diagnostics";
+import { analyzeSource } from "./analyzer";
 import { formatSource } from "./formatter";
 
 const packageMetadata = JSON.parse(
@@ -38,6 +39,7 @@ function printUsage(): void {
   console.log("  wibu <berkas.wibu>            Menjalankan berkas WibuScript (pintasan)");
   console.log("  wibu build <berkas.wibu>      Kompilasi berkas ke JavaScript (opsi: -o <output.js>, --dom)");
   console.log("  wibu check <berkas.wibu>      Periksa sintaks tanpa menjalankan program");
+  console.log("  wibu analyze <berkas.wibu>    Analisis scope, nama, dan alur kontrol");
   console.log("  wibu format <berkas.wibu>     Rapikan indentasi (opsi: -o <output.wibu>, --write, --check)");
   console.log("  wibu convert <berkas> --to <dialek>  Konversi antar-dialek (murni, singkat, wibu, rongawi)");
   console.log("  wibu add <paket>              Mengunduh pustaka pihak ketiga ke node_modules");
@@ -246,6 +248,45 @@ function handleCheck(args: string[]): void {
 }
 
 
+
+function handleAnalyze(args: string[]): void {
+  const targetFile = args[0];
+  if (!targetFile || targetFile.startsWith("-")) {
+    console.error("[Error] Berkas target .wibu diperlukan untuk 'analyze'.");
+    process.exit(1);
+  }
+  const resolvedPath = path.resolve(process.cwd(), targetFile);
+  if (!fs.existsSync(resolvedPath) || path.extname(resolvedPath).toLowerCase() !== ".wibu") {
+    console.error("[Error] Berkas tidak ditemukan atau ekstensi bukan .wibu: " + targetFile);
+    process.exit(1);
+  }
+  try {
+    const source = fs.readFileSync(resolvedPath, "utf-8");
+    const syntax = validateSource(source);
+    if (syntax.length) {
+      for (const item of syntax) console.error("[Syntax Error] " + item.line + ":" + item.column + " " + item.message);
+      process.exitCode = 1;
+      return;
+    }
+    const diagnostics = analyzeSource(source);
+    for (const item of diagnostics) {
+      const prefix = item.severity === "error" ? "Error" : "Warning";
+      console.error("[" + prefix + "] " + item.line + ":" + item.column + " " + item.code + " " + item.message);
+      if (item.sourceLine) {
+        console.error("  " + item.sourceLine);
+        console.error("  " + " ".repeat(Math.max(0, item.column - 1)) + "^");
+      }
+    }
+    const errors = diagnostics.filter(item => item.severity === "error").length;
+    const warnings = diagnostics.filter(item => item.severity === "warning").length;
+    console.log("[Analyze] " + errors + " error(s), " + warnings + " warning(s).");
+    if (errors) process.exitCode = 1;
+  } catch (error) {
+    console.error("[Analyze Error] " + (error instanceof Error ? error.message : String(error)));
+    process.exitCode = 1;
+  }
+}
+
 function handleFormat(args: string[]): void {
   const targetFile = args[0];
   if (!targetFile || targetFile.startsWith("-")) {
@@ -350,6 +391,10 @@ async function main(): Promise<void> {
 
     case "check":
       handleCheck(args.slice(1));
+      return;
+
+    case "analyze":
+      handleAnalyze(args.slice(1));
       return;
 
     case "format":

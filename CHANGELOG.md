@@ -7,6 +7,7 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan me
 ## [Unreleased]
 
 ### Added
+- Add initial semantic analysis API `analyzeSource()` and CLI `wibu analyze` for duplicate declarations, unresolved names, unused variables/functions, invalid return/break/continue placement, and unreachable statements. Analysis is static and never executes source code.
 - Add LSP `textDocument/formatting` support and a VS Code document-formatting provider, reusing the safe indentation formatter.
 - Add `wibu format --check` for CI-friendly formatting verification and sync VS Code extension metadata to core version 2.8.0.
 - Add `validateSource()` diagnostics API and `wibu check <file.wibu>` to validate syntax without executing code, with source locations, caret output, and actionable suggestions.

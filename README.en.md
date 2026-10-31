@@ -56,6 +56,10 @@ Despite its humorous and unconventional flavor, WibuScript is engineered with ri
 
 <img src="https://raw.githubusercontent.com/Rafli161102/wibuscript/main/assets/images/tech-glasses.gif" width="140" align="right" alt="Technical Analysis" />
 
+## Static Analysis
+
+Run `wibu analyze program.wibu` to detect unresolved names, duplicate declarations, unused variables/functions, and `return`/`break`/`continue` used outside valid contexts. Analysis is static and never executes the program. Warnings do not fail the process; error diagnostics return a non-zero exit code.
+
 ## Formatter & Syntax Check
 
 WibuScript provides syntax validation without executing programs and a conservative indentation formatter. It preserves keyword/dialect spelling, string literals, and comments; the current formatter intentionally changes indentation only to avoid rewriting expressions or program behavior. The same formatter is exposed over LSP and the VS Code **Format Document** command.
