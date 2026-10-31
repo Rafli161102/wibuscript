@@ -51,6 +51,17 @@ Meskipun pembawaannya santai dan absurd, proyek ini dirancang dengan standar tek
 
 <img src="https://raw.githubusercontent.com/Rafli161102/wibuscript/main/assets/images/tech-glasses.gif" width="140" align="right" alt="Analisis Teknis" />
 
+## Formatter & Syntax Check
+
+WibuScript menyediakan pemeriksaan sintaks tanpa mengeksekusi program dan formatter indentasi yang mempertahankan ejaan keyword/dialek, literal string, serta komentar. Formatter saat ini sengaja hanya menormalkan indentasi blok agar tidak mengubah ekspresi atau perilaku program.
+
+```bash
+wibu check kode.wibu
+wibu format kode.wibu                 # hasil ke stdout
+wibu format kode.wibu -o rapi.wibu    # simpan ke berkas baru
+wibu format kode.wibu --write         # ubah berkas langsung
+```
+
 ## Arsitektur Sistem
 
 Struktur direktori WibuScript memisahkan logika kompilasi inti dengan antarmuka pengguna:
@@ -60,6 +71,8 @@ wibuscript/
 |-- src/
 |   |-- ast.ts                  # Struktur Abstract Syntax Tree (AST)
 |   |-- lexer.ts                # Scanner token dan resolusi 4 dialek
+|   |-- diagnostics.ts          # Syntax diagnostics API
+|   |-- formatter.ts            # Safe indentation formatter
 |   |-- parser.ts               # Recursive Descent Parser ke bentuk AST
 |   |-- transpiler.ts           # JS Transpiler (ES2022+) & Source Map v3
 |   |-- sandbox.ts              # Best-effort Web Worker / Worker Threads runner

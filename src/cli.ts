@@ -20,6 +20,7 @@ import { startREPL } from "./repl";
 import { installPackage } from "./pm";
 import { startLanguageServer } from "./lsp";
 import { validateSource } from "./diagnostics";
+import { formatSource } from "./formatter";
 
 const packageMetadata = JSON.parse(
   fs.readFileSync(new URL("../package.json", import.meta.url), "utf8")
@@ -37,6 +38,7 @@ function printUsage(): void {
   console.log("  wibu <berkas.wibu>            Menjalankan berkas WibuScript (pintasan)");
   console.log("  wibu build <berkas.wibu>      Kompilasi berkas ke JavaScript (opsi: -o <output.js>, --dom)");
   console.log("  wibu check <berkas.wibu>      Periksa sintaks tanpa menjalankan program");
+  console.log("  wibu format <berkas.wibu>     Rapikan indentasi (opsi: -o <output.wibu>, --write)");
   console.log("  wibu convert <berkas> --to <dialek>  Konversi antar-dialek (murni, singkat, wibu, rongawi)");
   console.log("  wibu add <paket>              Mengunduh pustaka pihak ketiga ke node_modules");
   console.log("  wibu lsp                      Menjalankan Wibu Language Server Protocol (LSP)");
@@ -46,6 +48,7 @@ function printUsage(): void {
   console.log("  wibu");
   console.log("  wibu run kode.wibu");
   console.log("  wibu build kode.wibu -o hasil.js");
+  console.log("  wibu format kode.wibu");
   console.log("  wibu convert kode.wibu --to rongawi");
   console.log("  wibu add matematika-wibu");
   console.log("  wibu lsp");
@@ -242,6 +245,52 @@ function handleCheck(args: string[]): void {
   process.exitCode = 1;
 }
 
+
+function handleFormat(args: string[]): void {
+  const targetFile = args[0];
+  if (!targetFile || targetFile.startsWith("-")) {
+    console.error("[Error] Berkas target .wibu diperlukan untuk 'format'.");
+    console.error("Penggunaan: wibu format <berkas.wibu> [-o output.wibu | --write]");
+    process.exit(1);
+  }
+  const resolvedPath = path.resolve(process.cwd(), targetFile);
+  if (!fs.existsSync(resolvedPath)) {
+    console.error("[Error] Berkas tidak ditemukan: " + resolvedPath);
+    process.exit(1);
+  }
+  if (path.extname(resolvedPath).toLowerCase() !== ".wibu") {
+    console.error("[Error] Ekstensi berkas tidak valid. Gunakan ekstensi .wibu");
+    process.exit(1);
+  }
+  const writeInPlace = args.includes("--write");
+  const outputIndex = args.indexOf("-o");
+  if (writeInPlace && outputIndex !== -1) {
+    console.error("[Error] Gunakan salah satu --write atau -o, bukan keduanya.");
+    process.exit(1);
+  }
+  if (outputIndex !== -1 && !args[outputIndex + 1]) {
+    console.error("[Error] Jalur output setelah -o diperlukan.");
+    process.exit(1);
+  }
+  try {
+    const formatted = formatSource(fs.readFileSync(resolvedPath, "utf-8"));
+    if (writeInPlace) {
+      fs.writeFileSync(resolvedPath, formatted, "utf-8");
+      console.log("[Format Sukses] " + targetFile + " diperbarui.");
+    } else if (outputIndex !== -1) {
+      const outputPath = path.resolve(process.cwd(), args[outputIndex + 1]!);
+      fs.writeFileSync(outputPath, formatted, "utf-8");
+      console.log("[Format Sukses] Hasil ditulis ke '" + path.basename(outputPath) + "'.");
+    } else {
+      process.stdout.write(formatted);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[Format Error] " + message);
+    process.exit(1);
+  }
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
@@ -292,6 +341,10 @@ async function main(): Promise<void> {
 
     case "check":
       handleCheck(args.slice(1));
+      return;
+
+    case "format":
+      handleFormat(args.slice(1));
       return;
 
     case "convert":

@@ -162,3 +162,5 @@ export async function runWibuScript(sourceCode: string): Promise<void> {
 }
 
 export { validateSource, type WibuDiagnostic } from "./diagnostics";
+
+export { formatSource, type FormatOptions } from "./formatter";

@@ -51,6 +51,17 @@ Despite its humorous and unconventional flavor, WibuScript is engineered with ri
 
 <img src="https://raw.githubusercontent.com/Rafli161102/wibuscript/main/assets/images/tech-glasses.gif" width="140" align="right" alt="Technical Analysis" />
 
+## Formatter & Syntax Check
+
+WibuScript provides syntax validation without executing programs and a conservative indentation formatter. It preserves keyword/dialect spelling, string literals, and comments; the current formatter intentionally changes indentation only to avoid rewriting expressions or program behavior.
+
+```bash
+wibu check program.wibu
+wibu format program.wibu                   # print to stdout
+wibu format program.wibu -o formatted.wibu # write to a new file
+wibu format program.wibu --write           # update the input file
+```
+
 ## System Architecture
 
 The WibuScript directory structure separates the core compiler engine from user tooling:
@@ -60,6 +71,8 @@ wibuscript/
 |-- src/
 |   |-- ast.ts                  # Abstract Syntax Tree (AST) definitions
 |   |-- lexer.ts                # Token scanner and 4-dialect token mapping
+|   |-- diagnostics.ts          # Syntax diagnostics API
+|   |-- formatter.ts            # Safe indentation formatter
 |   |-- parser.ts               # Recursive Descent Parser producing AST
 |   |-- transpiler.ts           # JS Transpiler (ES2022+) & Source Map v3
 |   |-- sandbox.ts              # Best-effort Web Worker / Worker Threads runner
