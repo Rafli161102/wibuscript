@@ -58,7 +58,7 @@ export function analyzeSource(source: string): SemanticDiagnostic[] {
     for (const symbol of leaving.symbols.values()) {
       if (!symbol.exported && symbol.reads === 0 && (symbol.kind === "variable" || symbol.kind === "function")) {
         report(symbol.kind === "function" ? "unused-function" : "unused-variable", "warning",
-          symbol.kind === "function" ? \`Fungsi '\${symbol.name}' dideklarasikan tetapi tidak pernah digunakan.\` : \`Variabel '\${symbol.name}' dideklarasikan tetapi tidak pernah dibaca.\`,
+          symbol.kind === "function" ? `Fungsi '${symbol.name}' dideklarasikan tetapi tidak pernah digunakan.` : `Variabel '${symbol.name}' dideklarasikan tetapi tidak pernah dibaca.`,
           { line: symbol.line, column: symbol.column });
       }
     }
@@ -67,7 +67,7 @@ export function analyzeSource(source: string): SemanticDiagnostic[] {
   const declare = (name: string, kind: SymbolEntry["kind"], location: { line: number; column: number }, exported = false) => {
     if (!name || name === "*") return;
     if (current.symbols.has(name)) {
-      report("duplicate-declaration", "error", \`Nama '\${name}' sudah dideklarasikan pada scope yang sama.\`, location);
+      report("duplicate-declaration", "error", `Nama '${name}' sudah dideklarasikan pada scope yang sama.`, location);
       return;
     }
     current.symbols.set(name, { name, kind, line: location.line, column: location.column, reads: 0, exported });
@@ -85,11 +85,11 @@ export function analyzeSource(source: string): SemanticDiagnostic[] {
     if (!name || BUILTINS.has(name)) return;
     const symbol = resolve(name);
     if (symbol) symbol.reads++;
-    else report("undefined-name", "error", \`Nama '\${name}' tidak ditemukan dalam scope yang tersedia.\`, location);
+    else report("undefined-name", "error", `Nama '${name}' tidak ditemukan dalam scope yang tersedia.`, location);
   };
   const writeName = (name: string, location: { line: number; column: number }) => {
     if (name && !BUILTINS.has(name) && !resolve(name)) {
-      report("undefined-name", "error", \`Nama '\${name}' ditugaskan sebelum dideklarasikan.\`, location);
+      report("undefined-name", "error", `Nama '${name}' ditugaskan sebelum dideklarasikan.`, location);
     }
   };
 
@@ -249,7 +249,7 @@ export function analyzeSource(source: string): SemanticDiagnostic[] {
   for (const symbol of root.symbols.values()) {
     if (!symbol.exported && symbol.reads === 0 && (symbol.kind === "variable" || symbol.kind === "function")) {
       report(symbol.kind === "function" ? "unused-function" : "unused-variable", "warning",
-        symbol.kind === "function" ? \`Fungsi '\${symbol.name}' dideklarasikan tetapi tidak pernah digunakan.\` : \`Variabel '\${symbol.name}' dideklarasikan tetapi tidak pernah dibaca.\`,
+        symbol.kind === "function" ? `Fungsi '${symbol.name}' dideklarasikan tetapi tidak pernah digunakan.` : `Variabel '${symbol.name}' dideklarasikan tetapi tidak pernah dibaca.`,
         { line: symbol.line, column: symbol.column });
     }
   }
